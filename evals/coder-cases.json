@@ -1,0 +1,17 @@
+[
+  {
+    "id": "fizzbuzz",
+    "goal": "Write a TypeScript function fizzbuzz(n: number): string[] that returns FizzBuzz output from 1 to n. Include the function and a brief test.",
+    "criteria": "Must be valid TypeScript, handle the classic FizzBuzz rules, include at least one test case."
+  },
+  {
+    "id": "debounce",
+    "goal": "Implement a debounce<T extends (...args: any[]) => any>(fn: T, ms: number): T function in TypeScript with proper types.",
+    "criteria": "Must be TypeScript with generics, correct debounce semantics (delays execution, cancels prior call), no external dependencies."
+  },
+  {
+    "id": "binary-search",
+    "goal": "Write a binary search function in TypeScript: binarySearch<T>(arr: T[], target: T, compare: (a: T, b: T) => number): number. Returns index or -1.",
+    "criteria": "Generic, uses compare function correctly, returns -1 when not found, O(log n) complexity."
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "name": "ai-lab",
+  "version": "0.1.0",
+  "description": "Professional AI agents workspace",
+  "type": "module",
+  "scripts": {
+    "agent": "tsx scripts/run-agent.ts",
+    "eval": "tsx evals/runner.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:reset": "docker compose down -v && docker compose up -d",
+    "infra:logs": "docker compose logs -f",
+    "costs": "tsx scripts/cost-report.ts",
+    "vault:index": "tsx scripts/index-vault.ts",
+    "vault:reindex": "tsx scripts/index-vault.ts --force",
+    "vault:stats": "tsx scripts/index-vault.ts --stats",
+    "memory": "tsx scripts/memory.ts",
+    "memory:maintain": "tsx scripts/memory.ts maintain",
+    "task": "tsx scripts/run-task.ts",
+    "task:dry": "tsx scripts/run-task.ts --dry-run",
+    "eval": "tsx scripts/run-eval.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@langchain/anthropic": "^0.3.0",
+    "@langchain/community": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "dotenv": "^16.4.0",
+    "langchain": "^0.3.0",
+    "openai": "^6.38.0",
+    "p-limit": "^6.2.0",
+    "p-retry": "^6.2.0",
+    "pg": "^8.13.0",
+    "pgvector": "^0.2.0",
+    "redis": "^4.7.0",
+    "tsx": "^4.19.0",
+    "winston": "^3.17.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.7.0"
+  }
+}
