@@ -5,9 +5,12 @@
  * dynamic router can select the right agent for a given task without
  * hard-coding name lists everywhere.
  */
+
 import type { BaseAgent } from "./_base/agent.js";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
 
 export type AgentCapability =
   | "web-search"
@@ -18,22 +21,32 @@ export type AgentCapability =
   | "task-planning"
   | "evaluation"
   | "summarization"
-  | "data-analysis";
+  | "data-analysis"
+  | "lead-intelligence"
+  | "outreach-generation"
+  | "contact-enrichment"
+  | "email-delivery";
 
 export interface AgentMeta {
   /** Canonical name used in TaskGraphSpec and CLI */
   name: string;
-  /** Human-readable description for LLM routing prompts */
+
+  /** Human-readable description for routing prompts */
   description: string;
-  /** Declared capabilities — used by dynamic router */
+
+  /** Declared capabilities */
   capabilities: AgentCapability[];
-  /** Relative cost tier for routing budget decisions */
+
+  /** Relative cost tier */
   costTier: "low" | "medium" | "high";
-  /** Lazy factory — called on demand to avoid importing all agents up-front */
+
+  /** Lazy factory */
   factory: () => Promise<BaseAgent>;
 }
 
-// ─── Registry ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Registry
+// ─────────────────────────────────────────────────────────────────────────────
 
 class AgentRegistry {
   private entries = new Map<string, AgentMeta>();
@@ -44,7 +57,15 @@ class AgentRegistry {
 
   get(name: string): AgentMeta {
     const meta = this.entries.get(name);
-    if (!meta) throw new Error(`Agent not registered: "${name}". Known: ${[...this.entries.keys()].join(", ")}`);
+
+    if (!meta) {
+      throw new Error(
+        `Agent not registered: "${name}". Known: ${[
+          ...this.entries.keys(),
+        ].join(", ")}`
+      );
+    }
+
     return meta;
   }
 
@@ -56,23 +77,32 @@ class AgentRegistry {
     return [...this.entries.values()];
   }
 
-  /** Return agents that have ALL of the requested capabilities. */
   withCapabilities(...caps: AgentCapability[]): AgentMeta[] {
-    return this.all().filter((a) => caps.every((c) => a.capabilities.includes(c)));
+    return this.all().filter((a) =>
+      caps.every((c) => a.capabilities.includes(c))
+    );
   }
 
-  /** Return the first agent matching all capabilities, ordered by costTier asc. */
   cheapest(...caps: AgentCapability[]): AgentMeta | undefined {
-    const tierOrder: Record<AgentMeta["costTier"], number> = { low: 0, medium: 1, high: 2 };
+    const tierOrder: Record<AgentMeta["costTier"], number> = {
+      low: 0,
+      medium: 1,
+      high: 2,
+    };
+
     return this.withCapabilities(...caps).sort(
       (a, b) => tierOrder[a.costTier] - tierOrder[b.costTier]
     )[0];
   }
 
-  /** Produce a concise text catalogue for injection into LLM prompts. */
   catalogue(): string {
     return this.all()
-      .map((a) => `- ${a.name} (${a.costTier}): ${a.description} | caps: ${a.capabilities.join(", ")}`)
+      .map(
+        (a) =>
+          `- ${a.name} (${a.costTier}): ${a.description} | caps: ${a.capabilities.join(
+            ", "
+          )}`
+      )
       .join("\n");
   }
 
@@ -83,70 +113,219 @@ class AgentRegistry {
 
 export const agentRegistry = new AgentRegistry();
 
-// ─── Built-in registrations ───────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Built-in Agents
+// ─────────────────────────────────────────────────────────────────────────────
 
 agentRegistry.register({
   name: "researcher",
-  description: "Web search, fact-finding, summarisation, market research",
+  description:
+    "Web search, fact-finding, summarisation and market research",
   capabilities: ["web-search", "summarization"],
   costTier: "medium",
+
   factory: async () => {
-    const { ResearcherAgent } = await import("./researcher/agent.js");
+    const { ResearcherAgent } = await import(
+      "./researcher/agent.js"
+    );
+
     return ResearcherAgent.create();
   },
 });
 
 agentRegistry.register({
   name: "coder",
-  description: "Code generation, debugging, refactoring, tests, CLI tools",
-  capabilities: ["code-generation", "code-review", "summarization"],
+  description:
+    "Code generation, debugging, refactoring, tests and CLI tools",
+
+  capabilities: [
+    "code-generation",
+    "code-review",
+    "summarization",
+  ],
+
   costTier: "medium",
+
   factory: async () => {
-    const { CoderAgent } = await import("./coder/agent.js");
+    const { CoderAgent } = await import(
+      "./coder/agent.js"
+    );
+
     return CoderAgent.create();
   },
 });
 
 agentRegistry.register({
   name: "vault",
-  description: "Semantic and keyword search over the local Obsidian knowledge base",
+
+  description:
+    "Semantic and keyword search over the local Obsidian knowledge base",
+
   capabilities: ["vault-search", "summarization"],
+
   costTier: "low",
+
   factory: async () => {
-    const { VaultAgent } = await import("./vault/agent.js");
+    const { VaultAgent } = await import(
+      "./vault/agent.js"
+    );
+
     return VaultAgent.create();
   },
 });
 
 agentRegistry.register({
   name: "memory-manager",
-  description: "Querying and maintaining persistent agent memory (episodic, semantic, procedural)",
-  capabilities: ["memory-management", "summarization"],
+
+  description:
+    "Querying and maintaining persistent agent memory",
+
+  capabilities: [
+    "memory-management",
+    "summarization",
+  ],
+
   costTier: "low",
+
   factory: async () => {
-    const { MemoryManagerAgent } = await import("./memory-manager/agent.js");
+    const { MemoryManagerAgent } = await import(
+      "./memory-manager/agent.js"
+    );
+
     return MemoryManagerAgent.create();
   },
 });
 
 agentRegistry.register({
   name: "coordinator",
-  description: "Task decomposition and multi-agent orchestration",
+
+  description:
+    "Task decomposition and multi-agent orchestration",
+
   capabilities: ["task-planning"],
+
   costTier: "medium",
+
   factory: async () => {
-    const { CoordinatorAgent } = await import("./coordinator/agent.js");
+    const { CoordinatorAgent } = await import(
+      "./coordinator/agent.js"
+    );
+
     return CoordinatorAgent.create();
   },
 });
 
 agentRegistry.register({
   name: "evaluator",
-  description: "Output quality evaluation and scoring against a goal",
+
+  description:
+    "Output quality evaluation and scoring against a goal",
+
   capabilities: ["evaluation", "summarization"],
+
   costTier: "low",
+
   factory: async () => {
-    const { EvaluatorAgent } = await import("./evaluator/agent.js");
+    const { EvaluatorAgent } = await import(
+      "./evaluator/agent.js"
+    );
+
     return EvaluatorAgent.create();
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VRASHOWS Enterprise Intelligence Agents
+// ─────────────────────────────────────────────────────────────────────────────
+
+agentRegistry.register({
+  name: "futurecom-researcher",
+
+  description:
+    "Enterprise lead intelligence for VRASHOWS — identifies Futurecom exhibitors with high 360° operations potential",
+
+  capabilities: [
+    "web-search",
+    "lead-intelligence",
+    "data-analysis",
+    "summarization",
+  ],
+
+  costTier: "medium",
+
+  factory: async () => {
+    const { FuturecomResearcherAgent } = await import(
+      "./futurecom-researcher/agent.js"
+    );
+
+    return FuturecomResearcherAgent.create();
+  },
+});
+
+agentRegistry.register({
+  name: "outreach-agent",
+
+  description:
+    "Generates consultive enterprise outreach packages for VRASHOWS leads",
+
+  capabilities: [
+    "outreach-generation",
+    "summarization",
+  ],
+
+  costTier: "medium",
+
+  factory: async () => {
+    const { OutreachAgent } = await import(
+      "./outreach-agent/agent.js"
+    );
+
+    return OutreachAgent.create();
+  },
+});
+
+agentRegistry.register({
+  name: "lead-enrichment-agent",
+
+  description:
+    "Enriches company leads with decision maker contacts and strategic intelligence",
+
+  capabilities: [
+    "web-search",
+    "contact-enrichment",
+    "lead-intelligence",
+    "data-analysis",
+  ],
+
+  costTier: "medium",
+
+  factory: async () => {
+    const { LeadEnrichmentAgent } = await import(
+      "./lead-enrichment-agent/agent.js"
+    );
+
+    return LeadEnrichmentAgent.create();
+  },
+});
+
+agentRegistry.register({
+  name: "email-sender-agent",
+
+  description:
+    "Sends enterprise outreach emails via Resend API for VRASHOWS",
+
+  capabilities: [
+    "email-delivery",
+    "outreach-generation",
+  ],
+
+  costTier: "low",
+
+  factory: async () => {
+    const { EmailSenderAgent } = await import(
+      "./email-sender-agent/agent.js"
+    );
+
+    return EmailSenderAgent.create();
   },
 });

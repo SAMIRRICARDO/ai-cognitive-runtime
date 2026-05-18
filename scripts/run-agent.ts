@@ -11,6 +11,10 @@ import { ResearcherAgent } from "../agents/researcher/agent.js";
 import { CoderAgent } from "../agents/coder/agent.js";
 import { VaultAgent } from "../agents/vault/agent.js";
 import { MemoryManagerAgent } from "../agents/memory-manager/agent.js";
+import { FuturecomResearcherAgent } from "../agents/futurecom-researcher/agent.js";
+import { OutreachAgent } from "../agents/outreach-agent/agent.js";
+import { LeadEnrichmentAgent } from "../agents/lead-enrichment-agent/agent.js";
+import { EmailSenderAgent } from "../agents/email-sender-agent/agent.js";
 import { withReflection } from "../agents/evaluator/agent.js";
 import type { AgentStep } from "../agents/_base/types.js";
 
@@ -46,6 +50,10 @@ const agentFactories: Record<string, () => Promise<any>> = {
   coder: () => CoderAgent.create(),
   vault: () => VaultAgent.create(),
   "memory-manager": () => MemoryManagerAgent.create(),
+  "futurecom-researcher": () => FuturecomResearcherAgent.create(),
+  "outreach-agent": () => OutreachAgent.create(),
+  "lead-enrichment-agent": () => LeadEnrichmentAgent.create(),
+  "email-sender-agent": () => EmailSenderAgent.create(),
 };
 
 const factory = agentFactories[agentName];

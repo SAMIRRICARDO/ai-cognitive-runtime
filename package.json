@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "agent": "tsx scripts/run-agent.ts",
-    "eval": "tsx evals/runner.ts",
+    "eval": "tsx scripts/run-eval.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "infra:up": "docker compose up -d",
@@ -19,8 +19,7 @@
     "memory": "tsx scripts/memory.ts",
     "memory:maintain": "tsx scripts/memory.ts maintain",
     "task": "tsx scripts/run-task.ts",
-    "task:dry": "tsx scripts/run-task.ts --dry-run",
-    "eval": "tsx scripts/run-eval.ts"
+    "task:dry": "tsx scripts/run-task.ts --dry-run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -35,6 +34,7 @@
     "pg": "^8.13.0",
     "pgvector": "^0.2.0",
     "redis": "^4.7.0",
+    "resend": "^6.4.2",
     "tsx": "^4.19.0",
     "winston": "^3.17.0",
     "zod": "^3.23.0"

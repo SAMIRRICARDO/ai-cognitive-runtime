@@ -12,6 +12,7 @@ const envSchema = z.object({
   TAVILY_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   VAULT_PATH: z.string().default("~/obsidian-vault"),
+  RESEND_API_KEY: z.string().optional().default(""),
 });
 
 const parsed = envSchema.safeParse(process.env);
