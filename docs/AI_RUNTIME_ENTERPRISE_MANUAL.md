@@ -647,10 +647,10 @@ interface EnrichedContact {
 **Uso direto via script:**
 ```bash
 # Teste com email próprio
-tsx scripts/run-email.ts --test-to samir@vrashows.com.br
+tsx scripts/run-email.ts --test-to sender@yourdomain.com
 
 # Com PDF anexado
-tsx scripts/run-email.ts --test-to samir@vrashows.com.br \
+tsx scripts/run-email.ts --test-to sender@yourdomain.com \
   --attach ./assets/pdfs/vrashows_media_kit_optimized.pdf
 ```
 
@@ -899,7 +899,7 @@ A integração com o Resend SDK (`resend ^6.4.2`) é feita através do método `
 
 ```typescript
 const response = await client.emails.send({
-  from: `${fromName} <${fromAddress}>`,   // "Samir Ricardo | VRASHOWS <samir.ricardo@vrashows.com.br>"
+  from: `${fromName} <${fromAddress}>`,   // "Samir Ricardo | VRASHOWS <sender@yourdomain.com>"
   to: input.recipientEmail,
   subject: input.subject,
   text: input.bodyText,                   // Plain-text fallback obrigatório
@@ -909,7 +909,7 @@ const response = await client.emails.send({
 ```
 
 **Domínio de envio:** `vrashows.com.br`  
-**From address:** `samir.ricardo@vrashows.com.br`  
+**From address:** `sender@yourdomain.com`  
 **From name:** `Samir Ricardo | VRASHOWS`
 
 **DNS Records necessários para verificação no Resend:**
@@ -947,7 +947,7 @@ O template HTML é gerado pela função `buildHtmlEmail()` em `tools/send-email.
 ├──────────────────────────────────────────┤
 │  Samir Ricardo | VRASHOWS               │  ← Signature
 │  Parcerias Estratégicas · VRASHOWS      │
-│  samir.ricardo@vrashows.com.br          │  ← Link clicável #2563eb
+│  sender@yourdomain.com          │  ← Link clicável #2563eb
 │  vrashows.com.br                        │  ← Link clicável #94a3b8
 │                                     VRA │
 ├──────────────────────────────────────────┤
@@ -1533,7 +1533,7 @@ ANTHROPIC_API_KEY=sk-ant-api03-...    # Obrigatório
 OPENAI_API_KEY=sk-proj-...            # Embeddings + vault search
 TAVILY_API_KEY=tvly-...               # Web search tool
 RESEND_API_KEY=re_...                 # Email delivery
-RESEND_FROM_EMAIL=samir@vrashows.com.br  # Sender address
+RESEND_FROM_EMAIL=sender@yourdomain.com  # Sender address
 RESEND_FROM_NAME=Samir Ricardo | VRASHOWS  # Sender name
 
 # ── Modelos ──────────────────────────────────────────────────────
@@ -1709,14 +1709,14 @@ tsx scripts/run-email.ts [--test-to <email>] [--attach <path>] [--dry-run]
 **Exemplos:**
 ```bash
 # Teste básico
-tsx scripts/run-email.ts --test-to samir.ricardo@vrashows.com.br
+tsx scripts/run-email.ts --test-to sender@yourdomain.com
 
 # Com PDF media kit
-tsx scripts/run-email.ts --test-to samir@email.com \
+tsx scripts/run-email.ts --test-to sender@yourdomain.com \
   --attach ./assets/pdfs/vrashows_media_kit_optimized.pdf
 
 # Dry run (não envia, apenas valida)
-tsx scripts/run-email.ts --test-to samir@email.com --dry-run
+tsx scripts/run-email.ts --test-to sender@yourdomain.com --dry-run
 ```
 
 ### 11.3 Modo de Reflexão — withReflection
@@ -1990,7 +1990,7 @@ cp .env.example .env
 RESEND_FROM_EMAIL=samir.ricardo@vrashows
 
 # Correto:
-RESEND_FROM_EMAIL=samir.ricardo@vrashows.com.br
+RESEND_FROM_EMAIL=sender@yourdomain.com
 ```
 
 ---

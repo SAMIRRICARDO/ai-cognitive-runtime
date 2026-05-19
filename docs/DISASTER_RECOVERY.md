@@ -261,7 +261,7 @@ AI Cognitive Runtime — System Health
 
   ✓ Node.js                 v22.15.0 (required: ≥22)
   ✓ Anthropic API           Key configured (sk-ant-api03-...)
-  ✓ Resend Email            Key configured (re_Szb9p4...) | From: samir.ricardo@vrashows.com.br
+  ✓ Resend Email            Key configured (re_xxxxxxxxxxxx...) | From: sender@yourdomain.com
   ✓ Docker                  v27.3.1
   ✓ Redis                   v7.2.3 — PONG
   ✓ PostgreSQL+pgvector     pgvector v0.7.0

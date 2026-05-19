@@ -22,12 +22,38 @@ import { validateSendEmailInput } from "../agents/email-sender-agent/schemas.js"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DEFAULT_FROM_ADDRESS = env.RESEND_FROM_EMAIL ?? "samir.ricardo@vrashows.com.br";
-const DEFAULT_FROM_NAME    = env.RESEND_FROM_NAME  ?? "Samir Ricardo | VRASHOWS";
+const DEFAULT_FROM_ADDRESS = env.RESEND_FROM_EMAIL;
+const DEFAULT_FROM_NAME    = env.RESEND_FROM_NAME  ?? "Your Name | Your Brand";
 const DEFAULT_BCC_ADDRESS  = env.OUTBOUND_BCC_EMAIL ?? undefined;
 const DEFAULT_RATE_DELAY   = 1200; // ms between sends (< Resend's 2 req/s limit)
 const DEFAULT_DEDUP_DAYS   = 7;
 const DEDUP_KEY_PREFIX     = "email:sent:";
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+/** Extract first name for personalized greeting: "Rachel Louise Wilson" → "Rachel" */
+export function extractFirstName(fullName: string): string {
+  return fullName.trim().split(/\s+/)[0] ?? fullName.trim();
+}
+
+/** Subject variant pool — A/B ready, selected deterministically by recipient hash */
+export const SUBJECT_VARIANTS = [
+  "Operação integrada para eventos corporativos",
+  "Como reduzir ruído operacional em eventos corporativos",
+  "Experiência operacional premium para eventos corporativos",
+  "Estrutura operacional para eventos enterprise",
+  "Operação invisível para experiências corporativas",
+] as const;
+
+/** Pick subject variant deterministically for a given recipient (consistent A/B) */
+export function pickSubjectVariant(recipientEmail: string, override?: string): string {
+  if (override) return override;
+  let hash = 0;
+  for (let i = 0; i < recipientEmail.length; i++) {
+    hash = (hash * 31 + recipientEmail.charCodeAt(i)) & 0xffff;
+  }
+  return SUBJECT_VARIANTS[hash % SUBJECT_VARIANTS.length]!;
+}
 
 // ─── VRASHOWS HTML template ───────────────────────────────────────────────────
 
@@ -36,64 +62,70 @@ function buildHtmlEmail(opts: {
   company: string;
   bodyHtml: string;
   fromName: string;
+  fromAddress?: string;
 }): string {
-  const { contactName, bodyHtml, fromName } = opts;
+  const { bodyHtml, fromName } = opts;
+  const senderEmail = opts.fromAddress ?? DEFAULT_FROM_ADDRESS;
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>VRASHOWS</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 0;">
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:'Segoe UI',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f2f5;padding:40px 0;">
     <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+      <td align="center" style="padding:0 16px;">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:6px;overflow:hidden;max-width:600px;width:100%;">
 
-          <!-- Header -->
+          <!-- Header — discreet brand mark, not marketing banner -->
           <tr>
-            <td style="background:#0f172a;padding:24px 40px;">
-              <span style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px;">VRASHOWS</span>
-              <span style="color:#94a3b8;font-size:13px;margin-left:12px;">Operações 360° para Eventos Enterprise</span>
-            </td>
-          </tr>
-
-          <!-- Body -->
-          <tr>
-            <td style="padding:36px 40px 24px;color:#1e293b;font-size:15px;line-height:1.7;">
-              ${bodyHtml}
-            </td>
-          </tr>
-
-          <!-- Signature -->
-          <tr>
-            <td style="padding:0 40px 32px;">
-              <table cellpadding="0" cellspacing="0" style="border-top:2px solid #0f172a;padding-top:20px;width:100%;">
+            <td style="background:#0f172a;padding:20px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td>
-                    <p style="margin:0;font-size:15px;font-weight:700;color:#0f172a;">${fromName}</p>
-                    <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Parcerias Estratégicas · VRASHOWS</p>
-                    <p style="margin:4px 0 0;font-size:13px;color:#64748b;">
-                      <a href="mailto:${DEFAULT_FROM_ADDRESS}" style="color:#2563eb;text-decoration:none;">${DEFAULT_FROM_ADDRESS}</a>
-                    </p>
-                    <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;"><a href="https://vrashows.com.br" style="color:#94a3b8;text-decoration:none;">vrashows.com.br</a></p>
+                    <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:1.5px;font-family:Georgia,serif;">VRASHOWS</span>
                   </td>
-                  <td align="right" valign="top">
-                    <span style="display:inline-block;background:#0f172a;color:#ffffff;font-size:11px;font-weight:600;letter-spacing:0.5px;padding:6px 14px;border-radius:4px;">VRA</span>
+                  <td align="right">
+                    <span style="color:#475569;font-size:11px;letter-spacing:0.3px;font-family:'Segoe UI',Arial,sans-serif;">Hub de Operações Enterprise</span>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Footer -->
+          <!-- Body — generous whitespace, readable line-height -->
           <tr>
-            <td style="background:#f8fafc;padding:16px 40px;border-top:1px solid #e2e8f0;">
-              <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
-                Você está recebendo este email por conta de sua atuação em ${opts.company}.
-                Para não receber mais comunicações, responda com "Descadastrar".
+            <td style="padding:40px 44px 28px;color:#1e293b;font-size:15px;line-height:1.75;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+              ${bodyHtml}
+            </td>
+          </tr>
+
+          <!-- Signature — premium, not sales -->
+          <tr>
+            <td style="padding:0 44px 36px;">
+              <table cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #e2e8f0;padding-top:24px;width:100%;">
+                <tr>
+                  <td style="vertical-align:top;">
+                    <p style="margin:0 0 3px;font-size:15px;font-weight:700;color:#0f172a;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">${fromName}</p>
+                    <p style="margin:0 0 3px;font-size:12px;color:#64748b;letter-spacing:0.2px;">Operações &amp; Experiência Corporativa · <a href="https://vrashows.com.br" style="color:#64748b;text-decoration:none;">VRASHOWS</a></p>
+                    <p style="margin:0 0 0;font-size:12px;">
+                      <a href="mailto:${senderEmail}" style="color:#2563eb;text-decoration:none;">${senderEmail}</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer — professional opt-out, no newsletter feel -->
+          <tr>
+            <td style="background:#f8fafc;padding:14px 44px;border-top:1px solid #e2e8f0;">
+              <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.5;">
+                Caso prefira não receber novos contatos, basta responder este email informando.
               </p>
             </td>
           </tr>
@@ -211,6 +243,7 @@ export async function sendEmail(
     company: input.company,
     bodyHtml: rawHtml,
     fromName,
+    fromAddress,
   });
 
   // ── Resolve attachment ────────────────────────────────────────────────────

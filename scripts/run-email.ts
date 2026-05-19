@@ -32,7 +32,8 @@ import { env } from "../config/env.js";
 import { EmailSenderAgent } from "../agents/email-sender-agent/agent.js";
 import { FuturecomResearcherAgent } from "../agents/futurecom-researcher/agent.js";
 import { OutreachAgent } from "../agents/outreach-agent/agent.js";
-import { sendEmail } from "../tools/send-email.js";
+import { sendEmail, extractFirstName, pickSubjectVariant } from "../tools/send-email.js";
+import { scoreEmailQuality } from "../tools/email-quality.js";
 import type { OutreachPackage } from "../agents/outreach-agent/types.js";
 import type { AgentStep } from "../agents/_base/types.js";
 
@@ -49,15 +50,17 @@ function hasFlag(name: string): boolean {
   return args.includes(name);
 }
 
-const dryRun     = hasFlag("--dry-run");
-const testTo     = flag("--test-to");
-const attachPath = flag("--attach") ?? (env.MEDIA_KIT_PDF ? resolve(env.MEDIA_KIT_PDF) : undefined);
-const fromFile   = flag("--from-file");
-const pipeline   = hasFlag("--pipeline");
-const minScore   = parseInt(flag("--min-score") ?? "50", 10);
-const maxLeads   = parseInt(flag("--max-leads") ?? "8", 10);
-const rateDelay  = parseInt(flag("--rate-delay") ?? "1200", 10);
-const jsonOutput = hasFlag("--json");
+const dryRun      = hasFlag("--dry-run");
+const testTo      = flag("--test-to");
+const contactName = flag("--contact-name") ?? "Samir Ricardo";
+const attachPath  = flag("--attach") ?? (env.MEDIA_KIT_PDF ? resolve(env.MEDIA_KIT_PDF) : undefined);
+const fromFile    = flag("--from-file");
+const pipeline    = hasFlag("--pipeline");
+const minScore    = parseInt(flag("--min-score") ?? "50", 10);
+const maxLeads    = parseInt(flag("--max-leads") ?? "8", 10);
+const rateDelay   = parseInt(flag("--rate-delay") ?? "1200", 10);
+const jsonOutput  = hasFlag("--json");
+const skipQuality = hasFlag("--skip-quality");
 
 const sendOpts = { dryRun, rateDelayMs: rateDelay };
 
@@ -91,12 +94,16 @@ function makeStepHandler(label: string) {
 if (testTo) {
   const startedAt = Date.now();
 
-  // ── Executive outreach email — VRASHOWS premium positioning ──────────────
-  const subject = "Operação premium para eventos corporativos";
+  // ── Subject: deterministic A/B variant selection ──────────────────────────
+  const subject = pickSubjectVariant(testTo);
+
+  // ── Personalized greeting — firstName extraction ──────────────────────────
+  const firstName = extractFirstName(contactName);
+  const greeting = `Olá ${firstName},`;
 
   // Official copy v2.0 — validated 2026-05-19
   const bodyText = [
-    "Prezado(a),",
+    greeting,
     "",
     "Grandes eventos corporativos exigem muito mais do que execução operacional. Exigem controle, velocidade de resposta e uma experiência consistente do início ao fim — mesmo quando dezenas de fornecedores, equipes e demandas acontecem simultaneamente.",
     "",
@@ -124,28 +131,30 @@ if (testTo) {
   ].join("\n");
 
   const bodyHtml = [
-    `<p style="margin:0 0 16px;">Prezado(a),</p>`,
+    `<p style="margin:0 0 18px;font-size:15px;">${greeting}</p>`,
     `<p style="margin:0 0 16px;">Grandes eventos corporativos exigem muito mais do que execução operacional. Exigem controle, velocidade de resposta e uma experiência consistente do início ao fim — mesmo quando dezenas de fornecedores, equipes e demandas acontecem simultaneamente.</p>`,
     `<p style="margin:0 0 16px;">É exatamente nesse cenário que a <strong>VRASHOWS</strong> atua.</p>`,
     `<p style="margin:0 0 16px;">Somos um hub de soluções integradas para eventos corporativos e experiências de marca, assumindo toda a operação para que sua equipe possa concentrar energia no que realmente importa: relacionamento, negócios e resultado.</p>`,
-    `<p style="margin:0 0 8px;">Coordenamos de forma integrada:</p>`,
-    `<ul style="margin:0 0 16px;padding-left:20px;line-height:1.9;color:#1e293b;">`,
-    `  <li>logística operacional</li>`,
-    `  <li>staff premium</li>`,
-    `  <li>produção executiva</li>`,
-    `  <li>hospitality</li>`,
-    `  <li>suporte 360° em tempo real</li>`,
-    `  <li>experiência do visitante</li>`,
-    `</ul>`,
+    `<p style="margin:0 0 10px;">Coordenamos de forma integrada:</p>`,
+    `<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">`,
+    `  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; logística operacional</td></tr>`,
+    `  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; staff premium</td></tr>`,
+    `  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; produção executiva</td></tr>`,
+    `  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; hospitality</td></tr>`,
+    `  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; suporte 360&deg; em tempo real</td></tr>`,
+    `  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; experiência do visitante</td></tr>`,
+    `</table>`,
     `<p style="margin:0 0 16px;">Tudo com acompanhamento próximo, agilidade operacional e execução sem improvisos.</p>`,
-    `<p style="background:#f8fafc;border-left:3px solid #0f172a;padding:12px 16px;margin:20px 0;font-style:italic;color:#334155;"><em>"Enquanto você fecha negócios, nós controlamos a operação."</em></p>`,
+    `<p style="background:#f8fafc;border-left:3px solid #0f172a;padding:14px 18px;margin:24px 0;font-style:italic;color:#334155;font-size:14px;line-height:1.6;"><em>&ldquo;Enquanto você fecha negócios, nós controlamos a operação.&rdquo;</em></p>`,
     `<p style="margin:0 0 16px;">Na <strong>ABRINT 2026</strong>, atuamos ao lado da <strong>Brasil TecPar</strong> conduzindo toda a operação do evento com foco em fluidez operacional, experiência do público e suporte integral à equipe da marca — reduzindo ruído operacional e permitindo total foco em networking e geração de negócios.</p>`,
     `<p style="margin:0 0 16px;">Estou encaminhando em anexo nosso material institucional com mais detalhes sobre a estrutura e metodologia da VRASHOWS.</p>`,
-    `<p style="margin:0 0 16px;">Se fizer sentido para o momento da sua empresa, ficarei à disposição para uma conversa breve nos próximos dias.</p>`,
-    `<p style="margin:24px 0 0;"><a href="https://vrashows.com.br" style="display:inline-block;background:#0f172a;color:#ffffff;font-size:13px;font-weight:600;padding:10px 22px;border-radius:4px;text-decoration:none;letter-spacing:0.3px;">Vamos conversar →</a></p>`,
+    `<p style="margin:0 0 0;">Se fizer sentido para o momento da sua empresa, ficarei à disposição para uma conversa breve nos próximos dias.</p>`,
   ].join("\n");
 
   const bccAddress = env.OUTBOUND_BCC_EMAIL ?? undefined;
+
+  // ── Quality gate ─────────────────────────────────────────────────────────
+  const quality = scoreEmailQuality(subject, bodyText, bodyHtml);
 
   // ── Print send payload ───────────────────────────────────────────────────
   if (!jsonOutput) {
@@ -154,19 +163,53 @@ if (testTo) {
     console.log(hr);
     console.log(`  \x1b[2mMode:\x1b[0m          ${dryRun ? "\x1b[33mDRY-RUN\x1b[0m" : "\x1b[32mLIVE SEND\x1b[0m"}`);
     console.log(`  \x1b[2mTo:\x1b[0m            ${testTo}`);
+    console.log(`  \x1b[2mContact:\x1b[0m       ${contactName} (${firstName})`);
     console.log(`  \x1b[2mBCC:\x1b[0m           ${bccAddress ?? "\x1b[2mnone\x1b[0m"}`);
     console.log(`  \x1b[2mSubject:\x1b[0m       ${subject}`);
     console.log(`  \x1b[2mType:\x1b[0m          cold-outreach | seq 1`);
     console.log(`  \x1b[2mAttachment:\x1b[0m    ${attachPath ?? "none"}`);
     console.log(`  \x1b[2mTemplate:\x1b[0m      VRASHOWS branded HTML + signature`);
     console.log(hr);
+
+    // Quality score display
+    const qColor =
+      quality.decision === "send"   ? "\x1b[32m" :
+      quality.decision === "review" ? "\x1b[33m" :
+      "\x1b[31m";
+    const decisionLabel =
+      quality.decision === "send"   ? "✓ SEND"   :
+      quality.decision === "review" ? "⚠ REVIEW" :
+      "✗ REWRITE";
+    console.log(`\n  \x1b[1mQUALITY SCORE\x1b[0m`);
+    console.log(`  Overall:        ${qColor}${quality.score}/100  ${decisionLabel}\x1b[0m`);
+    console.log(`  Enterprise tone: ${String(quality.enterpriseToneScore).padStart(3)}/100`);
+    console.log(`  Spamminess:      ${String(quality.spamminessScore).padStart(3)}/100  (lower is better)`);
+    console.log(`  Personalization: ${String(quality.personalizationScore).padStart(3)}/100`);
+    console.log(`  Structure:       ${String(quality.structureScore).padStart(3)}/100`);
+    if (quality.issues.length > 0) {
+      console.log(`\n  \x1b[33mIssues:\x1b[0m`);
+      for (const issue of quality.issues) console.log(`    • ${issue}`);
+    }
+    if (quality.recommendations.length > 0) {
+      console.log(`\n  \x1b[36mRecommendations:\x1b[0m`);
+      for (const rec of quality.recommendations) console.log(`    → ${rec}`);
+    }
+    console.log(hr);
     console.log();
+
+    if (!skipQuality && quality.decision === "rewrite") {
+      console.log(`\x1b[31m✗ Quality gate failed (score ${quality.score}/100 < 50). Use --skip-quality to override.\x1b[0m\n`);
+      process.exit(1);
+    }
+    if (!skipQuality && quality.decision === "review") {
+      console.log(`\x1b[33m⚠ Quality score ${quality.score}/100 — proceeding (review recommended)\x1b[0m\n`);
+    }
   }
 
   const record = await sendEmail(
     {
       company: "VRASHOWS",
-      contactName: "Prezado(a)",
+      contactName,
       recipientEmail: testTo,
       subject,
       bodyText,
@@ -181,7 +224,7 @@ if (testTo) {
   const elapsed = Date.now() - startedAt;
 
   if (jsonOutput) {
-    process.stdout.write(JSON.stringify({ record, elapsed, bcc: bccAddress ?? null }, null, 2) + "\n");
+    process.stdout.write(JSON.stringify({ record, quality, elapsed, bcc: bccAddress ?? null }, null, 2) + "\n");
   } else {
     const statusColor =
       record.status === "sent"   ? "\x1b[32m" :
@@ -194,6 +237,7 @@ if (testTo) {
     console.log(`  \x1b[2mResend ID:\x1b[0m ${record.resendId ?? record.messageId}`);
     console.log(`  \x1b[2mSent at:\x1b[0m   ${record.sentAt}`);
     console.log(`  \x1b[2mElapsed:\x1b[0m   ${elapsed}ms`);
+    console.log(`  \x1b[2mQuality:\x1b[0m   ${quality.score}/100 (${quality.decision})`);
     console.log(`  \x1b[2mLLM cost:\x1b[0m  $0.00 (direct send — no agent reasoning)`);
     if (attachPath) console.log(`  \x1b[32m✓\x1b[0m Attachment: ${attachPath.split(/[\\/]/).pop()} loaded`);
     if (bccAddress) console.log(`  \x1b[32m✓\x1b[0m BCC:        ${bccAddress}`);
@@ -203,8 +247,7 @@ if (testTo) {
     if (record.status === "sent") {
       console.log(`\x1b[32m✓\x1b[0m Email entregue ao servidor Resend.`);
       console.log(`  Verifique a caixa de entrada em: ${testTo}`);
-      console.log(`  Links clicáveis: vrashows.com.br · samir.ricardo@vrashows.com.br`);
-      console.log(`  CTA: "Vamos conversar 20 min →"`);
+      console.log(`  Links clicáveis: vrashows.com.br · sender@yourdomain.com`);
     }
     console.log();
   }

@@ -14,14 +14,36 @@ coverage/
 logs/
 *.log
 
+# Lead data — real contacts and enriched emails NEVER committed
+data/leads/*.json
+data/leads/*.csv
+data/leads/validated/
+data/leads/futurecom/
+
 # Generated outreach artifacts — rebuilt each campaign run
 data/outreach/
 
+# Dashboard live metrics — contains real operational data
+dashboard/metrics.json
+
+# Cache and exports
+cache/
+exports/
+
+# Python virtualenv
+.venv/
+
 # Large binary assets — store outside git or use git-lfs
 assets/pdfs/
+assets/leads/
+*.pdf
 
 # Backups — local only, never committed
 backups/
+
+# Private usage reports and cost analytics
+usage/
+metrics/
 
 # Temp restore artifacts
 .pg_restore_tmp.sql

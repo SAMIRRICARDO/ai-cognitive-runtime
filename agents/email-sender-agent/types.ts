@@ -141,13 +141,13 @@ export interface EmailSenderOptions {
 
   /**
    * Override the default sender address.
-   * Default: samir.ricardo@vrashows.com.br
+   * Default: RESEND_FROM_EMAIL env var
    */
   fromAddress?: string;
 
   /**
    * Override the default sender display name.
-   * Default: Samir Ricardo | VRASHOWS
+   * Default: RESEND_FROM_NAME env var
    */
   fromName?: string;
 
