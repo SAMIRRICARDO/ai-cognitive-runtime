@@ -13,6 +13,7 @@ const envSchema = z.object({
   RESEND_API_KEY:    z.string().optional().default(""),
   RESEND_FROM_EMAIL: z.string().email().optional(),
   RESEND_FROM_NAME:  z.string().optional(),
+  MEDIA_KIT_PDF:     z.string().optional(),
 
   // ── Models ────────────────────────────────────────────────────────────────
   DEFAULT_MODEL:  z.string().default("claude-haiku-4-5-20251001"),

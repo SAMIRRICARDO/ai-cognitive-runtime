@@ -27,6 +27,8 @@
  */
 
 import { readFile } from "fs/promises";
+import { resolve } from "path";
+import { env } from "../config/env.js";
 import { EmailSenderAgent } from "../agents/email-sender-agent/agent.js";
 import { FuturecomResearcherAgent } from "../agents/futurecom-researcher/agent.js";
 import { OutreachAgent } from "../agents/outreach-agent/agent.js";
@@ -49,7 +51,7 @@ function hasFlag(name: string): boolean {
 
 const dryRun     = hasFlag("--dry-run");
 const testTo     = flag("--test-to");
-const attachPath = flag("--attach");
+const attachPath = flag("--attach") ?? (env.MEDIA_KIT_PDF ? resolve(env.MEDIA_KIT_PDF) : undefined);
 const fromFile   = flag("--from-file");
 const pipeline   = hasFlag("--pipeline");
 const minScore   = parseInt(flag("--min-score") ?? "50", 10);

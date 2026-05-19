@@ -1,9 +1,31 @@
+# Environment
 .env
-node_modules
-dist
-coverage
-.vscode
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+coverage/
+
+# Logs — generated at runtime
+logs/
 *.log
+
+# Generated outreach artifacts — rebuilt each campaign run
+data/outreach/
+
+# Large binary assets — store outside git or use git-lfs
+assets/pdfs/
+
+# Temp / OS
 .DS_Store
-node_modules
-.env
+Thumbs.db
+*.tmp
+*.temp
+
+# IDE
+.vscode/
+.idea/

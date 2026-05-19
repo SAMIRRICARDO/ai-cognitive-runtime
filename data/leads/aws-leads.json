@@ -1,0 +1,130 @@
+{
+  "campaign": "AWS Enterprise LATAM",
+  "targetEvent": "Futurecom 2026",
+  "enrichedAt": "2026-05-19",
+  "leads": [
+    {
+      "company": "AWS",
+      "contactName": "Raphael Lima",
+      "role": "Head of Partner Development — LATAM",
+      "area": "partnerships",
+      "seniority": "director",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "raphael.lima@amazon.com",   "pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "rlima@amazon.com",           "pattern": "flastname",          "confidence": "medium" },
+        { "email": "r.lima@amazon.com",          "pattern": "f.lastname",         "confidence": "medium" },
+        { "email": "raphael@amazon.com",         "pattern": "firstname",          "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "high",
+      "priorityScore": 88,
+      "outreachStatus": "pending",
+      "lastContactAttempt": null,
+      "rationale": "Responsável pela rede de parceiros AWS no LATAM. Decisor direto para operações de eventos de parceiros e ativações corporativas no Brasil. Alta relevância para Futurecom 2026.",
+      "notes": ""
+    },
+    {
+      "company": "AWS",
+      "contactName": "Jayme Faria",
+      "role": "Enterprise Account Manager — Brasil",
+      "area": "enterprise-sales",
+      "seniority": "manager",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "jayme.faria@amazon.com",     "pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "jfaria@amazon.com",          "pattern": "flastname",          "confidence": "medium" },
+        { "email": "j.faria@amazon.com",         "pattern": "f.lastname",         "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "high",
+      "priorityScore": 82,
+      "outreachStatus": "pending",
+      "lastContactAttempt": null,
+      "rationale": "Account Manager enterprise com carteira de clientes corporativos no Brasil. Envolvido em eventos de ativação e presença de marca em feiras do setor.",
+      "notes": ""
+    },
+    {
+      "company": "AWS",
+      "contactName": "Rachel Louise Wilson",
+      "role": "Marketing Manager — Events & Brand, LATAM",
+      "area": "marketing",
+      "seniority": "manager",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "rachel.wilson@amazon.com",   "pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "rwilson@amazon.com",         "pattern": "flastname",          "confidence": "medium" },
+        { "email": "r.wilson@amazon.com",        "pattern": "f.lastname",         "confidence": "medium" },
+        { "email": "rachel@amazon.com",          "pattern": "firstname",          "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "high",
+      "priorityScore": 91,
+      "outreachStatus": "pending",
+      "lastContactAttempt": null,
+      "rationale": "Gestora de eventos e brand para LATAM na AWS. Principal decisora para parcerias de operação de eventos corporativos — perfil ideal para VRASHOWS. Prioridade máxima.",
+      "notes": ""
+    },
+    {
+      "company": "AWS",
+      "contactName": "Aishwarya Murali",
+      "role": "Partner Marketing Manager — LATAM",
+      "area": "marketing",
+      "seniority": "manager",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "aishwarya.murali@amazon.com","pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "amurali@amazon.com",         "pattern": "flastname",          "confidence": "medium" },
+        { "email": "a.murali@amazon.com",        "pattern": "f.lastname",         "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "high",
+      "priorityScore": 85,
+      "outreachStatus": "pending",
+      "lastContactAttempt": null,
+      "rationale": "Partner Marketing com foco em ativações de parceiros AWS no LATAM. Responsável por coordenar presença de parceiros em eventos como Futurecom. Alta sinergia com operação VRASHOWS.",
+      "notes": ""
+    },
+    {
+      "company": "AWS",
+      "contactName": "Takashi Sato",
+      "role": "Senior Solutions Architect — Enterprise",
+      "area": "other",
+      "seniority": "manager",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "takashi.sato@amazon.com",    "pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "tsato@amazon.com",           "pattern": "flastname",          "confidence": "medium" },
+        { "email": "t.sato@amazon.com",          "pattern": "f.lastname",         "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "medium",
+      "priorityScore": 58,
+      "outreachStatus": "pending",
+      "lastContactAttempt": null,
+      "rationale": "Solutions Architect enterprise — envolvido em demos e briefings técnicos em eventos. Contato secundário para ativações de customer experience técnico.",
+      "notes": ""
+    },
+    {
+      "company": "AWS",
+      "contactName": "Marcio Pitel",
+      "role": "Country Manager — Brasil",
+      "area": "c-suite",
+      "seniority": "c-level",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "marcio.pitel@amazon.com",    "pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "mpitel@amazon.com",          "pattern": "flastname",          "confidence": "medium" },
+        { "email": "m.pitel@amazon.com",         "pattern": "f.lastname",         "confidence": "medium" },
+        { "email": "marcio@amazon.com",          "pattern": "firstname",          "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "high",
+      "priorityScore": 78,
+      "outreachStatus": "pending",
+      "lastContactAttempt": null,
+      "rationale": "Country Manager Brasil — autoridade máxima para decisões estratégicas de presença da AWS no Brasil. Abordagem deve ser executiva e direta, com foco em parceria estratégica de longo prazo.",
+      "notes": ""
+    }
+  ]
+}

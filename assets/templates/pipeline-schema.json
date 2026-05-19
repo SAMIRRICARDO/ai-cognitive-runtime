@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vrashows-outreach-pipeline",
+  "title": "VRASHOWS Outreach Pipeline Record",
+  "description": "Schema for tracking B2B outreach campaign pipeline per contact",
+  "type": "object",
+  "required": ["company", "contactName", "guessedEmails", "outreachStatus"],
+  "properties": {
+    "company": {
+      "type": "string",
+      "description": "Target company name"
+    },
+    "contactName": {
+      "type": "string",
+      "description": "Full name of the decision maker"
+    },
+    "role": {
+      "type": "string",
+      "description": "Job title as found in public sources"
+    },
+    "area": {
+      "type": "string",
+      "enum": ["marketing", "events", "brand", "customer-experience", "communications", "sponsorship", "c-suite", "other"]
+    },
+    "seniority": {
+      "type": "string",
+      "enum": ["c-level", "director", "manager", "analyst"]
+    },
+    "linkedin": {
+      "type": "string",
+      "description": "LinkedIn profile URL or 'unknown'"
+    },
+    "guessedEmails": {
+      "type": "array",
+      "description": "Ranked email candidates from EmailPatternResolver",
+      "items": {
+        "type": "object",
+        "properties": {
+          "email":      { "type": "string" },
+          "pattern":    { "type": "string" },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] }
+        },
+        "required": ["email", "pattern", "confidence"]
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Overall email confidence from EmailPatternResolver"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["high", "medium", "low"]
+    },
+    "priorityScore": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "outreachStatus": {
+      "type": "string",
+      "enum": ["pending", "emailed", "replied", "meeting-scheduled", "disqualified", "unsubscribed"],
+      "description": "Current status in the outreach pipeline"
+    },
+    "emailsSent": {
+      "type": "array",
+      "description": "Log of emails sent to this contact",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sentAt":     { "type": "string", "format": "date-time" },
+          "resendId":   { "type": "string" },
+          "emailType":  { "type": "string", "enum": ["cold-outreach", "follow-up", "re-engagement"] },
+          "sequence":   { "type": "integer" },
+          "status":     { "type": "string", "enum": ["sent", "failed", "queued", "skipped"] }
+        }
+      }
+    },
+    "lastContactAttempt": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "nextFollowUpDate": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "attachmentSent": {
+      "type": "boolean",
+      "description": "Whether media kit PDF was attached to the cold outreach"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes for the sales team"
+    },
+    "enrichedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
