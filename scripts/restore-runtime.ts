@@ -69,8 +69,22 @@ interface BackupManifest {
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
+const DOCKER_PATHS = [
+  "docker",
+  "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+  "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker",
+];
+function resolveDocker(): string {
+  for (const bin of DOCKER_PATHS) {
+    try { execSync(`"${bin}" --version`, { stdio: "pipe", timeout: 5_000 }); return bin; } catch { /* try next */ }
+  }
+  return "docker";
+}
+const DOCKER = resolveDocker();
+
 function exec(cmd: string, opts?: { cwd?: string }): string {
-  return execSync(cmd, { stdio: "pipe", timeout: 120_000, cwd: opts?.cwd ?? ROOT }).toString();
+  const resolved = cmd.replace(/^docker\b/, `"${DOCKER}"`);
+  return execSync(resolved, { stdio: "pipe", timeout: 120_000, cwd: opts?.cwd ?? ROOT }).toString();
 }
 
 function loadManifest(manifestPath: string): BackupManifest | null {

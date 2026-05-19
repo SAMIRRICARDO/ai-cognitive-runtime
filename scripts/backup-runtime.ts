@@ -132,8 +132,23 @@ function applyRetention(typeDir: string, keep: number): void {
   }
 }
 
+// Resolve docker binary — on Windows it may only be in a non-default PATH location
+const DOCKER_PATHS = [
+  "docker",
+  "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+  "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker",
+];
+function resolveDocker(): string {
+  for (const bin of DOCKER_PATHS) {
+    try { execSync(`"${bin}" --version`, { stdio: "pipe", timeout: 5_000 }); return bin; } catch { /* try next */ }
+  }
+  return "docker";
+}
+const DOCKER = resolveDocker();
+
 function exec(cmd: string): string {
-  return execSync(cmd, { stdio: "pipe", timeout: 60_000 }).toString();
+  const resolved = cmd.replace(/^docker\b/, `"${DOCKER}"`);
+  return execSync(resolved, { stdio: "pipe", timeout: 60_000 }).toString();
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

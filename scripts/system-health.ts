@@ -52,8 +52,22 @@ interface CheckResult {
 
 // ─── Check utilities ──────────────────────────────────────────────────────────
 
+const DOCKER_PATHS = [
+  "docker",
+  "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+  "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker",
+];
+function resolveDocker(): string {
+  for (const bin of DOCKER_PATHS) {
+    try { execSync(`"${bin}" --version`, { stdio: "pipe", timeout: 5_000 }); return bin; } catch { /* try next */ }
+  }
+  return "docker";
+}
+const DOCKER = resolveDocker();
+
 function exec(cmd: string): string {
-  return execSync(cmd, { stdio: "pipe", timeout: 8_000, cwd: ROOT }).toString().trim();
+  const resolved = cmd.replace(/^docker\b/, `"${DOCKER}"`);
+  return execSync(resolved, { stdio: "pipe", timeout: 8_000, cwd: ROOT }).toString().trim();
 }
 
 function tryExec(cmd: string): string | null {
