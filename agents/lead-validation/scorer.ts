@@ -42,17 +42,27 @@ function scoreRelevance(lead: RawLead): number {
   // Role keyword boost — accumulate multiple signals (cap at +40 from roles)
   const role = lead.role.toLowerCase();
   const BOOST_KEYWORDS: [RegExp, number][] = [
-    [/events?\s+manager|event\s+program|events?\s+&\s+brand/i, 25],
-    [/\bevents?\b/i,                                           18], // "Events & Brand LATAM" etc.
-    [/brand\s+experience|brand\s+manager/i,                   18],
-    [/marketing\s+manager|head\s+of\s+marketing/i,            15],
-    [/partner\s+marketing|field\s+marketing/i,                15],
-    [/demand\s+generation/i,                                  12],
-    [/country\s+manager|gm\s+brasil/i,                        10],
-    [/head\s+of\s+partner|partner\s+development/i,             8],
-    [/account\s+manager/i,                                     5],
-    [/solutions?\s+architect|technical/i,                     -15],
-    [/engineer|developer|devops/i,                            -25],
+    // English — events decision makers
+    [/events?\s+manager|event\s+program|events?\s+&\s+brand/i,       25],
+    [/\bevents?\b/i,                                                  18],
+    [/brand\s+experience|brand\s+manager/i,                          18],
+    [/marketing\s+manager|head\s+of\s+marketing/i,                   15],
+    [/partner\s+marketing|field\s+marketing/i,                       15],
+    [/demand\s+generation/i,                                         12],
+    [/country\s+manager|gm\s+brasil/i,                               10],
+    [/head\s+of\s+partner|partner\s+development/i,                    8],
+    [/account\s+manager/i,                                            5],
+    // Portuguese — eventos/marketing/patrocínio decision makers
+    [/gerente.*eventos|eventos.*gerente|coordenador[a]?\s+de\s+eventos/i, 25],
+    [/\beventos?\b/i,                                                 18],
+    [/brand\s+experience|experi[eê]ncia\s+de\s+marca/i,              18],
+    [/gerente.*marketing|marketing.*gerente|head.*marketing/i,        15],
+    [/patrocín|sponsorship/i,                                        20],
+    [/gerente.*marca|marca.*gerente/i,                               12],
+    [/country\s+manager|diretor.*pa[ií]s|pa[ií]s.*diretor/i,         10],
+    // Negative signals (technical, non-events)
+    [/solutions?\s+architect|technical/i,                            -15],
+    [/engineer|developer|devops/i,                                   -25],
   ];
   let roleBoost = 0;
   for (const [pattern, delta] of BOOST_KEYWORDS) {
@@ -108,10 +118,11 @@ function scoreStrategicFit(lead: RawLead): { score: number; fit: StrategicFit } 
     fit = "moderate";
   }
 
-  // Known event participation signal from rationale
-  const rationale = lead.rationale.toLowerCase();
+  // Known event participation signal from rationale + notes
+  const rationale = (lead.rationale + " " + lead.notes).toLowerCase();
   if (rationale.includes("futurecom") || rationale.includes("feira") || rationale.includes("evento")) score += 5;
   if (rationale.includes("latam") || rationale.includes("brasil")) score += 5;
+  if (rationale.includes("stand") || rationale.includes("ativação") || rationale.includes("ativacao")) score += 5;
 
   return { score: Math.min(100, score), fit };
 }
