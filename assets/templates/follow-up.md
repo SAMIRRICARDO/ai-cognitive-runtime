@@ -1,56 +1,57 @@
 # Follow-up Template — VRASHOWS
 
+**Versão:** 2.0 — 2026-05-19
 **Uso:** 3-7 dias após cold outreach sem resposta.
 **Attachment:** Não reenviar o PDF (já foi enviado).
 **Tom:** Levíssimo, sem pressão, apenas reabrir o tópico com contexto novo.
-**Regra:** Uma linha sobre "enquanto você fecha negócios" pode aparecer de forma natural, nunca forçada.
 
 ---
 
 ## Subject line options
 
-- `Re: VRASHOWS — operação para [Evento]`
-- `[Nome], retomando meu contato anterior`
+- `Re: Operação premium para eventos corporativos`
+- `[Nome], retomando o contato anterior`
 - `Follow-up — VRASHOWS x [Empresa]`
+- `[Empresa] — operação para [Evento]`
 
 ---
 
-## Body — Variante 1 (referência ao case, 70 palavras)
+## Body — Variante 1 (referência ao case, ~70 palavras)
 
 ```
-Olá [Nome],
+[Nome],
 
 Só um breve follow-up ao meu email anterior.
 
-Caso não tenha tido oportunidade de ver o material, posso compartilhar como estruturamos a operação para Brasil TecPar na ABRINT — contexto direto para o que [Empresa] planeja para [Evento].
+Caso não tenha tido oportunidade de ver o material, posso compartilhar como estruturamos a operação para Brasil TecPar na ABRINT 2026 — contexto direto para o que [Empresa] planeja para [Evento].
 
-O modelo que usamos permite que o time comercial foque 100% em negócios enquanto cuidamos de toda a operação.
+O modelo reduz significativamente o ruído operacional no dia do evento, permitindo que o time foque 100% em negócios e relacionamentos.
 
 Se fizer sentido, fico à disposição para uma conversa rápida.
 ```
 
 ---
 
-## Body — Variante 2 (calendário + urgência suave, 60 palavras)
+## Body — Variante 2 (janela de estruturação, ~60 palavras)
 
 ```
-Olá [Nome],
+[Nome],
 
-Retomando meu contato anterior sobre suporte operacional para [Evento/Empresa].
+Retomando meu contato anterior sobre operação integrada para [Evento/Empresa].
 
-Com o evento se aproximando, as janelas de estruturação de parceria começam a se fechar. Se já estiverem na fase de planejamento, podemos alinhar uma conversa rápida antes disso.
+Com o evento se aproximando, as janelas para estruturar parceria operacional começam a se fechar — o planejamento antecipado é exatamente o que garante execução sem improvisos no dia.
 
-Fico à disposição.
+Fico à disposição para uma conversa breve se fizer sentido agora.
 ```
 
 ---
 
-## Body — Variante 3 (ultra-curto, 25 palavras)
+## Body — Variante 3 (ultra-curto, ~25 palavras)
 
 ```
-Olá [Nome],
+[Nome],
 
-Seguindo meu email anterior — há possibilidade de uma conversa breve essa semana?
+Seguindo meu email anterior — há possibilidade de uma conversa breve essa semana sobre [Evento]?
 ```
 
 ---
@@ -62,4 +63,6 @@ Seguindo meu email anterior — há possibilidade de uma conversa breve essa sem
 - Reference previous email — don't repeat the full pitch
 - Single CTA only
 - Enviar no dia 3 ou dia 7 (não os dois em sequência imediata)
-- Nunca: urgência explícita ("última chance", "só essa semana")
+- Nunca: urgência explícita ("última chance", "só essa semana", "última oportunidade")
+- Nunca: "No ABRINT" — sempre "Na ABRINT 2026"
+- Tom: mais leve que o cold outreach, sem repetir toda a estrutura
