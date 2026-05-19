@@ -24,6 +24,7 @@ import { validateSendEmailInput } from "../agents/email-sender-agent/schemas.js"
 
 const DEFAULT_FROM_ADDRESS = env.RESEND_FROM_EMAIL ?? "samir.ricardo@vrashows.com.br";
 const DEFAULT_FROM_NAME    = env.RESEND_FROM_NAME  ?? "Samir Ricardo | VRASHOWS";
+const DEFAULT_BCC_ADDRESS  = env.OUTBOUND_BCC_EMAIL ?? undefined;
 const DEFAULT_RATE_DELAY   = 1200; // ms between sends (< Resend's 2 req/s limit)
 const DEFAULT_DEDUP_DAYS   = 7;
 const DEDUP_KEY_PREFIX     = "email:sent:";
@@ -119,6 +120,10 @@ function textToHtml(text: string): string {
 export interface CoreSendOptions extends EmailSenderOptions {
   resendClient?: Resend;
   memory?: RedisMemory;
+  /** Override global BCC. Pass an empty string "" to suppress BCC for a specific send. */
+  bcc?: string | string[];
+  /** Explicitly disable global BCC for this send */
+  suppressBcc?: boolean;
 }
 
 export async function sendEmail(
@@ -144,6 +149,13 @@ export async function sendEmail(
     memory,
     resendClient,
   } = opts;
+
+  // BCC: explicit override → env default → undefined (disabled)
+  // Set suppressBcc: true to skip BCC for a specific send
+  const bcc: string | string[] | undefined =
+    opts.suppressBcc ? undefined :
+    (opts.bcc !== undefined && opts.bcc !== "") ? opts.bcc :
+    DEFAULT_BCC_ADDRESS;
 
   const emailType = input.emailType ?? "cold-outreach";
   const sequenceNumber = input.sequenceNumber ?? 1;
@@ -247,6 +259,7 @@ export async function sendEmail(
       subject: input.subject,
       text: input.bodyText,
       html: fullHtml,
+      ...(bcc ? { bcc } : {}),
       ...(attachments ? { attachments } : {}),
     });
 
@@ -268,6 +281,7 @@ export async function sendEmail(
 
     logger.info("[send-email] sent", {
       to: input.recipientEmail,
+      bcc: bcc ?? null,
       company: input.company,
       subject: input.subject,
       resendId,

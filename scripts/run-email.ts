@@ -89,35 +89,71 @@ function makeStepHandler(label: string) {
 // ─── Mode: single test email ──────────────────────────────────────────────────
 
 if (testTo) {
+  const startedAt = Date.now();
+
+  // ── Executive outreach email — VRASHOWS premium positioning ──────────────
+  const subject = "Operação premium para eventos corporativos";
+
+  const bodyText = [
+    "Prezado(a),",
+    "",
+    "Empresas que lideram eventos corporativos enfrentam um desafio crescente: manter o padrão de excelência enquanto coordenam uma operação cada vez mais complexa — fornecedores, logística, staff, timing, experiência do público. Tudo acontece ao mesmo tempo. Qualquer falha é visível.",
+    "",
+    "A VRASHOWS foi construída para resolver exatamente isso.",
+    "",
+    "Somos um hub de operação integrada para eventos corporativos de alto padrão. Assumimos o controle de toda a estrutura — coordenação executiva, logística integrada, staff premium, produção operacional e suporte 360° em tempo real — para que sua equipe concentre energia onde realmente gera resultado.",
+    "",
+    "Sem improvisos. Sem retrabalho. Sem surpresas no dia do evento.",
+    "",
+    "No ABRINT 2026, operamos ao lado da Brasil TecPar com um nível de execução que a equipe percebeu desde a fase de planejamento: menos ruído operacional, mais resultado visível.",
+    "",
+    "Gostaria de conversar por 20 minutos para entender o contexto dos seus eventos em 2026 e mostrar como a VRASHOWS pode assumir a operação enquanto você foca no seu negócio.",
+    "",
+    "Segue em anexo o nosso material institucional com estrutura, metodologia e referências.",
+    "",
+    "Fico à disposição.",
+  ].join("\n");
+
+  const bodyHtml = [
+    `<p style="margin:0 0 16px;">Prezado(a),</p>`,
+    `<p style="margin:0 0 16px;">Empresas que lideram eventos corporativos enfrentam um desafio crescente: manter o padrão de excelência enquanto coordenam uma operação cada vez mais complexa — fornecedores, logística, staff, timing, experiência do público. Tudo acontece ao mesmo tempo. Qualquer falha é visível.</p>`,
+    `<p style="margin:0 0 16px;">A <strong>VRASHOWS</strong> foi construída para resolver exatamente isso.</p>`,
+    `<p style="margin:0 0 16px;">Somos um hub de operação integrada para eventos corporativos de alto padrão. Assumimos o controle de toda a estrutura — coordenação executiva, logística integrada, staff premium, produção operacional e suporte 360° em tempo real — para que sua equipe concentre energia onde realmente gera resultado.</p>`,
+    `<p style="background:#f8fafc;border-left:3px solid #0f172a;padding:12px 16px;margin:20px 0;font-style:italic;color:#334155;">"Enquanto você fecha negócios, nós controlamos a operação."</p>`,
+    `<p style="margin:0 0 16px;">Sem improvisos. Sem retrabalho. Sem surpresas no dia do evento.</p>`,
+    `<p style="margin:0 0 16px;">No <strong>ABRINT 2026</strong>, operamos ao lado da <strong>Brasil TecPar</strong> com um nível de execução que a equipe percebeu desde a fase de planejamento: menos ruído operacional, mais resultado visível.</p>`,
+    `<p style="margin:0 0 16px;">Gostaria de conversar por <strong>20 minutos</strong> para entender o contexto dos seus eventos em 2026 e mostrar como a VRASHOWS pode assumir a operação enquanto você foca no seu negócio.</p>`,
+    `<p style="margin:0 0 16px;">Segue em anexo o nosso material institucional com estrutura, metodologia e referências.</p>`,
+    `<p style="margin:0 0 16px;">Fico à disposição.</p>`,
+    `<p style="margin:24px 0 0;"><a href="https://vrashows.com.br" style="display:inline-block;background:#0f172a;color:#ffffff;font-size:13px;font-weight:600;padding:10px 22px;border-radius:4px;text-decoration:none;letter-spacing:0.3px;">Vamos conversar 20 min →</a></p>`,
+  ].join("\n");
+
+  const bccAddress = env.OUTBOUND_BCC_EMAIL ?? undefined;
+
+  // ── Print send payload ───────────────────────────────────────────────────
   if (!jsonOutput) {
-    console.log(`\nVRASHOWS Email Sender — Test Mode`);
-    console.log(`Sending test email to: ${testTo}`);
-    if (attachPath) console.log(`Attachment: ${attachPath}`);
+    const hr = "─".repeat(72);
+    console.log(`\n\x1b[1mVRASHOWS Email Sender — Outreach Real\x1b[0m`);
+    console.log(hr);
+    console.log(`  \x1b[2mMode:\x1b[0m          ${dryRun ? "\x1b[33mDRY-RUN\x1b[0m" : "\x1b[32mLIVE SEND\x1b[0m"}`);
+    console.log(`  \x1b[2mTo:\x1b[0m            ${testTo}`);
+    console.log(`  \x1b[2mBCC:\x1b[0m           ${bccAddress ?? "\x1b[2mnone\x1b[0m"}`);
+    console.log(`  \x1b[2mSubject:\x1b[0m       ${subject}`);
+    console.log(`  \x1b[2mType:\x1b[0m          cold-outreach | seq 1`);
+    console.log(`  \x1b[2mAttachment:\x1b[0m    ${attachPath ?? "none"}`);
+    console.log(`  \x1b[2mTemplate:\x1b[0m      VRASHOWS branded HTML + signature`);
+    console.log(hr);
     console.log();
   }
 
   const record = await sendEmail(
     {
       company: "VRASHOWS",
-      contactName: "Samir Ricardo",
+      contactName: "Prezado(a)",
       recipientEmail: testTo,
-      subject: "VRASHOWS — Media Kit 2026",
-      bodyText: [
-        "Olá,",
-        "",
-        "Segue em anexo o Media Kit 2026 da VRASHOWS com informações completas sobre nossas soluções de operações 360° para eventos enterprise.",
-        "",
-        "Ficamos à disposição para qualquer dúvida.",
-        "",
-        "Att,",
-        "VRASHOWS",
-      ].join("\n"),
-      bodyHtml: [
-        "<p>Olá,</p>",
-        "<p>Segue em anexo o <strong>Media Kit 2026</strong> da VRASHOWS com informações completas sobre nossas soluções de operações 360° para eventos enterprise.</p>",
-        "<p>Ficamos à disposição para qualquer dúvida.</p>",
-        "<p>Att,<br><strong>VRASHOWS</strong></p>",
-      ].join("\n"),
+      subject,
+      bodyText,
+      bodyHtml,
       emailType: "cold-outreach",
       sequenceNumber: 1,
       ...(attachPath ? { attachmentPath: attachPath } : {}),
@@ -125,13 +161,35 @@ if (testTo) {
     { dryRun }
   );
 
+  const elapsed = Date.now() - startedAt;
+
   if (jsonOutput) {
-    process.stdout.write(JSON.stringify(record, null, 2) + "\n");
+    process.stdout.write(JSON.stringify({ record, elapsed, bcc: bccAddress ?? null }, null, 2) + "\n");
   } else {
-    const statusColor = record.status === "sent" ? "\x1b[32m" : record.status === "queued" ? "\x1b[33m" : "\x1b[31m";
-    console.log(`${statusColor}Status: ${record.status.toUpperCase()}\x1b[0m`);
-    console.log(`Message ID: ${record.messageId}`);
-    if (record.error) console.log(`Error: ${record.error}`);
+    const statusColor =
+      record.status === "sent"   ? "\x1b[32m" :
+      record.status === "queued" ? "\x1b[33m" :
+      "\x1b[31m";
+
+    const hr = "─".repeat(72);
+    console.log(hr);
+    console.log(`  ${statusColor}STATUS:    ${record.status.toUpperCase()}\x1b[0m`);
+    console.log(`  \x1b[2mResend ID:\x1b[0m ${record.resendId ?? record.messageId}`);
+    console.log(`  \x1b[2mSent at:\x1b[0m   ${record.sentAt}`);
+    console.log(`  \x1b[2mElapsed:\x1b[0m   ${elapsed}ms`);
+    console.log(`  \x1b[2mLLM cost:\x1b[0m  $0.00 (direct send — no agent reasoning)`);
+    if (attachPath) console.log(`  \x1b[32m✓\x1b[0m Attachment: ${attachPath.split(/[\\/]/).pop()} loaded`);
+    if (bccAddress) console.log(`  \x1b[32m✓\x1b[0m BCC:        ${bccAddress}`);
+    if (record.error) console.log(`  \x1b[31mError:\x1b[0m     ${record.error}`);
+    console.log(hr);
+    console.log();
+    if (record.status === "sent") {
+      console.log(`\x1b[32m✓\x1b[0m Email entregue ao servidor Resend.`);
+      console.log(`  Verifique a caixa de entrada em: ${testTo}`);
+      console.log(`  Links clicáveis: vrashows.com.br · samir.ricardo@vrashows.com.br`);
+      console.log(`  CTA: "Vamos conversar 20 min →"`);
+    }
+    console.log();
   }
 
   process.exit(0);

@@ -150,6 +150,12 @@ export interface EmailSenderOptions {
    * Default: Samir Ricardo | VRASHOWS
    */
   fromName?: string;
+
+  /**
+   * BCC address(es) for every outbound email — used for audit, commercial tracking,
+   * and campaign monitoring. Falls back to OUTBOUND_BCC_EMAIL env var if not set.
+   */
+  bcc?: string | string[];
 }
 
 // ─── Multi-agent bridge ───────────────────────────────────────────────────────
