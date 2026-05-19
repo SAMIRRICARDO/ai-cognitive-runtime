@@ -1,0 +1,285 @@
+{
+  "campaignId": "AWS Enterprise LATAM",
+  "targetEvent": "Futurecom 2026",
+  "totalLeads": 6,
+  "hot": 2,
+  "warm": 2,
+  "lowPriority": 1,
+  "invalid": 1,
+  "leads": [
+    {
+      "company": "AWS",
+      "contactName": "Rachel Louise Wilson",
+      "role": "Marketing Manager — Events & Brand, LATAM",
+      "linkedin": "unknown",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "rachel.wilson@amazon.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        },
+        {
+          "email": "rwilson@amazon.com",
+          "pattern": "flastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "r.wilson@amazon.com",
+          "pattern": "f.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "rachel@amazon.com",
+          "pattern": "firstname",
+          "confidence": "medium"
+        }
+      ],
+      "primaryEmail": "rachel.wilson@amazon.com",
+      "confidence": "high",
+      "bounceRisk": "low",
+      "relevanceScore": 72,
+      "strategicFitScore": 100,
+      "outreachPriority": 75,
+      "strategicFit": "excellent",
+      "rationale": "Gestora de eventos e brand para LATAM na AWS. Principal decisora para parcerias de operação de eventos corporativos — perfil ideal para VRASHOWS. Prioridade máxima.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Frame around fluidez operacional e experiência do visitante — a operação que desaparece para que a ativação seja o centro de tudo.",
+      "recommendedCTA": "Se fizer sentido para o momento da sua empresa, ficarei à disposição para uma conversa breve nos próximos dias.",
+      "useCaseABRINT": true,
+      "personalizationLevel": "high",
+      "status": "HOT",
+      "campaignId": "AWS Enterprise LATAM",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-19T13:40:25.712Z",
+      "originalPriorityScore": 91
+    },
+    {
+      "company": "AWS",
+      "contactName": "Aishwarya Murali",
+      "role": "Partner Marketing Manager — LATAM",
+      "linkedin": "unknown",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "aishwarya.murali@amazon.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        },
+        {
+          "email": "amurali@amazon.com",
+          "pattern": "flastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "a.murali@amazon.com",
+          "pattern": "f.lastname",
+          "confidence": "medium"
+        }
+      ],
+      "primaryEmail": "aishwarya.murali@amazon.com",
+      "confidence": "high",
+      "bounceRisk": "low",
+      "relevanceScore": 64,
+      "strategicFitScore": 100,
+      "outreachPriority": 70,
+      "strategicFit": "excellent",
+      "rationale": "Partner Marketing com foco em ativações de parceiros AWS no LATAM. Responsável por coordenar presença de parceiros em eventos como Futurecom. Alta sinergia com operação VRASHOWS.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Frame around fluidez operacional e experiência do visitante — a operação que desaparece para que a ativação seja o centro de tudo.",
+      "recommendedCTA": "Se fizer sentido para o momento da sua empresa, ficarei à disposição para uma conversa breve nos próximos dias.",
+      "useCaseABRINT": true,
+      "personalizationLevel": "medium",
+      "status": "HOT",
+      "campaignId": "AWS Enterprise LATAM",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-19T13:40:25.712Z",
+      "originalPriorityScore": 85
+    },
+    {
+      "company": "AWS",
+      "contactName": "Marcio Pitel",
+      "role": "Country Manager — Brasil",
+      "linkedin": "unknown",
+      "area": "c-suite",
+      "seniority": "c-level",
+      "guessedEmails": [
+        {
+          "email": "marcio.pitel@amazon.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        },
+        {
+          "email": "mpitel@amazon.com",
+          "pattern": "flastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "m.pitel@amazon.com",
+          "pattern": "f.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "marcio@amazon.com",
+          "pattern": "firstname",
+          "confidence": "medium"
+        }
+      ],
+      "primaryEmail": "marcio.pitel@amazon.com",
+      "confidence": "high",
+      "bounceRisk": "low",
+      "relevanceScore": 35,
+      "strategicFitScore": 95,
+      "outreachPriority": 53,
+      "strategicFit": "excellent",
+      "rationale": "Country Manager Brasil — autoridade máxima para decisões estratégicas de presença da AWS no Brasil. Abordagem deve ser executiva e direta, com foco em parceria estratégica de longo prazo.",
+      "recommendedTemplate": "executive-intro",
+      "recommendedApproach": "Tom ultra-executivo, peer-to-peer. Foco em parceria estratégica de operação, não em serviços. Mencionar ABRINT 2026 como credencial operacional.",
+      "recommendedCTA": "Vale 20 minutos para alinharmos o que o evento exige operacionalmente?",
+      "useCaseABRINT": false,
+      "personalizationLevel": "standard",
+      "status": "WARM",
+      "campaignId": "AWS Enterprise LATAM",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-19T13:40:25.712Z",
+      "originalPriorityScore": 78
+    },
+    {
+      "company": "AWS",
+      "contactName": "Raphael Lima",
+      "role": "Head of Partner Development — LATAM",
+      "linkedin": "unknown",
+      "area": "partnerships",
+      "seniority": "director",
+      "guessedEmails": [
+        {
+          "email": "raphael.lima@amazon.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        },
+        {
+          "email": "rlima@amazon.com",
+          "pattern": "flastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "r.lima@amazon.com",
+          "pattern": "f.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "raphael@amazon.com",
+          "pattern": "firstname",
+          "confidence": "medium"
+        }
+      ],
+      "primaryEmail": "raphael.lima@amazon.com",
+      "confidence": "high",
+      "bounceRisk": "low",
+      "relevanceScore": 31,
+      "strategicFitScore": 100,
+      "outreachPriority": 52,
+      "strategicFit": "excellent",
+      "rationale": "Responsável pela rede de parceiros AWS no LATAM. Decisor direto para operações de eventos de parceiros e ativações corporativas no Brasil. Alta relevância para Futurecom 2026.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Frame around suporte operacional a eventos de parceiros AWS — logística integrada para ativações de parceiros enterprise.",
+      "recommendedCTA": "Se fizer sentido para o momento da sua empresa, ficarei à disposição para uma conversa breve nos próximos dias.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "standard",
+      "status": "WARM",
+      "campaignId": "AWS Enterprise LATAM",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-19T13:40:25.711Z",
+      "originalPriorityScore": 88
+    },
+    {
+      "company": "AWS",
+      "contactName": "Jayme Faria",
+      "role": "Enterprise Account Manager — Brasil",
+      "linkedin": "unknown",
+      "area": "enterprise-sales",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "jayme.faria@amazon.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        },
+        {
+          "email": "jfaria@amazon.com",
+          "pattern": "flastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "j.faria@amazon.com",
+          "pattern": "f.lastname",
+          "confidence": "medium"
+        }
+      ],
+      "primaryEmail": "jayme.faria@amazon.com",
+      "confidence": "high",
+      "bounceRisk": "low",
+      "relevanceScore": 17,
+      "strategicFitScore": 100,
+      "outreachPriority": 44,
+      "strategicFit": "excellent",
+      "rationale": "Account Manager enterprise com carteira de clientes corporativos no Brasil. Envolvido em eventos de ativação e presença de marca em feiras do setor.",
+      "recommendedTemplate": "linkedin-message",
+      "recommendedApproach": "Frame around suporte operacional a ativações de clientes enterprise — experiência do visitante como acelerador de negócio.",
+      "recommendedCTA": "Se fizer sentido para o momento da sua empresa, ficarei à disposição para uma conversa breve nos próximos dias.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "standard",
+      "status": "LOW_PRIORITY",
+      "campaignId": "AWS Enterprise LATAM",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-19T13:40:25.712Z",
+      "originalPriorityScore": 82
+    },
+    {
+      "company": "AWS",
+      "contactName": "Takashi Sato",
+      "role": "Senior Solutions Architect — Enterprise",
+      "linkedin": "unknown",
+      "area": "other",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "takashi.sato@amazon.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        },
+        {
+          "email": "tsato@amazon.com",
+          "pattern": "flastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "t.sato@amazon.com",
+          "pattern": "f.lastname",
+          "confidence": "medium"
+        }
+      ],
+      "primaryEmail": "takashi.sato@amazon.com",
+      "confidence": "high",
+      "bounceRisk": "low",
+      "relevanceScore": 0,
+      "strategicFitScore": 95,
+      "outreachPriority": 33,
+      "strategicFit": "excellent",
+      "rationale": "Solutions Architect enterprise — envolvido em demos e briefings técnicos em eventos. Contato secundário para ativações de customer experience técnico.",
+      "recommendedTemplate": "linkedin-message",
+      "recommendedApproach": "Abordagem padrão cold outreach com foco em controle operacional integrado.",
+      "recommendedCTA": "Se fizer sentido para o momento da sua empresa, ficarei à disposição para uma conversa breve nos próximos dias.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "standard",
+      "status": "INVALID",
+      "campaignId": "AWS Enterprise LATAM",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-19T13:40:25.712Z",
+      "originalPriorityScore": 58
+    }
+  ],
+  "validatedAt": "2026-05-19T13:40:25.713Z"
+}

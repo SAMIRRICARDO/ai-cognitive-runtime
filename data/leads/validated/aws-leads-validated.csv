@@ -1,0 +1,7 @@
+status,outreachPriority,relevanceScore,bounceRisk,company,contactName,role,seniority,area,primaryEmail,confidence,strategicFit,recommendedTemplate,useCaseABRINT,personalizationLevel
+HOT,75,72,low,"AWS","Rachel Louise Wilson","Marketing Manager — Events & Brand, LATAM",manager,marketing,rachel.wilson@amazon.com,high,excellent,cold-outreach,true,high
+HOT,70,64,low,"AWS","Aishwarya Murali","Partner Marketing Manager — LATAM",manager,marketing,aishwarya.murali@amazon.com,high,excellent,cold-outreach,true,medium
+WARM,53,35,low,"AWS","Marcio Pitel","Country Manager — Brasil",c-level,c-suite,marcio.pitel@amazon.com,high,excellent,executive-intro,false,standard
+WARM,52,31,low,"AWS","Raphael Lima","Head of Partner Development — LATAM",director,partnerships,raphael.lima@amazon.com,high,excellent,cold-outreach,false,standard
+LOW_PRIORITY,44,17,low,"AWS","Jayme Faria","Enterprise Account Manager — Brasil",manager,enterprise-sales,jayme.faria@amazon.com,high,excellent,linkedin-message,false,standard
+INVALID,33,0,low,"AWS","Takashi Sato","Senior Solutions Architect — Enterprise",manager,other,takashi.sato@amazon.com,high,excellent,linkedin-message,false,standard
