@@ -1,4 +1,4 @@
-# Environment
+# Environment — NEVER commit secrets
 .env
 .env.local
 .env.*.local
@@ -19,6 +19,13 @@ data/outreach/
 
 # Large binary assets — store outside git or use git-lfs
 assets/pdfs/
+
+# Backups — local only, never committed
+backups/
+
+# Temp restore artifacts
+.pg_restore_tmp.sql
+.git_commit_msg.txt
 
 # Temp / OS
 .DS_Store

@@ -19,7 +19,15 @@
     "memory": "tsx scripts/memory.ts",
     "memory:maintain": "tsx scripts/memory.ts maintain",
     "task": "tsx scripts/run-task.ts",
-    "task:dry": "tsx scripts/run-task.ts --dry-run"
+    "task:dry": "tsx scripts/run-task.ts --dry-run",
+    "backup": "tsx scripts/backup-runtime.ts",
+    "backup:weekly": "tsx scripts/backup-runtime.ts --type weekly",
+    "backup:snapshot": "tsx scripts/backup-runtime.ts --type snapshot",
+    "restore": "tsx scripts/restore-runtime.ts",
+    "restore:list": "tsx scripts/restore-runtime.ts --list",
+    "export-memories": "tsx scripts/export-memories.ts",
+    "import-memories": "tsx scripts/import-memories.ts",
+    "health": "tsx scripts/system-health.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
