@@ -20,6 +20,8 @@
     "memory:maintain": "tsx scripts/memory.ts maintain",
     "task": "tsx scripts/run-task.ts",
     "task:dry": "tsx scripts/run-task.ts --dry-run",
+    "validate:futurecom": "tsx workers/lead-validation-worker.ts",
+    "dashboard": "node dashboard/server.js",
     "backup": "tsx scripts/backup-runtime.ts",
     "backup:weekly": "tsx scripts/backup-runtime.ts --type weekly",
     "backup:snapshot": "tsx scripts/backup-runtime.ts --type snapshot",

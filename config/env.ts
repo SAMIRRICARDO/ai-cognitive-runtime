@@ -29,6 +29,13 @@ const envSchema = z.object({
   // ── Observability ─────────────────────────────────────────────────────────
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
+  // ── Outbound delivery limits and scheduling ─────────────────────────────────
+  MAX_SENDS_PER_DAY: z.coerce.number().int().positive().default(5),
+  MAX_BATCH_SIZE: z.coerce.number().int().positive().default(5),
+  NO_SEND_AFTER: z.string().default("16:00"),
+  WEEKEND_BLOCK: z.string().default("true"),
+  OUTBOUND_RATE_DELAY_MS: z.coerce.number().int().nonnegative().default(120000),
+
   // ── Cost / Dev mode ───────────────────────────────────────────────────────
   DEV_MODE:           z.string().optional().default("false"),
   CHEAP_MODE:         z.string().optional().default("false"),
@@ -43,7 +50,14 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export const env = parsed.data;
+export const env = {
+  ...parsed.data,
+  MAX_SENDS_PER_DAY: parsed.data.MAX_SENDS_PER_DAY,
+  MAX_BATCH_SIZE: parsed.data.MAX_BATCH_SIZE,
+  NO_SEND_AFTER: parsed.data.NO_SEND_AFTER,
+  WEEKEND_BLOCK: parsed.data.WEEKEND_BLOCK === "true",
+  OUTBOUND_RATE_DELAY_MS: parsed.data.OUTBOUND_RATE_DELAY_MS,
+};
 
 // Derived helpers — read once at startup
 export const isCheapMode = env.CHEAP_MODE === "true" || env.DEV_MODE === "true";
