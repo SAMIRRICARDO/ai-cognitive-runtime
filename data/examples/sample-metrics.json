@@ -1,0 +1,29 @@
+{
+  "_note": "Sample data only — dashboard/metrics.json is generated at runtime and must not be committed.",
+  "generatedAt": "2026-01-01T10:00:00.000Z",
+  "emailsSentToday": 5,
+  "emailsSentTotal": 47,
+  "batchesExecuted": 9,
+  "replyRate": 0.11,
+  "bounceRate": 0.04,
+  "deliverySuccess": 0.94,
+  "leadsCaptured": 52,
+  "highConfidenceLeads": 14,
+  "companiesContacted": 8,
+  "aiCosts": {
+    "claude": 1.20,
+    "openai": 0.18
+  },
+  "tokensUsed": 48000,
+  "cheapModeSavings": 85,
+  "recentSends": [
+    { "date": "2026-01-01T09:57:00.000Z", "company": "Acme Cloud Inc.", "email": "alex.johnson@acmecloudinc.example", "status": "sent" },
+    { "date": "2026-01-01T09:54:00.000Z", "company": "Global Telecom SA", "email": "maria.silva@globaltelecom.example", "status": "sent" },
+    { "date": "2026-01-01T09:51:00.000Z", "company": "Fintech Partners Ltd.", "email": "carlos.pereira@fintechpartners.example", "status": "bounced" }
+  ],
+  "recentLeads": [
+    { "name": "Alex Johnson",   "role": "Head of Marketing — LATAM",  "company": "Acme Cloud Inc.",        "score": 91 },
+    { "name": "Maria Silva",    "role": "Brand Experience Director",   "company": "Global Telecom SA",      "score": 85 },
+    { "name": "Carlos Pereira", "role": "Events & Brand Manager",      "company": "Fintech Partners Ltd.",  "score": 72 }
+  ]
+}

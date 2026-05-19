@@ -1,0 +1,42 @@
+{
+  "_note": "Sample data only — real delivery reports are generated per run in data/outreach/ and must not be committed.",
+  "runAt": "2026-01-01T10:05:00.000Z",
+  "campaign": "Example Campaign — Tech Summit 2026",
+  "mode": "dry-run",
+  "summary": {
+    "total": 3,
+    "sent": 0,
+    "skipped": 0,
+    "failed": 0,
+    "dryRun": 3
+  },
+  "entries": [
+    {
+      "priority": "HOT",
+      "company": "Acme Cloud Inc.",
+      "to": "alex.johnson@acmecloudinc.example",
+      "subject": "Acme Cloud Inc. — operação integrada para Tech Summit 2026",
+      "status": "dry-run",
+      "qualityScore": 91,
+      "durationMs": 0
+    },
+    {
+      "priority": "HOT",
+      "company": "Global Telecom SA",
+      "to": "maria.silva@globaltelecom.example",
+      "subject": "Global Telecom SA — suporte 360° para Tech Summit 2026",
+      "status": "dry-run",
+      "qualityScore": 85,
+      "durationMs": 0
+    },
+    {
+      "priority": "WARM",
+      "company": "Fintech Partners Ltd.",
+      "to": "carlos.pereira@fintechpartners.example",
+      "subject": "Fintech Partners Ltd. — Tech Summit 2026",
+      "status": "dry-run",
+      "qualityScore": 72,
+      "durationMs": 0
+    }
+  ]
+}

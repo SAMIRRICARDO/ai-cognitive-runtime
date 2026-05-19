@@ -1,0 +1,61 @@
+{
+  "campaign": "Example Campaign — Tech Summit 2026",
+  "targetEvent": "Tech Summit 2026",
+  "enrichedAt": "2026-01-01",
+  "_note": "Sample data only — replace with real leads from your acquisition pipeline.",
+  "leads": [
+    {
+      "company": "Acme Cloud Inc.",
+      "contactName": "Alex Johnson",
+      "role": "Head of Marketing — LATAM",
+      "area": "marketing",
+      "seniority": "director",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "alex.johnson@acmecloudinc.example", "pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "ajohnson@acmecloudinc.example",      "pattern": "flastname",          "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "hot",
+      "score": 91,
+      "segment": "cloud-enterprise",
+      "eventFit": "high",
+      "strategicNotes": "Sample note — replace with real research."
+    },
+    {
+      "company": "Global Telecom SA",
+      "contactName": "Maria Silva",
+      "role": "Brand Experience Director",
+      "area": "marketing",
+      "seniority": "director",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "maria.silva@globaltelecom.example", "pattern": "firstname.lastname", "confidence": "high" },
+        { "email": "msilva@globaltelecom.example",      "pattern": "flastname",          "confidence": "medium" }
+      ],
+      "confidence": "high",
+      "priority": "hot",
+      "score": 85,
+      "segment": "telecom",
+      "eventFit": "high",
+      "strategicNotes": "Sample note — replace with real research."
+    },
+    {
+      "company": "Fintech Partners Ltd.",
+      "contactName": "Carlos Pereira",
+      "role": "Events & Brand Manager",
+      "area": "marketing",
+      "seniority": "manager",
+      "linkedin": "unknown",
+      "guessedEmails": [
+        { "email": "carlos.pereira@fintechpartners.example", "pattern": "firstname.lastname", "confidence": "high" }
+      ],
+      "confidence": "medium",
+      "priority": "warm",
+      "score": 72,
+      "segment": "fintech",
+      "eventFit": "medium",
+      "strategicNotes": "Sample note — replace with real research."
+    }
+  ]
+}
