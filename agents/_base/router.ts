@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { env } from "../../config/env.js";
+import { env, isCheapMode } from "../../config/env.js";
 import { Models } from "../../config/models.js";
 import { logger } from "../../config/logger.js";
 import {
@@ -30,6 +30,10 @@ export class ModelRouter {
    * Uses fast heuristics first; falls back to a Haiku classifier when confidence is low.
    */
   async route(prompt: string): Promise<RoutingDecision> {
+    if (isCheapMode) {
+      return { model: Models.fast, tier: "low", score: 0, reason: "cheap-mode" };
+    }
+
     const { score, signals } = this.scoreHeuristics(prompt);
     const lengthBonus = this.lengthBonus(prompt);
     const totalScore = score + lengthBonus;

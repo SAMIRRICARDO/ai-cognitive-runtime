@@ -10,6 +10,8 @@
  * Used directly by EmailSenderAgent.registerTool() and also
  * exported as a standalone sendEmail() function for scripts.
  */
+import { readFileSync, existsSync } from "fs";
+import { basename } from "path";
 import { Resend } from "resend";
 import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
@@ -20,8 +22,8 @@ import { validateSendEmailInput } from "../agents/email-sender-agent/schemas.js"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DEFAULT_FROM_ADDRESS = "samir.ricardo@vrashows.com.br";
-const DEFAULT_FROM_NAME    = "Samir Ricardo | VRASHOWS";
+const DEFAULT_FROM_ADDRESS = env.RESEND_FROM_EMAIL ?? "samir.ricardo@vrashows.com.br";
+const DEFAULT_FROM_NAME    = env.RESEND_FROM_NAME  ?? "Samir Ricardo | VRASHOWS";
 const DEFAULT_RATE_DELAY   = 1200; // ms between sends (< Resend's 2 req/s limit)
 const DEFAULT_DEDUP_DAYS   = 7;
 const DEDUP_KEY_PREFIX     = "email:sent:";
@@ -75,7 +77,7 @@ function buildHtmlEmail(opts: {
                     <p style="margin:4px 0 0;font-size:13px;color:#64748b;">
                       <a href="mailto:${DEFAULT_FROM_ADDRESS}" style="color:#2563eb;text-decoration:none;">${DEFAULT_FROM_ADDRESS}</a>
                     </p>
-                    <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">vrashows.com.br</p>
+                    <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;"><a href="https://vrashows.com.br" style="color:#94a3b8;text-decoration:none;">vrashows.com.br</a></p>
                   </td>
                   <td align="right" valign="top">
                     <span style="display:inline-block;background:#0f172a;color:#ffffff;font-size:11px;font-weight:600;letter-spacing:0.5px;padding:6px 14px;border-radius:4px;">VRA</span>
@@ -129,6 +131,7 @@ export async function sendEmail(
     bodyHtml?: string;
     emailType?: EmailType;
     sequenceNumber?: number;
+    attachmentPath?: string;
   },
   opts: CoreSendOptions = {}
 ): Promise<EmailRecord> {
@@ -198,6 +201,42 @@ export async function sendEmail(
     fromName,
   });
 
+  // ── Resolve attachment ────────────────────────────────────────────────────
+  type ResendAttachment = { filename: string; content: string };
+  let attachments: ResendAttachment[] | undefined;
+
+  if (input.attachmentPath) {
+    if (!existsSync(input.attachmentPath)) {
+      logger.error("[send-email] attachment not found", { path: input.attachmentPath });
+      return {
+        ...baseRecord,
+        messageId: `failed:${input.recipientEmail}:${sentAt}`,
+        status: "failed",
+        error: `Attachment file not found: ${input.attachmentPath}`,
+      };
+    }
+    try {
+      const fileBuffer = readFileSync(input.attachmentPath);
+      attachments = [{
+        filename: basename(input.attachmentPath),
+        content: fileBuffer.toString("base64"),
+      }];
+      logger.info("[send-email] attachment loaded", {
+        filename: basename(input.attachmentPath),
+        sizeKb: Math.round(fileBuffer.byteLength / 1024),
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error("[send-email] failed to read attachment", { path: input.attachmentPath, error: message });
+      return {
+        ...baseRecord,
+        messageId: `failed:${input.recipientEmail}:${sentAt}`,
+        status: "failed",
+        error: `Failed to read attachment: ${message}`,
+      };
+    }
+  }
+
   // ── Send via Resend ──────────────────────────────────────────────────────
   const client = resendClient ?? new Resend(env.RESEND_API_KEY);
 
@@ -208,6 +247,7 @@ export async function sendEmail(
       subject: input.subject,
       text: input.bodyText,
       html: fullHtml,
+      ...(attachments ? { attachments } : {}),
     });
 
     if (response.error) {
@@ -312,6 +352,10 @@ export function createSendEmailTool(
             type: "number",
             description: "Position in sequence: 1=cold, 2=first follow-up, 3=second follow-up",
           },
+          attachmentPath: {
+            type: "string",
+            description: "Absolute path to a file to attach (e.g. a PDF media kit). File must exist on disk.",
+          },
         },
         required: ["company", "contactName", "recipientEmail", "subject", "bodyText"],
       },
@@ -322,7 +366,7 @@ export function createSendEmailTool(
 
       if (!validation.success) {
         const issues = validation.error.issues
-          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .map((i: any) => `${i.path.join(".")}: ${i.message}`)
           .join("; ");
         logger.warn("[send-email] invalid input rejected", { issues });
         return { success: false, error: `Validation failed: ${issues}` };

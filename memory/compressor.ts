@@ -33,28 +33,33 @@ export interface SummarizationResult {
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const CLUSTER_THRESHOLD = 0.78;          // cosine above which memories cluster together
-const EPISODE_SUMMARY_THRESHOLD = 8;     // episodic memories before rolling summarization
-const ROLLING_WINDOW = 6;               // how many episode summaries to roll up at once
-const MIN_CLUSTER_SIZE = 2;             // minimum memories to trigger compression
+const CLUSTER_THRESHOLD = 0.78;
+const EPISODE_SUMMARY_THRESHOLD = 8;
+const ROLLING_WINDOW = 6;
+const MIN_CLUSTER_SIZE = 2;
 
 // ─── MemoryCompressor ─────────────────────────────────────────────────────────
 
 export class MemoryCompressor {
   private client: Anthropic;
-  private pool: pg.Pool;
+  private pool: pg.Pool | null = null;
 
   constructor() {
     this.client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-    if (!env.DATABASE_URL) throw new Error("DATABASE_URL required");
-    this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
+
+    if (env.ENABLE_MEMORY !== "false") {
+      if (!env.DATABASE_URL) throw new Error("DATABASE_URL required");
+      this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
+    }
   }
 
   // ── Schema migration ─────────────────────────────────────────────────────────
 
   async initialize(): Promise<void> {
-    // Episodes table
-    await this.pool.query(`
+    const pool = this.pool;
+    if (!pool) return;
+
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS agent_episodes (
         id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         agent_name   TEXT NOT NULL,
@@ -64,18 +69,17 @@ export class MemoryCompressor {
         memory_count INT DEFAULT 0
       )
     `);
-    await this.pool.query(
+    await pool.query(
       `CREATE INDEX IF NOT EXISTS agent_episodes_agent_idx ON agent_episodes (agent_name)`
     );
 
-    // Extend agent_memories with episode tracking
-    await this.pool.query(
+    await pool.query(
       `ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS episode_id UUID REFERENCES agent_episodes(id) ON DELETE SET NULL`
     );
-    await this.pool.query(
+    await pool.query(
       `ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS is_summary BOOLEAN NOT NULL DEFAULT FALSE`
     );
-    await this.pool.query(
+    await pool.query(
       `ALTER TABLE agent_memories ADD COLUMN IF NOT EXISTS source_ids UUID[] DEFAULT '{}'`
     );
 
@@ -85,7 +89,10 @@ export class MemoryCompressor {
   // ── Episode lifecycle ─────────────────────────────────────────────────────────
 
   async beginEpisode(agentName: string): Promise<string> {
-    const { rows } = await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return "";
+
+    const { rows } = await pool.query(
       `INSERT INTO agent_episodes (agent_name) VALUES ($1) RETURNING id`,
       [agentName]
     );
@@ -95,7 +102,10 @@ export class MemoryCompressor {
   }
 
   async endEpisode(episodeId: string): Promise<{ summary: string; tokenCost: number }> {
-    const { rows: memories } = await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return { summary: "", tokenCost: 0 };
+
+    const { rows: memories } = await pool.query(
       `SELECT id, content, importance FROM agent_memories
        WHERE episode_id = $1 ORDER BY importance DESC`,
       [episodeId]
@@ -114,7 +124,7 @@ export class MemoryCompressor {
       tokenCost = result.tokenCost;
     }
 
-    await this.pool.query(
+    await pool.query(
       `UPDATE agent_episodes
        SET ended_at = NOW(), summary = $1, memory_count = $2
        WHERE id = $3`,
@@ -126,7 +136,10 @@ export class MemoryCompressor {
   }
 
   async attachToEpisode(memoryId: string, episodeId: string): Promise<void> {
-    await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return;
+
+    await pool.query(
       `UPDATE agent_memories SET episode_id = $1 WHERE id = $2`,
       [episodeId, memoryId]
     );
@@ -134,14 +147,11 @@ export class MemoryCompressor {
 
   // ── Semantic compression ──────────────────────────────────────────────────────
 
-  /**
-   * Finds clusters of semantically similar memories and compresses each cluster
-   * into a single dense memory using Haiku for dedup scoring + Sonnet for synthesis.
-   */
-  async compressSemanticClusters(
-    agentName?: string
-  ): Promise<CompressionResult> {
-    const { rows } = await this.pool.query(
+  async compressSemanticClusters(agentName?: string): Promise<CompressionResult> {
+    const pool = this.pool;
+    if (!pool) return { clustersFound: 0, memoriesCompressed: 0, memoriesCreated: 0, tokenCost: 0 };
+
+    const { rows } = await pool.query(
       agentName
         ? `SELECT id, content, importance, embedding::text FROM agent_memories
            WHERE agent_name = $1 AND is_summary = FALSE ORDER BY importance DESC`
@@ -154,7 +164,6 @@ export class MemoryCompressor {
       return { clustersFound: 0, memoriesCompressed: 0, memoriesCreated: 0, tokenCost: 0 };
     }
 
-    // Build clusters via connected components (union-find)
     const clusters = await this.buildClusters(rows);
     const significantClusters = clusters.filter((c) => c.length >= MIN_CLUSTER_SIZE);
 
@@ -182,13 +191,11 @@ export class MemoryCompressor {
   private async buildClusters(
     rows: Array<{ id: string; content: string; importance: number; embedding: string }>
   ): Promise<Array<Array<{ id: string; content: string; importance: number }>>> {
-    // Parse embeddings
     const embeddings = rows.map((r) => {
       const vals = r.embedding.replace(/[[\]]/g, "").split(",").map(Number);
       return { id: r.id, content: r.content, importance: r.importance, vec: vals };
     });
 
-    // Union-Find
     const parent = new Map(embeddings.map((e) => [e.id, e.id]));
     const find = (id: string): string => {
       if (parent.get(id) !== id) parent.set(id, find(parent.get(id)!));
@@ -196,7 +203,6 @@ export class MemoryCompressor {
     };
     const union = (a: string, b: string) => parent.set(find(a), find(b));
 
-    // O(n²) similarity — acceptable for memory sets (typically < 500 rows)
     for (let i = 0; i < embeddings.length; i++) {
       for (let j = i + 1; j < embeddings.length; j++) {
         const sim = cosineSimilarity(embeddings[i].vec, embeddings[j].vec);
@@ -204,7 +210,6 @@ export class MemoryCompressor {
       }
     }
 
-    // Group by root
     const groups = new Map<string, Array<{ id: string; content: string; importance: number }>>();
     for (const e of embeddings) {
       const root = find(e.id);
@@ -219,11 +224,12 @@ export class MemoryCompressor {
     cluster: Array<{ id: string; content: string; importance: number }>,
     agentName: string
   ): Promise<{ tokenCost: number }> {
-    // Sort by importance descending for the prompt
+    const pool = this.pool;
+    if (!pool) return { tokenCost: 0 };
+
     const sorted = [...cluster].sort((a, b) => b.importance - a.importance);
     const bullets = sorted.map((m) => `- [importance=${m.importance.toFixed(1)}] ${m.content}`).join("\n");
 
-    // Use Sonnet for synthesis quality
     const { text, tokenCost } = await this.callSonnet(
       "You are compressing a group of related memories into one denser representation. " +
       "Preserve ALL distinct facts, decisions, and nuances from the group. " +
@@ -235,7 +241,6 @@ export class MemoryCompressor {
     const allTags = cluster.flatMap(() => [] as string[]);
     const sourceIds = cluster.map((m) => m.id);
 
-    // Store compressed memory
     const id = await memoryManager.store({
       type: "semantic",
       content: text,
@@ -245,14 +250,12 @@ export class MemoryCompressor {
       tags: [...new Set(allTags)],
     });
 
-    // Mark as summary with source tracking
-    await this.pool.query(
+    await pool.query(
       `UPDATE agent_memories SET is_summary = TRUE, source_ids = $1 WHERE id = $2`,
       [sourceIds, id]
     );
 
-    // Delete originals
-    await this.pool.query(
+    await pool.query(
       `DELETE FROM agent_memories WHERE id = ANY($1::uuid[])`,
       [sourceIds]
     );
@@ -262,12 +265,11 @@ export class MemoryCompressor {
 
   // ── Incremental summarization ─────────────────────────────────────────────────
 
-  /**
-   * When episodic memory count exceeds threshold, summarizes the oldest window
-   * into a single rolling summary memory. Keeps memory count bounded.
-   */
   async incrementalSummarize(agentName: string): Promise<SummarizationResult> {
-    const { rows: episodic } = await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return { episodesSummarized: 0, memoriesMerged: 0, rollingSummaryUpdated: false, tokenCost: 0 };
+
+    const { rows: episodic } = await pool.query(
       `SELECT id, content, importance, created_at
        FROM agent_memories
        WHERE agent_name = $1 AND type = 'episodic' AND is_summary = FALSE
@@ -279,14 +281,12 @@ export class MemoryCompressor {
       return { episodesSummarized: 0, memoriesMerged: 0, rollingSummaryUpdated: false, tokenCost: 0 };
     }
 
-    // Take the oldest ROLLING_WINDOW episodic memories
     const toSummarize = episodic.slice(0, ROLLING_WINDOW);
     const bullets = toSummarize
       .map((m: any) => `- [${new Date(m.created_at).toLocaleDateString()}] ${m.content}`)
       .join("\n");
 
-    // Check if a rolling summary already exists
-    const { rows: existing } = await this.pool.query(
+    const { rows: existing } = await pool.query(
       `SELECT id, content FROM agent_memories
        WHERE agent_name = $1 AND type = 'episodic' AND is_summary = TRUE
        ORDER BY created_at DESC LIMIT 1`,
@@ -306,12 +306,10 @@ export class MemoryCompressor {
 
     const sourceIds = toSummarize.map((m: any) => m.id);
 
-    // Delete prior rolling summary if it exists
     if (existing[0]) {
       await memoryManager.delete(existing[0].id);
     }
 
-    // Create new rolling summary
     const summaryId = await memoryManager.store({
       type: "episodic",
       content: text,
@@ -321,13 +319,12 @@ export class MemoryCompressor {
       tags: ["rolling-summary"],
     });
 
-    await this.pool.query(
+    await pool.query(
       `UPDATE agent_memories SET is_summary = TRUE, source_ids = $1 WHERE id = $2`,
       [sourceIds, summaryId]
     );
 
-    // Delete the original episodic memories that were summarized
-    await this.pool.query(
+    await pool.query(
       `DELETE FROM agent_memories WHERE id = ANY($1::uuid[])`,
       [sourceIds]
     );
@@ -348,15 +345,14 @@ export class MemoryCompressor {
 
   // ── Cost-aware deduplication ──────────────────────────────────────────────────
 
-  /**
-   * Uses Haiku (cheapest) to confirm true duplicates before deleting.
-   * Avoids false positives from pure cosine similarity.
-   */
   async deduplicateCheap(agentName?: string): Promise<{ removed: number; tokenCost: number }> {
-    const threshold = 0.88; // slightly lower than compressor to catch more candidates cheaply
+    const pool = this.pool;
+    if (!pool) return { removed: 0, tokenCost: 0 };
+
+    const threshold = 0.88;
     const agentFilter = agentName ? `AND a.agent_name = '${agentName}'` : "";
 
-    const { rows: candidates } = await this.pool.query(`
+    const { rows: candidates } = await pool.query(`
       SELECT a.id AS id_a, b.id AS id_b, a.content AS content_a, b.content AS content_b,
              a.importance AS imp_a, b.importance AS imp_b,
              1 - (a.embedding <=> b.embedding) AS similarity
@@ -374,7 +370,6 @@ export class MemoryCompressor {
     for (const row of candidates) {
       if (deleted.has(row.id_a) || deleted.has(row.id_b)) continue;
 
-      // Use Haiku to confirm: are these truly duplicates?
       const { text, tokenCost: tc } = await this.callHaiku(
         'Are these two memories expressing the same fact/event? Answer only "yes" or "no".',
         `Memory A: ${row.content_a}\nMemory B: ${row.content_b}`
@@ -396,7 +391,10 @@ export class MemoryCompressor {
   // ── Episode history ───────────────────────────────────────────────────────────
 
   async getEpisodes(agentName: string, limit = 10): Promise<Episode[]> {
-    const { rows } = await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return [];
+
+    const { rows } = await pool.query(
       `SELECT id, agent_name, started_at, ended_at, summary, memory_count
        FROM agent_episodes
        WHERE agent_name = $1
@@ -459,7 +457,7 @@ export class MemoryCompressor {
   }
 
   async close(): Promise<void> {
-    await this.pool.end();
+    if (this.pool) await this.pool.end();
   }
 }
 

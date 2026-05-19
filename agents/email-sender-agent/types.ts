@@ -84,6 +84,9 @@ export interface SendEmailRequest {
 
   /** Sequence number in follow-up chain (default: 1) */
   sequenceNumber?: number;
+
+  /** Absolute path to a file to attach (e.g. a PDF) */
+  attachmentPath?: string;
 }
 
 // ─── Session result ───────────────────────────────────────────────────────────

@@ -19,7 +19,7 @@ import {
 } from "../../tools/index.js";
 
 import { logger } from "../../config/logger.js";
-import { Models, ModelConfig } from "../../config/models.js";
+import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 
 import {
   validateLeadProfile,
@@ -115,11 +115,11 @@ export class FuturecomResearcherAgent extends BaseAgent {
 
       model: Models.default,
 
-      maxTokens: ModelConfig.maxTokens.extended,
+      maxTokens: getMaxTokens(ModelConfig.maxTokens.extended),
 
       temperature: ModelConfig.temperature.deterministic,
 
-      maxIterations: 20,
+      maxIterations: getMaxIterations(20),
 
       memoryEnabled: true,
 

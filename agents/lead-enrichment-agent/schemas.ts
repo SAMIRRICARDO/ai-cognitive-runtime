@@ -33,6 +33,12 @@ export const EmailConfidenceSchema = z.enum(["high", "medium", "low"]);
 
 // ─── Contact schema ───────────────────────────────────────────────────────────
 
+const GuessedEmailSchema = z.object({
+  email:      z.string(),
+  pattern:    z.string(),
+  confidence: EmailConfidenceSchema,
+});
+
 export const EnrichedContactSchema = z.object({
   company: z.string().min(1),
   name: z.string().min(2).describe("Full name — first and last name required"),
@@ -43,6 +49,7 @@ export const EnrichedContactSchema = z.object({
   possibleEmail: z.string().describe("Possible corporate email or 'unknown'"),
   emailInferred: z.boolean(),
   emailConfidence: EmailConfidenceSchema,
+  guessedEmails: z.array(GuessedEmailSchema).optional(),
   priority: ContactPrioritySchema,
   priorityScore: z.number().int().min(0).max(100),
   strategicNotes: z.string().min(20).describe("Strategic notes for VRASHOWS sales team (1-2 sentences)"),
@@ -92,6 +99,19 @@ export const saveContactInputSchema = {
       type: "string",
       enum: ["high", "medium", "low"],
       description: "high: pattern confirmed or company format known. medium: inferred from domain+name. low: domain uncertain.",
+    },
+    guessedEmails: {
+      type: "array",
+      description: "All email candidates from resolve_email_pattern tool, ordered by confidence. Pass the full array returned by the tool.",
+      items: {
+        type: "object",
+        properties: {
+          email:      { type: "string" },
+          pattern:    { type: "string" },
+          confidence: { type: "string", enum: ["high", "medium", "low"] },
+        },
+        required: ["email", "pattern", "confidence"],
+      },
     },
     priority: {
       type: "string",

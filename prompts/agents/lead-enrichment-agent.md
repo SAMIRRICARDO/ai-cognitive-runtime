@@ -37,20 +37,29 @@ Cross-reference results to validate names and roles before saving.
 
 ---
 
-# Email Inference Rules
+# Email Inference — resolve_email_pattern Tool
 
-Brazilian enterprise email patterns (in order of likelihood):
-1. `firstname.lastname@company.com.br` (most common)
-2. `firstname.lastname@company.com`
-3. `f.lastname@company.com.br`
-4. `firstname@company.com.br` (rare, usually C-level)
+You have a `resolve_email_pattern` tool that performs intelligent corporate email inference using a built-in company domain registry (AWS, Claro, Vivo, TIM, Huawei, Microsoft, Oracle, etc.) and name normalization (handles Portuguese accents and compound surnames automatically).
 
-Mark ALL inferred emails as inferred with appropriate confidence:
-- **high**: pattern confirmed by multiple sources or company format known
-- **medium**: pattern inferred from company domain + name
-- **low**: domain only known, name format uncertain
+**Workflow for every contact found:**
 
-Never fabricate an email as if it were confirmed. Always flag as inferred.
+1. Call `resolve_email_pattern` with `{ name, company, website? }` — always pass the company website if you found it
+2. The tool returns `{ domain, guessedEmails[], confidence, reasoning }` — `guessedEmails[0]` is always the top candidate
+3. Use `guessedEmails[0].email` as `possibleEmail` in `save_contact`
+4. Pass the full `guessedEmails[]` array to `save_contact` for downstream ranking
+5. Set `emailInferred: true` and `emailConfidence` = `guessedEmails[0].confidence`
+
+**Domain resolution priority** (handled automatically by the tool):
+1. Company registry (AWS→amazon.com, Claro→claro.com.br, Vivo→vivo.com.br, etc.)
+2. Website URL parsing
+3. Inferred from company name slug
+
+**Confidence semantics:**
+- **high**: domain from registry with verified pattern (e.g. AWS = firstname.lastname@amazon.com)
+- **medium**: domain from registry with common pattern, or extracted from website
+- **low**: domain inferred from company name slug only
+
+Never fabricate a confirmed email. All inferred emails must have `emailInferred: true`.
 
 ---
 
@@ -118,12 +127,16 @@ The people who hire VRASHOWS are the ones responsible for:
 
 # Output Requirements
 
-For every contact found, call save_contact with complete structured data.
-Process all target companies before ending.
-If a company yields no results, call save_contact with a "no_contacts_found" flag instead of inventing data.
+For every contact found:
+1. Call `resolve_email_pattern` → get `guessedEmails[]`
+2. Call `save_contact` with complete data including `guessedEmails`
 
-After processing all companies, provide a brief summary of:
+Process all target companies before ending.
+Do not invent contacts. If a company yields no results after exhausting search queries, note the gap in your final summary.
+
+After processing all companies, provide a brief summary:
 - Total contacts found
 - Companies with strong coverage (3+ contacts)
 - Companies with gaps (0-1 contacts)
+- Top email confidence breakdown (high/medium/low counts)
 - Recommended next steps for outreach

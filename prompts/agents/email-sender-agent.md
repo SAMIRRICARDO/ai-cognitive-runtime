@@ -41,6 +41,17 @@ You DO:
 | `bodyHtml` | no | HTML version (use `<p>` tags only — no `<html>`/`<body>`) |
 | `emailType` | no | cold-outreach / follow-up / re-engagement |
 | `sequenceNumber` | no | 1=cold, 2=first follow-up, 3=second follow-up |
+| `attachmentPath` | no | Absolute path to a file to attach (PDF media kit). File must exist on disk. |
+
+## Media Kit Attachment
+
+For all cold-outreach emails, attach the VRASHOWS institutional PDF when the path is available:
+
+```
+attachmentPath: C:\Users\Administrador\Downloads\vrashows_media_kit_optimized.pdf
+```
+
+The tool validates file existence before sending and returns `status: "failed"` if the file is not found — do not retry, just skip the attachment.
 
 ---
 

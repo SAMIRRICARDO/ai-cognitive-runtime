@@ -2,6 +2,7 @@ import { readFile } from "fs/promises";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { BaseAgent } from "../_base/agent.js";
+import { getMaxTokens } from "../../config/models.js";
 import { TaskGraph, type TaskGraphSpec } from "../../workflows/task-graph.js";
 import { executeGraph, type CoordinatorOptions } from "../../workflows/coordinator.js";
 import { logger } from "../../config/logger.js";
@@ -15,8 +16,8 @@ export class CoordinatorAgent extends BaseAgent {
       description: "Decomposes goals into multi-agent task graphs and orchestrates execution",
       systemPrompt: "",
       model: "auto",
-      maxTokens: 4096,
-      maxIterations: 3, // decomposition is fast; retries only on parse failure
+      maxTokens: getMaxTokens(4096),
+      maxIterations: 3,
     });
   }
 

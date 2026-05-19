@@ -21,7 +21,7 @@ import type { ToolHandler, AgentRunOptions } from "../_base/types.js";
 
 import { memoryReadTool, memoryWriteTool } from "../../tools/index.js";
 import { logger } from "../../config/logger.js";
-import { Models, ModelConfig } from "../../config/models.js";
+import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 
 import { validateOutreachPackage, saveOutreachInputSchema } from "./schemas.js";
 import type {
@@ -84,9 +84,9 @@ export class OutreachAgent extends BaseAgent {
         "Generates consultive enterprise outreach (email + LinkedIn) for VRASHOWS leads",
       systemPrompt,
       model: Models.default,
-      maxTokens: ModelConfig.maxTokens.extended,
+      maxTokens: getMaxTokens(ModelConfig.maxTokens.extended),
       temperature: ModelConfig.temperature.balanced,
-      maxIterations: 25,
+      maxIterations: getMaxIterations(25),
       memoryEnabled: true,
       memorySaveEnabled: false, // outreach packages stored via memory_write explicitly
     });

@@ -222,9 +222,17 @@ for (const company of result.companies) {
     }
     if (contact.possibleEmail !== "unknown") {
       const emailLabel = contact.emailInferred
-        ? `\x1b[2m(inferred, ${contact.emailConfidence} confidence)\x1b[0m`
-        : "\x1b[2m(confirmed)\x1b[0m";
+        ? `(inferred, ${contact.emailConfidence} confidence)`
+        : "(confirmed)";
       console.log(`    \x1b[2mEmail: ${contact.possibleEmail} ${emailLabel}\x1b[0m`);
+
+      if (contact.guessedEmails && contact.guessedEmails.length > 1) {
+        const variants = contact.guessedEmails
+          .slice(1, 4)
+          .map((g) => `${g.email} [${g.pattern}, ${g.confidence}]`)
+          .join(", ");
+        console.log(`    \x1b[2mVariants: ${variants}\x1b[0m`);
+      }
     }
     console.log(`    \x1b[2m${contact.strategicNotes}\x1b[0m`);
     console.log();

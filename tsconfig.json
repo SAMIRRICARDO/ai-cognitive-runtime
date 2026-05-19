@@ -13,15 +13,7 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@agents/*": ["agents/*"],
-      "@tools/*": ["tools/*"],
-      "@memory/*": ["memory/*"],
-      "@config/*": ["config/*"],
-      "@workflows/*": ["workflows/*"]
-    }
+    "sourceMap": true
   },
   "include": ["./**/*.ts"],
   "exclude": ["node_modules", "dist"]

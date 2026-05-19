@@ -9,16 +9,21 @@ export interface Document {
 }
 
 export class VectorStore {
-  private pool: pg.Pool;
+  private pool: pg.Pool | null = null;
 
   constructor() {
-    if (!env.DATABASE_URL) throw new Error("DATABASE_URL is required for VectorStore");
-    this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
+    if (env.ENABLE_MEMORY !== "false") {
+      if (!env.DATABASE_URL) throw new Error("DATABASE_URL is required for VectorStore");
+      this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
+    }
   }
 
   async initialize(): Promise<void> {
-    await this.pool.query(`CREATE EXTENSION IF NOT EXISTS vector`);
-    await this.pool.query(`
+    const pool = this.pool;
+    if (!pool) return;
+
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS vector`);
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS documents (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         content TEXT NOT NULL,
@@ -27,13 +32,16 @@ export class VectorStore {
         created_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await this.pool.query(
+    await pool.query(
       `CREATE INDEX IF NOT EXISTS documents_embedding_idx ON documents USING ivfflat (embedding vector_cosine_ops)`
     );
   }
 
   async insert(doc: Document): Promise<string> {
-    const { rows } = await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return "";
+
+    const { rows } = await pool.query(
       `INSERT INTO documents (content, metadata, embedding) VALUES ($1, $2, $3) RETURNING id`,
       [doc.content, JSON.stringify(doc.metadata), doc.embedding ? `[${doc.embedding.join(",")}]` : null]
     );
@@ -41,7 +49,10 @@ export class VectorStore {
   }
 
   async similaritySearch(embedding: number[], limit = 5): Promise<Document[]> {
-    const { rows } = await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return [];
+
+    const { rows } = await pool.query(
       `SELECT id, content, metadata, 1 - (embedding <=> $1) AS score
        FROM documents
        ORDER BY embedding <=> $1
@@ -52,6 +63,6 @@ export class VectorStore {
   }
 
   async close(): Promise<void> {
-    await this.pool.end();
+    if (this.pool) await this.pool.end();
   }
 }

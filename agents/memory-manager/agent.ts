@@ -2,6 +2,7 @@ import { readFile } from "fs/promises";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { BaseAgent } from "../_base/agent.js";
+import { getMaxIterations } from "../../config/models.js";
 import { memoryManager, type Memory, type MemoryType } from "../../memory/manager.js";
 import { memoryCompressor } from "../../memory/compressor.js";
 import { logger } from "../../config/logger.js";
@@ -238,7 +239,7 @@ export class MemoryManagerAgent extends BaseAgent {
       description: "Manages agent memory: compression, summarization, dedup, episodic lifecycle",
       systemPrompt: "",
       model: "auto",
-      maxIterations: 20,
+      maxIterations: getMaxIterations(20),
     });
   }
 

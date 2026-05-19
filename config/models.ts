@@ -1,4 +1,4 @@
-import { env } from "./env.js";
+import { env, isCheapMode } from "./env.js";
 
 export const Models = {
   default: env.DEFAULT_MODEL,
@@ -10,6 +10,7 @@ export const ModelConfig = {
   maxTokens: {
     default: 8192,
     extended: 16384,
+    cheap: 2048,
   },
   temperature: {
     deterministic: 0,
@@ -17,3 +18,24 @@ export const ModelConfig = {
     creative: 0.7,
   },
 } as const;
+
+/**
+ * Resolves effective max_tokens respecting cost controls.
+ * `preferred` is the agent's desired limit; env vars/cheap mode can cap it lower.
+ */
+export function getMaxTokens(preferred?: number): number {
+  const base = preferred ?? ModelConfig.maxTokens.default;
+  if (env.MAX_OUTPUT_TOKENS) return Math.min(base, env.MAX_OUTPUT_TOKENS);
+  if (isCheapMode) return Math.min(base, ModelConfig.maxTokens.cheap);
+  return base;
+}
+
+/**
+ * Resolves effective maxIterations respecting cost controls.
+ * Agent-specific overrides are still capped by MAX_TOOL_ITERATIONS if set.
+ */
+export function getMaxIterations(preferred?: number): number {
+  const base = preferred ?? (isCheapMode ? 5 : 10);
+  if (env.MAX_TOOL_ITERATIONS) return Math.min(base, env.MAX_TOOL_ITERATIONS);
+  return base;
+}

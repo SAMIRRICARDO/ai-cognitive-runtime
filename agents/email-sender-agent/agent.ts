@@ -34,7 +34,7 @@ import {
 
 import { RedisMemory } from "../../memory/short-term/redis.js";
 import { logger } from "../../config/logger.js";
-import { Models, ModelConfig } from "../../config/models.js";
+import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 import { env } from "../../config/env.js";
 
 import type {
@@ -77,11 +77,11 @@ export class EmailSenderAgent extends BaseAgent {
 
       model: Models.fast,
 
-      maxTokens: ModelConfig.maxTokens.default,
+      maxTokens: getMaxTokens(ModelConfig.maxTokens.default),
 
       temperature: ModelConfig.temperature.deterministic,
 
-      maxIterations: 30,
+      maxIterations: getMaxIterations(30),
 
       memoryEnabled: false,
 

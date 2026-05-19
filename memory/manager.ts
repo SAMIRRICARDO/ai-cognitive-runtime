@@ -48,22 +48,27 @@ const PRUNE_MAX_AGE_DAYS = 60;
 // ─── MemoryManager ────────────────────────────────────────────────────────────
 
 export class MemoryManager {
-  private pool: pg.Pool;
-  private openai: OpenAI;
+  private pool: pg.Pool | null = null;
+  private openai: OpenAI | null = null;
   private redis = new RedisMemory();
 
   constructor() {
-    if (!env.DATABASE_URL) throw new Error("DATABASE_URL required for MemoryManager");
-    if (!env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY required for MemoryManager");
-    this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
-    this.openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+    if (env.ENABLE_MEMORY !== "false") {
+      if (!env.DATABASE_URL) throw new Error("DATABASE_URL required for MemoryManager");
+      if (!env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY required for MemoryManager");
+      this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
+      this.openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+    }
   }
 
   // ── Schema ───────────────────────────────────────────────────────────────────
 
   async initialize(): Promise<void> {
-    await this.pool.query(`CREATE EXTENSION IF NOT EXISTS vector`);
-    await this.pool.query(`
+    const pool = this.pool;
+    if (!pool) return;
+
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS vector`);
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS agent_memories (
         id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         type             TEXT NOT NULL CHECK (type IN ('episodic','semantic','procedural')),
@@ -78,15 +83,15 @@ export class MemoryManager {
         last_accessed_at TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await this.pool.query(`
+    await pool.query(`
       CREATE INDEX IF NOT EXISTS agent_memories_embedding_idx
         ON agent_memories USING ivfflat (embedding vector_cosine_ops)
         WITH (lists = 50)
     `);
-    await this.pool.query(
+    await pool.query(
       `CREATE INDEX IF NOT EXISTS agent_memories_agent_idx ON agent_memories (agent_name)`
     );
-    await this.pool.query(
+    await pool.query(
       `CREATE INDEX IF NOT EXISTS agent_memories_type_idx ON agent_memories (type)`
     );
     logger.info("[memory-manager] schema ready");
@@ -95,11 +100,14 @@ export class MemoryManager {
   // ── Embedding ─────────────────────────────────────────────────────────────────
 
   private async embed(text: string): Promise<number[]> {
+    const openai = this.openai;
+    if (!openai) return [];
+
     const key = "membed:" + crypto.createHash("sha256").update(text).digest("hex").slice(0, 24);
     const cached = await this.redis.get(key).catch(() => null);
     if (cached) return JSON.parse(cached) as number[];
 
-    const res = await this.openai.embeddings.create({
+    const res = await openai.embeddings.create({
       model: EMBEDDING_MODEL,
       input: text.slice(0, 8000),
     });
@@ -111,9 +119,12 @@ export class MemoryManager {
   // ── Store ─────────────────────────────────────────────────────────────────────
 
   async store(memory: Memory): Promise<string> {
+    const pool = this.pool;
+    if (!pool) return "";
+
     const embedding = await this.embed(memory.content);
 
-    const { rows } = await this.pool.query(
+    const { rows } = await pool.query(
       `INSERT INTO agent_memories
          (type, content, context, agent_name, importance, tags, embedding)
        VALUES ($1,$2,$3,$4,$5,$6,$7)
@@ -145,8 +156,12 @@ export class MemoryManager {
       minImportance?: number;
     } = {}
   ): Promise<MemorySearchResult[]> {
+    const pool = this.pool;
+    if (!pool) return [];
+
     const { agentName, type, limit = 8, minScore = 0.35, minImportance = 0 } = options;
     const embedding = await this.embed(query);
+    if (embedding.length === 0) return [];
 
     let sql = `
       SELECT id, type, content, context, agent_name, importance,
@@ -164,12 +179,11 @@ export class MemoryManager {
     sql += ` ORDER BY score DESC LIMIT $${params.length + 1}`;
     params.push(limit);
 
-    const { rows } = await this.pool.query(sql, params);
+    const { rows } = await pool.query(sql, params);
 
-    // Update access metadata asynchronously
     if (rows.length > 0) {
       const ids = rows.map((r: any) => r.id);
-      this.pool.query(
+      pool.query(
         `UPDATE agent_memories
          SET access_count = access_count + 1, last_accessed_at = NOW()
          WHERE id = ANY($1::uuid[])`,
@@ -194,11 +208,9 @@ export class MemoryManager {
 
   // ── Context injection ─────────────────────────────────────────────────────────
 
-  /**
-   * Returns a formatted memory context block to inject into an agent's system prompt.
-   * Retrieves top-k relevant memories for the given agent + current task.
-   */
   async getContextFor(agentName: string, task: string, limit = 5): Promise<string> {
+    if (!this.pool) return "";
+
     const memories = await this.search(task, { agentName, limit, minScore: 0.4 });
     if (memories.length === 0) return "";
 
@@ -213,6 +225,9 @@ export class MemoryManager {
   // ── Update / Delete ───────────────────────────────────────────────────────────
 
   async update(id: string, patch: Partial<Pick<Memory, "content" | "importance" | "tags">>): Promise<void> {
+    const pool = this.pool;
+    if (!pool) return;
+
     const sets: string[] = [];
     const params: unknown[] = [];
 
@@ -232,25 +247,26 @@ export class MemoryManager {
 
     if (sets.length === 0) return;
     params.push(id);
-    await this.pool.query(
+    await pool.query(
       `UPDATE agent_memories SET ${sets.join(", ")} WHERE id = $${params.length}`,
       params
     );
   }
 
   async delete(id: string): Promise<void> {
-    await this.pool.query(`DELETE FROM agent_memories WHERE id = $1`, [id]);
+    const pool = this.pool;
+    if (!pool) return;
+
+    await pool.query(`DELETE FROM agent_memories WHERE id = $1`, [id]);
     logger.debug("[memory-manager] deleted", { id });
   }
 
   // ── Consolidate ───────────────────────────────────────────────────────────────
 
-  /**
-   * Finds near-duplicate memories (cosine > DUPLICATE_THRESHOLD) and removes the
-   * lower-importance duplicate, preserving the higher-importance one.
-   * Returns counts of what changed.
-   */
   async consolidate(agentName?: string): Promise<ConsolidationResult> {
+    const pool = this.pool;
+    if (!pool) return { merged: 0, kept: 0, removed: 0 };
+
     let sql = `
       SELECT a.id AS id_a, b.id AS id_b,
              a.importance AS imp_a, b.importance AS imp_b,
@@ -266,14 +282,13 @@ export class MemoryManager {
       params.push(agentName);
     }
 
-    const { rows } = await this.pool.query(sql, params);
+    const { rows } = await pool.query(sql, params);
 
     let merged = 0;
     const toDelete = new Set<string>();
 
     for (const row of rows) {
       if (toDelete.has(row.id_a) || toDelete.has(row.id_b)) continue;
-      // Keep higher importance, delete the other
       const deleteId = row.imp_a >= row.imp_b ? row.id_b : row.id_a;
       toDelete.add(deleteId);
       merged++;
@@ -283,7 +298,7 @@ export class MemoryManager {
       await this.delete(id);
     }
 
-    const { rows: remaining } = await this.pool.query(
+    const { rows: remaining } = await pool.query(
       agentName
         ? `SELECT COUNT(*) FROM agent_memories WHERE agent_name = $1`
         : `SELECT COUNT(*) FROM agent_memories`,
@@ -296,11 +311,10 @@ export class MemoryManager {
 
   // ── Prune ─────────────────────────────────────────────────────────────────────
 
-  /**
-   * Removes low-value memories: importance < threshold AND accessCount < threshold
-   * AND older than N days.
-   */
   async prune(agentName?: string): Promise<number> {
+    const pool = this.pool;
+    if (!pool) return 0;
+
     const cutoff = new Date(Date.now() - PRUNE_MAX_AGE_DAYS * 86_400_000).toISOString();
     let sql = `
       DELETE FROM agent_memories
@@ -315,7 +329,7 @@ export class MemoryManager {
       params.push(agentName);
     }
 
-    const { rowCount } = await this.pool.query(sql, params);
+    const { rowCount } = await pool.query(sql, params);
     logger.info("[memory-manager] pruned", { removed: rowCount, agentName });
     return rowCount ?? 0;
   }
@@ -323,7 +337,10 @@ export class MemoryManager {
   // ── Stats ─────────────────────────────────────────────────────────────────────
 
   async stats(agentName?: string): Promise<Record<string, unknown>> {
-    const { rows } = await this.pool.query(
+    const pool = this.pool;
+    if (!pool) return { byType: [] };
+
+    const { rows } = await pool.query(
       agentName
         ? `SELECT type, COUNT(*) AS count, AVG(importance) AS avg_importance
            FROM agent_memories WHERE agent_name = $1 GROUP BY type`
@@ -345,7 +362,7 @@ export class MemoryManager {
   }
 
   async close(): Promise<void> {
-    await this.pool.end();
+    if (this.pool) await this.pool.end();
   }
 }
 

@@ -36,6 +36,34 @@ export type ContactPriority = "high" | "medium" | "low";
 /** Confidence level for inferred email addresses */
 export type EmailConfidence = "high" | "medium" | "low";
 
+// ─── Email pattern resolution ──────────────────────────────────────────────────
+
+/** A single email candidate with pattern label and confidence */
+export interface GuessedEmail {
+  /** The inferred email address */
+  email: string;
+  /** Pattern used to generate it (e.g. "firstname.lastname") */
+  pattern: string;
+  /** Confidence based on domain knowledge and pattern prevalence */
+  confidence: EmailConfidence;
+}
+
+/** Full result from EmailPatternResolver.resolve() */
+export interface EmailPatternResult {
+  /** Resolved corporate email domain */
+  domain: string;
+  /** How the domain was determined */
+  domainSource: "known" | "website" | "inferred";
+  /** Primary pattern detected for this company */
+  pattern: string;
+  /** Ordered email candidates, highest confidence first */
+  guessedEmails: GuessedEmail[];
+  /** Aggregate confidence for the top candidate */
+  confidence: EmailConfidence;
+  /** Human-readable explanation of the inference */
+  reasoning: string;
+}
+
 // ─── Contact ──────────────────────────────────────────────────────────────────
 
 export interface EnrichedContact {
@@ -65,6 +93,9 @@ export interface EnrichedContact {
 
   /** Confidence level for the email (relevant only when emailInferred is true) */
   emailConfidence: EmailConfidence;
+
+  /** All inferred email candidates ranked by confidence (from EmailPatternResolver) */
+  guessedEmails?: GuessedEmail[];
 
   /** Outreach priority for VRASHOWS sales team */
   priority: ContactPriority;

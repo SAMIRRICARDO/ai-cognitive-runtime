@@ -21,9 +21,10 @@ import type { ToolHandler, AgentRunOptions } from "../_base/types.js";
 
 import { webSearchTool, memoryReadTool, memoryWriteTool } from "../../tools/index.js";
 import { logger } from "../../config/logger.js";
-import { Models, ModelConfig } from "../../config/models.js";
+import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 
 import { validateEnrichedContact, saveContactInputSchema } from "./schemas.js";
+import { emailPatternResolver } from "./email-resolver.js";
 import type {
   EnrichedContact,
   EnrichedCompany,
@@ -44,6 +45,59 @@ const SENIORITY_RANK: Record<ContactSeniority, number> = {
   "manager":  2,
   "analyst":  1,
 };
+
+// ─── resolve_email_pattern tool ───────────────────────────────────────────────
+
+function createEmailResolverTool(): ToolHandler {
+  return {
+    name: "resolve_email_pattern",
+    schema: {
+      name: "resolve_email_pattern",
+      description:
+        "Infer probable corporate email addresses for a contact using name normalization and a corporate domain registry. Returns ranked email variants with confidence scores. Call this BEFORE save_contact for every contact found.",
+      input_schema: {
+        type: "object" as const,
+        properties: {
+          name: {
+            type: "string",
+            description: "Full name of the contact (first and last name)",
+          },
+          company: {
+            type: "string",
+            description: "Company name (used for domain registry lookup)",
+          },
+          website: {
+            type: "string",
+            description: "Company website URL if known (e.g. aws.amazon.com, vivo.com.br) — improves domain accuracy",
+          },
+          domain: {
+            type: "string",
+            description: "Known corporate email domain (e.g. amazon.com) — overrides all other detection",
+          },
+        },
+        required: ["name", "company"],
+      },
+    },
+    execute: async (raw) => {
+      const input = raw as { name: string; company: string; website?: string; domain?: string };
+      const result = emailPatternResolver.resolve({
+        name: input.name,
+        company: input.company,
+        website: input.website,
+        domain: input.domain,
+      });
+      logger.debug("[lead-enrichment-agent] email pattern resolved", {
+        name: input.name,
+        company: input.company,
+        domain: result.domain,
+        domainSource: result.domainSource,
+        confidence: result.confidence,
+        topEmail: result.guessedEmails[0]?.email,
+      });
+      return result;
+    },
+  };
+}
 
 // ─── save_contact tool ────────────────────────────────────────────────────────
 
@@ -112,9 +166,9 @@ export class LeadEnrichmentAgent extends BaseAgent {
       description: "Enriches company leads with decision maker profiles for VRASHOWS outreach",
       systemPrompt,
       model: Models.default,
-      maxTokens: ModelConfig.maxTokens.extended,
+      maxTokens: getMaxTokens(ModelConfig.maxTokens.extended),
       temperature: ModelConfig.temperature.deterministic,
-      maxIterations: 40,
+      maxIterations: getMaxIterations(40),
       memoryEnabled: true,
       memorySaveEnabled: false,
     });
@@ -127,6 +181,7 @@ export class LeadEnrichmentAgent extends BaseAgent {
     agent.registerTool(webSearchTool);
     agent.registerTool(memoryReadTool);
     agent.registerTool(memoryWriteTool);
+    agent.registerTool(createEmailResolverTool());
     agent.registerTool(createSaveContactTool(agent.contacts));
     return agent;
   }

@@ -17,6 +17,7 @@
  * Options:
  *   --dry-run            Build emails but do NOT send (status: queued)
  *   --test-to <email>    Send a single branded test email to this address
+ *   --attach <path>      Absolute path to a file to attach (used with --test-to)
  *   --from-file <path>   Read outreach packages from JSON file (run-outreach.ts --json output)
  *   --pipeline           Full pipeline: research → outreach → send
  *   --min-score <n>      Min lead score in pipeline mode (default: 50)
@@ -48,6 +49,7 @@ function hasFlag(name: string): boolean {
 
 const dryRun     = hasFlag("--dry-run");
 const testTo     = flag("--test-to");
+const attachPath = flag("--attach");
 const fromFile   = flag("--from-file");
 const pipeline   = hasFlag("--pipeline");
 const minScore   = parseInt(flag("--min-score") ?? "50", 10);
@@ -87,33 +89,36 @@ function makeStepHandler(label: string) {
 if (testTo) {
   if (!jsonOutput) {
     console.log(`\nVRASHOWS Email Sender — Test Mode`);
-    console.log(`Sending test email to: ${testTo}\n`);
+    console.log(`Sending test email to: ${testTo}`);
+    if (attachPath) console.log(`Attachment: ${attachPath}`);
+    console.log();
   }
 
   const record = await sendEmail(
     {
-      company: "Test",
-      contactName: "Test User",
+      company: "VRASHOWS",
+      contactName: "Samir Ricardo",
       recipientEmail: testTo,
-      subject: "VRASHOWS — Teste de Entrega",
+      subject: "VRASHOWS — Media Kit 2026",
       bodyText: [
         "Olá,",
         "",
-        "Este é um email de teste enviado pelo sistema de outreach enterprise da VRASHOWS.",
+        "Segue em anexo o Media Kit 2026 da VRASHOWS com informações completas sobre nossas soluções de operações 360° para eventos enterprise.",
         "",
-        "Se você recebeu este email, o sistema está funcionando corretamente.",
+        "Ficamos à disposição para qualquer dúvida.",
         "",
         "Att,",
         "VRASHOWS",
       ].join("\n"),
       bodyHtml: [
         "<p>Olá,</p>",
-        "<p>Este é um email de teste enviado pelo sistema de outreach enterprise da <strong>VRASHOWS</strong>.</p>",
-        "<p>Se você recebeu este email, o sistema está funcionando corretamente.</p>",
-        "<p>Att,<br>VRASHOWS</p>",
+        "<p>Segue em anexo o <strong>Media Kit 2026</strong> da VRASHOWS com informações completas sobre nossas soluções de operações 360° para eventos enterprise.</p>",
+        "<p>Ficamos à disposição para qualquer dúvida.</p>",
+        "<p>Att,<br><strong>VRASHOWS</strong></p>",
       ].join("\n"),
       emailType: "cold-outreach",
       sequenceNumber: 1,
+      ...(attachPath ? { attachmentPath: attachPath } : {}),
     },
     { dryRun }
   );

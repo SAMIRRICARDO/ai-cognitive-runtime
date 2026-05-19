@@ -66,15 +66,9 @@ function extractLinks(text: string): string[] {
   return [...text.matchAll(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g)].map((m) => m[1].trim());
 }
 
-/**
- * Semantic chunking: splits on headings first, then on paragraph boundaries,
- * then by character limit with overlap. Preserves heading context.
- */
 function chunkNote(title: string, body: string): Array<{ section: string; content: string }> {
   const chunks: Array<{ section: string; content: string }> = [];
-  const headingRe = /^(#{1,4})\s+(.+)$/m;
 
-  // Split body into sections by headings
   const sections = body.split(/(?=^#{1,4}\s)/m).filter((s) => s.trim());
 
   for (const section of sections) {
@@ -82,7 +76,6 @@ function chunkNote(title: string, body: string): Array<{ section: string; conten
     const sectionName = headingMatch ? headingMatch[2].trim() : title;
     const sectionBody = headingMatch ? section.slice(section.indexOf("\n") + 1) : section;
 
-    // Split long sections on double-newlines (paragraph boundaries)
     const paragraphs = sectionBody.split(/\n{2,}/);
     let current = "";
 
@@ -94,10 +87,8 @@ function chunkNote(title: string, body: string): Array<{ section: string; conten
       } else {
         if (current.trim()) {
           chunks.push({ section: sectionName, content: current.trim() });
-          // Overlap: carry last paragraph into next chunk
           current = current.slice(-CHUNK_OVERLAP) + "\n\n" + para;
         } else {
-          // Single paragraph larger than limit — hard split
           for (let i = 0; i < para.length; i += CHUNK_MAX_CHARS - CHUNK_OVERLAP) {
             chunks.push({ section: sectionName, content: para.slice(i, i + CHUNK_MAX_CHARS).trim() });
           }
@@ -132,25 +123,30 @@ async function setCachedEmbedding(text: string, embedding: number[]): Promise<vo
 // ─── VaultIndex ───────────────────────────────────────────────────────────────
 
 export class VaultIndex {
-  private pool: pg.Pool;
-  private openai: OpenAI;
+  private pool: pg.Pool | null = null;
+  private openai: OpenAI | null = null;
   private vaultRoot: string;
 
   constructor() {
-    if (!env.DATABASE_URL) throw new Error("DATABASE_URL required for VaultIndex");
-    if (!env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY required for embeddings");
-
-    this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
-    this.openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
     this.vaultRoot = resolvePath(env.VAULT_PATH);
+
+    if (env.ENABLE_MEMORY !== "false") {
+      if (!env.DATABASE_URL) throw new Error("DATABASE_URL required for VaultIndex");
+      if (!env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY required for embeddings");
+      this.pool = new pg.Pool({ connectionString: env.DATABASE_URL });
+      this.openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
+    }
   }
 
   // ── Schema ──────────────────────────────────────────────────────────────────
 
   async initialize(): Promise<void> {
-    await this.pool.query(`CREATE EXTENSION IF NOT EXISTS vector`);
-    await this.pool.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
-    await this.pool.query(`
+    const pool = this.pool;
+    if (!pool) return;
+
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS vector`);
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS vault_chunks (
         id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         file_path    TEXT NOT NULL,
@@ -168,15 +164,15 @@ export class VaultIndex {
         indexed_at   TIMESTAMPTZ DEFAULT NOW()
       )
     `);
-    await this.pool.query(`
+    await pool.query(`
       CREATE INDEX IF NOT EXISTS vault_chunks_embedding_idx
         ON vault_chunks USING ivfflat (embedding vector_cosine_ops)
         WITH (lists = 100)
     `);
-    await this.pool.query(
+    await pool.query(
       `CREATE INDEX IF NOT EXISTS vault_chunks_file_idx ON vault_chunks (file_path)`
     );
-    await this.pool.query(
+    await pool.query(
       `CREATE INDEX IF NOT EXISTS vault_chunks_fts_idx ON vault_chunks USING GIN (fts)`
     );
     logger.info("[vault] schema ready");
@@ -185,12 +181,15 @@ export class VaultIndex {
   // ── Embedding ───────────────────────────────────────────────────────────────
 
   async embed(text: string): Promise<number[]> {
+    const openai = this.openai;
+    if (!openai) return [];
+
     const cached = await getCachedEmbedding(text);
     if (cached) return cached;
 
-    const response = await this.openai.embeddings.create({
+    const response = await openai.embeddings.create({
       model: EMBEDDING_MODEL,
-      input: text.slice(0, 8000), // API limit safety
+      input: text.slice(0, 8000),
     });
 
     const embedding = response.data[0].embedding;
@@ -201,6 +200,12 @@ export class VaultIndex {
   // ── Indexing ─────────────────────────────────────────────────────────────────
 
   async indexVault(options: { force?: boolean } = {}): Promise<{ indexed: number; skipped: number; deleted: number }> {
+    const pool = this.pool;
+    if (!pool) {
+      logger.warn("[vault] indexing skipped — memory disabled");
+      return { indexed: 0, skipped: 0, deleted: 0 };
+    }
+
     const files = await this.walkVault();
     const limit = pLimit(EMBED_CONCURRENCY);
     let indexed = 0, skipped = 0;
@@ -216,9 +221,8 @@ export class VaultIndex {
       else skipped++;
     }
 
-    // Remove chunks for deleted files
     const currentPaths = files.map((f) => relative(this.vaultRoot, f));
-    const { rowCount } = await this.pool.query(
+    const { rowCount } = await pool.query(
       `DELETE FROM vault_chunks WHERE file_path != ALL($1::text[])`,
       [currentPaths]
     );
@@ -229,15 +233,17 @@ export class VaultIndex {
   }
 
   private async indexFile(absPath: string, force: boolean): Promise<"indexed" | "skipped"> {
+    const pool = this.pool;
+    if (!pool) return "skipped";
+
     const filePath = relative(this.vaultRoot, absPath);
     const fileStat = await stat(absPath);
     const mtime = Number.isFinite(fileStat.mtimeMs)
-  ? Math.floor(fileStat.mtimeMs)
-  : Date.now()
+      ? Math.floor(fileStat.mtimeMs)
+      : Date.now();
 
-    // Skip if file hasn't changed (check stored mtime)
     if (!force) {
-      const { rows } = await this.pool.query(
+      const { rows } = await pool.query(
         `SELECT mtime FROM vault_chunks WHERE file_path = $1 LIMIT 1`,
         [filePath]
       );
@@ -251,17 +257,14 @@ export class VaultIndex {
     const links = extractLinks(body);
     const rawChunks = chunkNote(fileTitle, body);
 
-    // Delete old chunks for this file
-    await this.pool.query(`DELETE FROM vault_chunks WHERE file_path = $1`, [filePath]);
+    await pool.query(`DELETE FROM vault_chunks WHERE file_path = $1`, [filePath]);
 
-    // Embed + insert all chunks
     for (let i = 0; i < rawChunks.length; i++) {
       const { section, content } = rawChunks[i];
-      // Embed: prepend title+section for better retrieval context
       const textToEmbed = `${fileTitle}\n${section}\n\n${content}`;
       const embedding = await this.embed(textToEmbed);
 
-      await this.pool.query(
+      await pool.query(
         `INSERT INTO vault_chunks
            (file_path, title, section, content, tags, links, mtime, chunk_index, embedding)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
@@ -289,7 +292,7 @@ export class VaultIndex {
     async function walk(dir: string): Promise<void> {
       const entries = await readdir(dir, { withFileTypes: true });
       for (const entry of entries) {
-        if (entry.name.startsWith(".")) continue; // skip hidden
+        if (entry.name.startsWith(".")) continue;
         const full = join(dir, entry.name);
         if (entry.isDirectory()) {
           await walk(full);
@@ -309,8 +312,12 @@ export class VaultIndex {
     query: string,
     options: { limit?: number; tags?: string[]; minScore?: number } = {}
   ): Promise<SearchResult[]> {
+    const pool = this.pool;
+    if (!pool) return [];
+
     const { limit = 8, tags, minScore = 0.3 } = options;
     const queryEmbedding = await this.embed(query);
+    if (queryEmbedding.length === 0) return [];
 
     let sql = `
       SELECT id, file_path, title, section, content, tags, links, mtime, chunk_index,
@@ -328,7 +335,7 @@ export class VaultIndex {
     sql += ` ORDER BY embedding <=> $1::vector LIMIT $${params.length + 1}`;
     params.push(limit);
 
-    const { rows } = await this.pool.query(sql, params);
+    const { rows } = await pool.query(sql, params);
 
     return rows.map((r) => ({
       id: r.id,
@@ -344,12 +351,6 @@ export class VaultIndex {
     }));
   }
 
-  /**
-   * Hybrid retrieval: combines semantic similarity, keyword (BM25-like), and recency signals.
-   *
-   * Final score = α×semantic + β×keyword + γ×recency
-   * Defaults: α=0.6, β=0.3, γ=0.1
-   */
   async hybridSearch(
     query: string,
     options: {
@@ -359,10 +360,15 @@ export class VaultIndex {
       weights?: { semantic?: number; keyword?: number; recency?: number };
     } = {}
   ): Promise<SearchResult[]> {
+    const pool = this.pool;
+    if (!pool) return [];
+
     const { limit = 8, tags, minScore = 0.1 } = options;
     const { semantic = 0.6, keyword = 0.3, recency = 0.1 } = options.weights ?? {};
 
     const queryEmbedding = await this.embed(query);
+    if (queryEmbedding.length === 0) return [];
+
     const nowMs = Date.now();
     const oneYearMs = 365 * 24 * 60 * 60 * 1000;
 
@@ -384,7 +390,6 @@ export class VaultIndex {
           vc.tags, vc.links, vc.mtime, vc.chunk_index,
           COALESCE(s.sem_score, 0) AS sem_score,
           COALESCE(k.kw_score, 0) AS kw_score,
-          -- recency: 1.0 for today, decays to 0 over 1 year
           GREATEST(0, 1.0 - (($3::bigint - vc.mtime)::float / $4::float)) AS rec_score
         FROM vault_chunks vc
         LEFT JOIN semantic  s ON s.id = vc.id
@@ -419,7 +424,7 @@ export class VaultIndex {
     `;
     params.push(semantic, keyword, recency, minScore, limit);
 
-    const { rows } = await this.pool.query(sql, params);
+    const { rows } = await pool.query(sql, params);
 
     return rows.map((r) => ({
       id: r.id,
@@ -436,7 +441,10 @@ export class VaultIndex {
   }
 
   async stats(): Promise<{ totalChunks: number; totalFiles: number; lastIndexed: string }> {
-    const { rows } = await this.pool.query(`
+    const pool = this.pool;
+    if (!pool) return { totalChunks: 0, totalFiles: 0, lastIndexed: "never" };
+
+    const { rows } = await pool.query(`
       SELECT COUNT(*) AS total_chunks,
              COUNT(DISTINCT file_path) AS total_files,
              MAX(indexed_at) AS last_indexed
@@ -450,7 +458,7 @@ export class VaultIndex {
   }
 
   async close(): Promise<void> {
-    await this.pool.end();
+    if (this.pool) await this.pool.end();
   }
 }
 

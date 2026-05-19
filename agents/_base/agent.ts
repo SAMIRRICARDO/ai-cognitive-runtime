@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../../config/env.js";
-import { Models, ModelConfig } from "../../config/models.js";
+import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 import { logger } from "../../config/logger.js";
 import { modelRouter } from "./router.js";
 import { responseCache, ResponseCache } from "./cache.js";
@@ -27,9 +27,9 @@ export abstract class BaseAgent {
     this.client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
     this.config = {
       model: Models.default,
-      maxTokens: ModelConfig.maxTokens.default,
+      maxTokens: getMaxTokens(),
       temperature: ModelConfig.temperature.balanced,
-      maxIterations: 10,
+      maxIterations: getMaxIterations(),
       contextTokenLimit: DEFAULT_CONTEXT_TOKEN_LIMIT,
       enableResponseCache: false,
       ...config,
