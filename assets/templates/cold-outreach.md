@@ -2,41 +2,43 @@
 
 **Uso:** Primeiro contato com decisor de marketing/eventos enterprise.
 **Attachment:** vrashows_media_kit_optimized.pdf (obrigatório)
-**Tom:** Executivo, elegante, sem pressão de vendas.
+**Tom:** Executivo, elegante, peer-to-peer. Zero pressão de vendas.
+**Posicionamento:** HUB premium de soluções integradas — não agência de staff.
 
 ---
 
 ## Subject line options
 
-- `VRASHOWS — Operação 360° para [Evento/Feira]`
-- `Parceria operacional para eventos [Empresa]`
-- `[Nome], operação enterprise para sua próxima feira`
-- `Suporte full service para eventos [Empresa] em [Ano]`
+- `VRASHOWS — Operação integrada para [Evento/Feira]`
+- `[Empresa], HUB operacional para sua próxima feira`
+- `Enquanto vocês fecham negócios, nós cuidamos da operação`
+- `Operação 360° para eventos enterprise — VRASHOWS`
+- `[Nome], parceria estratégica para [Evento] [Ano]`
 
 ---
 
-## Body (PT-BR)
+## Body (PT-BR) — Versão padrão
 
 ```
 Olá [Nome], tudo bem?
 
 Sou Ricardo, da VRASHOWS.
 
-Atuamos na operação completa de eventos corporativos, feiras e ativações de marca, ajudando equipes de marketing a executarem experiências com mais agilidade, controle operacional e excelência na experiência do cliente.
+Somos um HUB de soluções integradas para eventos corporativos — reunimos em uma única operação tudo que uma marca enterprise precisa para executar experiências com controle, agilidade e excelência no atendimento ao visitante.
 
-Hoje apoiamos marcas e organizadores com:
-• coordenação operacional
-• staff e promotores
+Atuamos com:
+• coordenação operacional em tempo real
+• staff e promotores alinhados à marca
 • logística e transporte executivo
-• produção executiva
-• suporte full service para eventos
+• hospitalidade e experiência do cliente
+• produção e suporte full service
 
-Nosso objetivo é simples:
-permitir que a equipe da marca foque em resultado e relacionamento enquanto cuidamos integralmente da operação.
+Nosso modelo é simples:
+enquanto você fecha negócios e cultiva relacionamentos, nós controlamos integralmente a operação — do primeiro ao último detalhe.
 
-Estou enviando em anexo um material institucional rápido para apresentação da estrutura da VRASHOWS.
+Envio em anexo nosso material institucional.
 
-Se fizer sentido para vocês, podemos agendar uma conversa breve nos próximos dias.
+Se fizer sentido, podemos agendar uma conversa breve nos próximos dias.
 ```
 
 ---
@@ -45,26 +47,35 @@ Se fizer sentido para vocês, podemos agendar uma conversa breve nos próximos d
 
 - `[Nome]` — primeiro nome do contato
 - `[Empresa]` — nome da empresa
-- `[Evento/Feira]` — evento específico da empresa (ex: Futurecom 2026, AWS re:Invent)
-- `[Segmento]` — inserir 1-2 linhas de posicionamento específico por segmento entre capabilities e "nosso objetivo"
+- `[Evento]` — evento específico (ex: Futurecom 2026, AWS Summit)
+- `[Segmento insert]` — inserir entre os bullets e "nosso modelo é simples"
 
-## Segment inserts (escolher 1)
+---
 
-**Telecom:**
-> Empresas do setor de conectividade como a [Empresa] não podem se dar ao luxo de falhas operacionais visíveis no estande — a presença na feira é, ela mesma, uma declaração de confiabilidade de rede.
+## Segment inserts (inserir antes de "Nosso modelo é simples")
+
+**Telecom / Conectividade:**
+> Para marcas de conectividade como a [Empresa], a presença em feiras como Futurecom é ela mesma uma declaração de confiabilidade — a operação no estande precisa refletir o mesmo padrão que a rede promete.
 
 **Cloud / Enterprise SaaS:**
-> Para empresas de tecnologia, a experiência no evento precisa refletir a mesma excelência que a marca promete digitalmente — seamless, premium, e sem fricção.
+> Empresas de tecnologia precisam que a experiência no evento reflita a mesma excelência que a marca promete digitalmente — seamless, premium e sem fricção operacional.
 
-**Marketing / Brand:**
-> Eventos de ativação de marca exigem uma operação que some — invisível para o visitante, integralmente controlada nos bastidores.
-```
+**AI / Cibersegurança:**
+> Empresas deste setor precisam de ambientes controlados e de alta confiança para demos, briefings executivos e reuniões estratégicas — sem espaço para improviso.
+
+**Fintech / Finance:**
+> Marcas financeiras enterprise precisam de uma operação que reflita solidez institucional e hospitalidade de alto nível — o padrão que os seus clientes esperam.
+
+**Marketing / Brand Activation:**
+> Ativações de marca exigem uma operação que some — invisível para o visitante, integralmente controlada nos bastidores, para que a experiência seja tudo que a marca quer transmitir.
 
 ---
 
 ## Rules
 
 - Maximum 180 words in body
-- Never change "nosso objetivo é simples" section
+- Never lead with "staff" or "promotores" as the value prop
+- Always use the tagline concept ("enquanto você fecha negócios")
 - Always attach media kit PDF
-- CTA must be soft — no urgency language
+- CTA: soft, no urgency, no "I'd love to"
+- Name used only once (in the greeting)

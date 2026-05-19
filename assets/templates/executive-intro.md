@@ -1,53 +1,58 @@
 # Executive Intro Template — VRASHOWS
 
-**Uso:** Contatos C-level (CMO, VP, Country Manager). Tom diferenciado — peer-to-peer, sem pitch operacional.
-**Attachment:** PDF opcional — só se houver referência a um evento específico iminente.
-**Tom:** Brevíssimo, institucional, foco em parceria estratégica.
+**Uso:** Contatos C-level (CMO, VP, Country Manager, CEO). Tom diferenciado — institucional, brevíssimo, sem pitch operacional.
+**Attachment:** PDF opcional — incluir apenas se há evento específico e iminente.
+**Tom:** Peer-to-peer entre executivos. Ultra-conciso. Foco em parceria estratégica.
 
 ---
 
-## Subject line options
+## Subject line options (máx. 8 palavras)
 
 - `VRASHOWS — Parceria estratégica em operações enterprise`
-- `[Nome] — projeto para [Evento] da [Empresa]`
-- `Operação 360° — conversa estratégica VRASHOWS`
+- `[Nome] — operação 360° para [Evento] da [Empresa]`
+- `Enquanto você fecha negócios — proposta VRASHOWS`
+- `HUB operacional para eventos enterprise — VRASHOWS`
 
 ---
 
-## Body (PT-BR)
-
-### Variante 1 — Introdução institucional
-
-```
-Olá [Nome],
-
-Sou Ricardo, da VRASHOWS — operamos eventos corporativos de ponta a ponta para marcas enterprise no Brasil.
-
-Nosso modelo permite que equipes de liderança foquem em resultado enquanto assumimos integralmente a operação — desde staff e logística até produção executiva e experiência do cliente.
-
-Recentemente operamos para Brasil TecPar na ABRINT — posso compartilhar o case se for relevante para [Empresa].
-
-Vale uma conversa de 20 minutos?
-```
-
-### Variante 2 — Direto ao ponto (C-suite ultra-curto)
+## Body (PT-BR) — Variante 1 (institucional, 90 palavras)
 
 ```
 [Nome],
 
-VRASHOWS opera eventos corporativos 360° para marcas enterprise — staff, logística, produção e customer experience integrados.
+Sou Ricardo, da VRASHOWS — somos um HUB de soluções integradas para eventos corporativos enterprise.
+
+Nosso modelo permite que times de liderança foquem 100% em negócios e relacionamentos enquanto assumimos integralmente a operação — coordenação, staff, logística, hospitalidade e experiência do cliente, tudo em uma única parceria.
+
+Referência: operamos a presença completa da Brasil TecPar na ABRINT 2026.
+
+Vale 20 minutos para alinharmos o que [Futurecom / evento] exige da operação de [Empresa]?
+```
+
+---
+
+## Body (PT-BR) — Variante 2 (ultra-curto C-suite, 60 palavras)
+
+```
+[Nome],
+
+VRASHOWS é um HUB de operações integradas para eventos enterprise — coordenação, logística, hospitalidade e experiência do cliente em uma única parceria.
+
+Tagline que resume o que fazemos: "Enquanto você fecha negócios, nós controlamos a operação."
 
 Referência: Brasil TecPar / ABRINT 2026.
 
-Vale 20 minutos para alinharmos [Futurecom / evento específico]?
+Vale 20 minutos para conversarmos sobre [evento]?
 ```
 
 ---
 
 ## Rules
 
-- Subject must be under 8 words
-- Body under 100 words for C-level
-- Reference case (ABRINT/Brasil TecPar) as credibility, not as sales pitch
-- "20 minutos" is the right CTA for C-level — specific and low friction
-- Never use: "I'd love to", "feel free to", "any questions"
+- Subject: máx. 8 palavras
+- Body: máx. 100 palavras para C-level
+- Tagline concept: presente em todas as variantes
+- Case ABRINT: citado como credencial, nunca como pitch
+- CTA: "20 minutos" — específico e de baixa fricção
+- Nunca: "adoraria conectar", "fique à vontade", "qualquer dúvida"
+- Nunca: listar preços, pacotes ou "tabela de serviços"

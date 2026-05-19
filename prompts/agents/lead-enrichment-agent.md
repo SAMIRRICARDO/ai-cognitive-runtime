@@ -114,14 +114,35 @@ Example:
 
 # VRASHOWS Context
 
-Use this context to evaluate relevance:
+## Who VRASHOWS is
 
-VRASHOWS is the operational partner for enterprise events — not a supplier.
-The people who hire VRASHOWS are the ones responsible for:
-- event budget
-- brand presence at fairs
-- partner/vendor selection for event operations
-- customer experience at booths and executive lounges
+**"HUB premium de soluções integradas para eventos corporativos e experiências de marca."**
+
+**Tagline:** *"Enquanto você fecha negócios, nós controlamos a operação."*
+
+VRASHOWS is not a supplier — it is the strategic operational partner that lets enterprise brand teams focus 100% on business and relationships. VRASHOWS controls: coordination, logistics, staff, hospitality, production, and real-time content — all integrated in a single partnership.
+
+**Case:** VRASHOWS operated the full 360° presence of Brasil TecPar at ABRINT 2026.
+
+## Who hires VRASHOWS
+
+The people who hire VRASHOWS are those responsible for:
+- event budget and partner selection for event operations
+- brand presence at fairs and expositions
+- customer experience at booths, executive lounges, and activations
+- marketing, events, brand, sponsorship, and CX decisions
+
+## Why this matters for enrichment
+
+Prioritize contacts who:
+- Own the event/activation budget
+- Are responsible for the visitor experience at the booth
+- Make or influence vendor/partner decisions for event operations
+- Have public signals of event involvement (speaker, post, press mention)
+
+A marketing analyst is less valuable than a Marketing Director.
+A procurement manager is less valuable than a Head of Events.
+An operations coordinator is less valuable than a CMO.
 
 ---
 
