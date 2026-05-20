@@ -3,134 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VRASHOWS Operations Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="./styles.css" />
+    <title>VRASHOWS Live Dashboard</title>
+    <style>
+      body { margin: 0; font-family: Inter, system-ui, sans-serif; background:#050816; color:#e2e8f0; }
+      .page { min-height:100vh; padding:24px; max-width:1200px; margin:0 auto; }
+      .header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
+      .title { margin:0; font-size:2.25rem; line-height:1.1; }
+      .subtitle { margin:4px 0 0; color:#94a3b8; }
+      .grid { display:grid; gap:16px; margin-top:24px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+      .card { background:rgba(15,23,42,.9); border:1px solid rgba(148,163,184,.12); border-radius:18px; padding:20px; }
+      .card h2 { margin:0 0 8px; font-size:0.95rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.08em; }
+      .value { font-size:2rem; font-weight:700; margin:0; }
+      .table { width:100%; border-collapse:collapse; margin-top:12px; }
+      .table th, .table td { text-align:left; padding:10px 8px; border-bottom:1px solid rgba(148,163,184,.12); }
+      .table th { color:#94a3b8; font-size:.85rem; text-transform:uppercase; letter-spacing:.06em; }
+      .footer { margin-top:20px; color:#94a3b8; font-size:.92rem; }
+      .pill { display:inline-flex; padding:6px 12px; border-radius:999px; background:rgba(16,185,129,.12); color:#a7f3d0; font-size:.88rem; }
+      .grid-wide { grid-column: span 2; }
+      @media (max-width: 720px) { .header { flex-direction:column; align-items:flex-start; } .grid-wide { grid-column: span 1; } }
+    </style>
   </head>
-  <body class="bg-slate-950 text-slate-100">
-    <div class="min-h-screen px-4 py-6 lg:px-8">
-      <header class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <body>
+    <div class="page">
+      <div class="header">
         <div>
-          <p class="text-sm uppercase tracking-[0.3em] text-slate-500">VRASHOWS</p>
-          <h1 class="text-3xl font-semibold text-white">Dashboard Operacional</h1>
-          <p class="mt-2 text-slate-400 max-w-2xl">Visão local-first para monitorar outbound, leads, IA, custos e entrega.</p>
+          <p class="pill">VRASHOWS Live</p>
+          <h1 class="title">Dashboard em tempo real</h1>
+          <p class="subtitle">Dados ao vivo a partir dos arquivos de log locais.</p>
         </div>
-        <div class="flex flex-col gap-2 text-right">
-          <span id="status-pill" class="inline-flex rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-semibold text-emerald-300">Carregando…</span>
-          <span id="updated-at" class="text-sm text-slate-500"></span>
-        </div>
-      </header>
+        <div id="status-pill" class="pill">Carregando…</div>
+      </div>
 
-      <section class="grid gap-4 xl:grid-cols-[repeat(4,minmax(0,1fr))]">
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Emails enviados hoje</h2>
-          <p id="kpi-sent-today" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Batches executados</h2>
-          <p id="kpi-batches" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Reply rate</h2>
-          <p id="kpi-reply-rate" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Bounce rate</h2>
-          <p id="kpi-bounce-rate" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Leads captados</h2>
-          <p id="kpi-leads" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Leads HIGH confidence</h2>
-          <p id="kpi-high-confidence" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Empresas contactadas</h2>
-          <p id="kpi-companies" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-        <article class="card">
-          <h2 class="text-sm font-semibold text-slate-400">Custos AI</h2>
-          <p id="kpi-ai-cost" class="mt-3 text-4xl font-semibold text-white">—</p>
-        </article>
-      </section>
+      <div class="grid">
+        <div class="card"><h2>Emails enviados hoje</h2><p id="emails-sent-today" class="value">---</p></div>
+        <div class="card"><h2>Total de envios</h2><p id="emails-total" class="value">---</p></div>
+        <div class="card"><h2>Empresas contactadas</h2><p id="companies-contacted" class="value">---</p></div>
+        <div class="card"><h2>Reply rate</h2><p id="reply-rate" class="value">---</p></div>
+        <div class="card"><h2>Delivery success</h2><p id="delivery-success" class="value">---</p></div>
+        <div class="card"><h2>Bounce rate</h2><p id="bounce-rate" class="value">---</p></div>
+        <div class="card"><h2>Custo AI estimado</h2><p id="ai-cost" class="value">---</p></div>
+      </div>
 
-      <section class="mt-8 grid gap-4 xl:grid-cols-[2fr_1fr]">
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-base font-semibold text-white">Tendência de envio</h2>
-              <p class="mt-1 text-sm text-slate-500">Email outbound e entregas recentes</p>
-            </div>
-            <span class="rounded-full bg-slate-800 px-3 py-1 text-sm text-slate-300">Chart.js</span>
-          </div>
-          <div class="mt-5">
-            <canvas id="chart-email-trend" height="220"></canvas>
-          </div>
-        </div>
+      <div class="grid" style="margin-top:16px;">
+        <div class="card"><h2>Tendência de envio</h2><canvas id="chart-send-trend" height="220"></canvas></div>
+        <div class="card"><h2>Performance</h2><canvas id="chart-performance" height="220"></canvas></div>
+      </div>
 
-        <div class="space-y-4">
-          <div class="card">
-            <h2 class="text-base font-semibold text-white">Qualidade de entrega</h2>
-            <canvas id="chart-delivery" height="220"></canvas>
-          </div>
-          <div class="card">
-            <h2 class="text-base font-semibold text-white">Custo AI</h2>
-            <canvas id="chart-cost" height="220"></canvas>
-          </div>
-        </div>
-      </section>
+      <div class="card grid-wide">
+        <h2>Últimos envios</h2>
+        <table class="table">
+          <thead>
+            <tr><th>Data</th><th>Empresa</th><th>Destino</th><th>Status</th></tr>
+          </thead>
+          <tbody id="recent-sends"></tbody>
+        </table>
+      </div>
 
-      <section class="mt-8 grid gap-4 xl:grid-cols-2">
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-base font-semibold text-white">Envios recentes</h2>
-              <p class="mt-1 text-sm text-slate-500">Últimos eventos outbound</p>
-            </div>
-          </div>
-          <div class="mt-5 overflow-x-auto">
-            <table class="min-w-full text-left text-sm text-slate-300">
-              <thead class="border-b border-slate-700 text-slate-500">
-                <tr>
-                  <th class="px-3 py-3">Data</th>
-                  <th class="px-3 py-3">Empresa</th>
-                  <th class="px-3 py-3">Destino</th>
-                  <th class="px-3 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody id="table-recent-sends"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-base font-semibold text-white">Leads recentes</h2>
-              <p class="mt-1 text-sm text-slate-500">Últimos leads qualificados</p>
-            </div>
-          </div>
-          <div class="mt-5 overflow-x-auto">
-            <table class="min-w-full text-left text-sm text-slate-300">
-              <thead class="border-b border-slate-700 text-slate-500">
-                <tr>
-                  <th class="px-3 py-3">Contato</th>
-                  <th class="px-3 py-3">Cargo</th>
-                  <th class="px-3 py-3">Empresa</th>
-                  <th class="px-3 py-3">Score</th>
-                </tr>
-              </thead>
-              <tbody id="table-recent-leads"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+      <div class="footer">Atualizado em <span id="updated-at">—</span></div>
     </div>
 
-    <script type="module" src="./charts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

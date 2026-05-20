@@ -1,22 +1,40 @@
-# AI Cognitive Runtime
+# VRASHOWS AI Runtime
 
-> An AI-native orchestration platform for autonomous outbound operations — built on Claude (strategic layer), multi-agent pipelines, semantic memory, and a cost-governed delivery engine.
+> AI-native orchestration platform for autonomous outbound operations — built on Claude (strategic layer), multi-agent pipelines, semantic memory, and a cost-governed delivery engine.
 
 ---
 
 ## Overview
 
-This runtime is a production-grade, multi-agent system that automates the full lifecycle of B2B outbound operations:
+VRASHOWS AI Runtime automates the full lifecycle of B2B outbound operations for enterprise event marketing:
 
 ```
 Lead Acquisition → Validation → Enrichment → Outreach Generation → Delivery → Observability
 ```
 
-It is designed to be modular, cost-aware, and extensible — operating as a cognitive layer on top of transactional infrastructure.
+The system combines:
+- **Claude** — strategic intelligence, outreach copy, executive messaging, brand positioning
+- **Multi-agent pipeline** — sourcing, validation, enrichment, outreach, delivery workers
+- **Semantic memory** — Redis short-term + pgvector long-term + Obsidian vault RAG
+- **Cost governance** — Cheap Mode routes lightweight tasks to Haiku (~70% savings)
 
 ---
 
-## Architecture
+## Core Architecture
+
+```mermaid
+flowchart TD
+  A[Lead Acquisition] --> B[Validation Pipeline]
+  B --> C[Scoring Engine]
+  C --> D[Claude Outreach Layer]
+  D --> E[Delivery Queue]
+  E --> F[Resend API]
+  F --> G[Analytics & Logs]
+
+  H[Memory / RAG] --> D
+  I[Dashboard] --> G
+  J[Scheduler] --> E
+```
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -45,9 +63,9 @@ It is designed to be modular, cost-aware, and extensible — operating as a cogn
 | **Lead Acquisition** | Sourcer agents build company/contact lists from event seeds |
 | **Validation Pipeline** | Scorer assigns strategic fit, seniority, and priority score |
 | **Enrichment Agent** | Resolves email patterns (40+ company heuristics, 6 patterns) |
-| **Outreach Builder** | Generates segment-personalized email copy via Claude |
+| **Outreach Builder** | Segment-personalized email copy generated via Claude |
 | **Delivery Engine** | Queue-backed worker with rate limiting and dry-run mode |
-| **Cheap Mode** | Haiku-first routing, token caps, iteration limits — 70% cost reduction |
+| **Cheap Mode** | Haiku-first routing, token caps, iteration limits — ~70% cost reduction |
 | **Memory / RAG** | Redis short-term + pgvector long-term + Obsidian semantic vault |
 | **Observability** | Structured logs, cost tracking, delivery reports, dashboard |
 
@@ -58,7 +76,7 @@ It is designed to be modular, cost-aware, and extensible — operating as a cogn
 | Layer | Technology |
 |---|---|
 | Runtime | TypeScript + Node.js (ESM) |
-| AI — Strategic | Anthropic Claude (Opus/Sonnet) |
+| AI — Strategic | Anthropic Claude (Opus / Sonnet) |
 | AI — Operational | Claude Haiku (cheap mode) |
 | Embeddings | OpenAI `text-embedding-3-small` |
 | Short-term memory | Redis |
@@ -74,20 +92,20 @@ It is designed to be modular, cost-aware, and extensible — operating as a cogn
 
 ```
 agents/
-  _base/          BaseAgent class — router, cache, context, cost tracking
-  coordinator/    Orchestrator — decomposes tasks, coordinates agents
-  coder/          Code generation and refactoring agent
-  evaluator/      Reflection loops and output quality validation
-  lead-sourcing/  Company/contact acquisition from event seeds
-  lead-validation/Strategic scoring and segmentation
+  _base/                BaseAgent class — router, cache, context, cost tracking
+  coordinator/          Orchestrator — decomposes tasks, coordinates agents
+  coder/                Code generation and refactoring agent
+  evaluator/            Reflection loops and output quality validation
+  lead-sourcing/        Company/contact acquisition from event seeds
+  lead-validation/      Strategic scoring and segmentation
   lead-enrichment-agent/  Email pattern resolver + enrichment
-  outreach-agent/ Segment-aware email generation (Claude)
-  outreach-builder/ Queue entry builder and personalization
-  email-sender-agent/ Delivery control and reporting
+  outreach-agent/       Segment-aware email generation (Claude)
+  outreach-builder/     Queue entry builder and personalization
+  email-sender-agent/   Delivery control and reporting
   futurecom-researcher/ Event-specific research agent
-  memory-manager/ Memory ingestion and retrieval orchestration
-  researcher/     General-purpose web research agent
-  vault/          Obsidian vault RAG agent
+  memory-manager/       Memory ingestion and retrieval orchestration
+  researcher/           General-purpose web research agent
+  vault/                Obsidian vault RAG agent
 
 config/
   env.ts          Startup env validation (zod) — never read process.env directly
@@ -97,29 +115,29 @@ config/
   logger.ts       Structured logging (Winston)
 
 memory/
-  short-term/redis.ts     Redis adapter (conversation context, cache)
-  long-term/pgvector.ts   Semantic vector search
-  long-term/vault-index.ts  Obsidian vault indexer
-  compressor.ts           Context compression to reduce token spend
-  manager.ts              Unified memory interface
+  short-term/redis.ts      Redis adapter (conversation context, cache)
+  long-term/pgvector.ts    Semantic vector search
+  long-term/vault-index.ts Obsidian vault indexer
+  compressor.ts            Context compression to reduce token spend
+  manager.ts               Unified memory interface
 
 tools/
-  send-email.ts   Resend integration with rate limiting and dry-run
+  send-email.ts    Resend integration with rate limiting and dry-run
   email-quality.ts Email quality scoring (syntax, pattern confidence)
-  web-search.ts   Tavily search wrapper
-  code-exec.ts    Sandboxed code execution tool
+  web-search.ts    Tavily search wrapper
+  code-exec.ts     Sandboxed code execution tool
 
 workers/
-  delivery-worker.ts      Queue consumer for outbound email sends
-  lead-validation-worker.ts  Async lead scoring processor
+  delivery-worker.ts        Queue consumer for outbound email sends
+  lead-validation-worker.ts Async lead scoring processor
 
 scheduler/
-  outbound-scheduler.ts   Cron-based campaign scheduling with weekend/time guards
+  outbound-scheduler.ts     Cron-based campaign scheduling with weekend/time guards
 
 scripts/
-  run-agent.ts            CLI entry point for any registered agent
-  run-email.ts            Single email send (dev/test)
-  run-outbound-batch.ts   Batch executor with dry-run, hot-only, preview modes
+  run-agent.ts              CLI entry point for any registered agent
+  run-email.ts              Single email send (dev/test)
+  run-outbound-batch.ts     Batch executor with dry-run, hot-only, preview modes
   generate-outreach-queue.ts  Build prioritized outreach queue from validated leads
 
 workflows/
@@ -138,47 +156,25 @@ docs/             Architecture, flows, enterprise guides
 
 ## Quick Start
 
-### 1. Clone and install
-
 ```bash
 git clone <repo-url>
 cd ai-cognitive-runtime
 npm install
-```
+cp .env.example .env          # fill in ANTHROPIC_API_KEY, RESEND_API_KEY, etc.
+npm run infra:up               # start Redis + Postgres (Docker)
 
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-# Fill in: ANTHROPIC_API_KEY, RESEND_API_KEY, DATABASE_URL, REDIS_URL
-```
-
-### 3. Start infrastructure
-
-```bash
-npm run infra:up        # Redis + Postgres (Docker)
-```
-
-### 4. Run an agent
-
-```bash
 tsx scripts/run-agent.ts researcher "What is the state of AI agents in 2026?"
 tsx scripts/run-agent.ts coder "Write a TypeScript CSV parser with zod validation"
-```
 
-### 5. Run outbound batch (dry-run)
-
-```bash
-tsx scripts/run-outbound-batch.ts \
-  --queue data/outreach/queue.json \
-  --dry-run
+# Outbound batch — dry-run by default
+tsx scripts/run-outbound-batch.ts --queue data/outreach/queue.json --dry-run
 ```
 
 ---
 
 ## Cheap Mode
 
-Set `CHEAP_MODE=true` or `DEV_MODE=true` in `.env` to activate cost-reduced routing:
+Set `CHEAP_MODE=true` or `DEV_MODE=true` in `.env`:
 
 - All agents default to **Claude Haiku** instead of Sonnet/Opus
 - `MAX_OUTPUT_TOKENS` capped at 2048
@@ -191,8 +187,6 @@ Estimated savings: **~70% vs full Opus routing**.
 
 ## Outbound Engine
 
-The delivery system is a queue-backed pipeline with built-in safety controls:
-
 ```
 Leads (validated JSON)
   → generate-outreach-queue  (prioritize: HOT > WARM > COLD)
@@ -200,8 +194,6 @@ Leads (validated JSON)
       → send-email tool        (Resend API, dry-run supported)
         → delivery report       (per-run JSON artifact)
 ```
-
-### Safety flags
 
 | Flag | Default | Description |
 |---|---|---|
@@ -235,16 +227,14 @@ Input → [Short-term Redis cache] → [Semantic pgvector search] → [Obsidian 
 
 ## Cost Architecture
 
-The runtime implements a 4-layer cost governance model:
+4-layer cost governance model:
 
 1. **Model routing** — Haiku for lightweight tasks, Sonnet for orchestration, Opus for planning
 2. **Token caps** — per-agent max_tokens, global MAX_OUTPUT_TOKENS
 3. **Iteration caps** — MAX_TOOL_ITERATIONS prevents runaway loops
 4. **Budget enforcement** — per-call cost recorded, daily/monthly budget alerts
 
-Target: **< $0.05 per enriched lead** in cheap mode.
-
-See [`docs/COST_GOVERNANCE.md`](docs/COST_GOVERNANCE.md) for full breakdown.
+Target: **< $0.05 per enriched lead** in cheap mode. See [`docs/COST_GOVERNANCE.md`](docs/COST_GOVERNANCE.md).
 
 ---
 
@@ -252,7 +242,7 @@ See [`docs/COST_GOVERNANCE.md`](docs/COST_GOVERNANCE.md) for full breakdown.
 
 All agents emit structured logs and cost events:
 
-```
+```json
 {
   "level": "info",
   "agent": "outreach-agent",
@@ -264,7 +254,7 @@ All agents emit structured logs and cost events:
 }
 ```
 
-Dashboard available at `dashboard/index.html` (serve locally via `node dashboard/server.js`).
+Dashboard: `node dashboard/server.js` → `http://localhost:4200`
 
 ---
 
@@ -277,21 +267,17 @@ npm run infra:reset    # wipe volumes and restart
 npm run infra:logs     # tail container logs
 ```
 
-Postgres is auto-initialized with the `vector` extension via `infra/postgres/init.sql`.
-
-Default credentials (`.env.example`): `postgresql://ailab:ailab@localhost:5433/ai_lab`
-
 ---
 
 ## Adding a New Agent
 
 1. Create `agents/<name>/agent.ts` — extend `BaseAgent`, implement `static async create()`
-2. Create `prompts/agents/<name>.md` — the system prompt (versioned markdown)
+2. Create `prompts/agents/<name>.md` — versioned system prompt
 3. Register tools via `agent.registerTool(...)` in `create()`
 4. Register in `agents/registry.ts`
 
 Key conventions:
-- Always set `cache_control: { type: "ephemeral" }` on system prompt blocks
+- Set `cache_control: { type: "ephemeral" }` on system prompt blocks
 - Use `Models.default` / `Models.fast` / `Models.powerful` from `config/models.ts`
 - Use `logger` from `config/logger.ts` — never `console.log`
 - All env vars via `config/env.ts` — never read `process.env` directly
@@ -305,7 +291,7 @@ Key conventions:
 | [`docs/architecture/VRASHOWS_AI_Runtime_Architecture.md`](docs/architecture/VRASHOWS_AI_Runtime_Architecture.md) | Engineers | Full architecture with Mermaid diagrams |
 | [`docs/architecture/queue-flow.md`](docs/architecture/queue-flow.md) | Backend | Queue, workers, batching, retry strategy |
 | [`docs/architecture/memory-flow.md`](docs/architecture/memory-flow.md) | AI Engineers | RAG, memory injection, context trimming |
-| [`docs/architecture/delivery-flow.md`](docs/architecture/delivery-flow.md) | Backend | Email delivery pipeline, BCC, bounce protection |
+| [`docs/architecture/delivery-flow.md`](docs/architecture/delivery-flow.md) | Backend | Email delivery pipeline, bounce protection |
 | [`docs/COST_GOVERNANCE.md`](docs/COST_GOVERNANCE.md) | Finance / Engineering | Budget enforcement, per-agent costs |
 | [`docs/SCALING_STRATEGY.md`](docs/SCALING_STRATEGY.md) | Architects | Phase-by-phase scaling from 50 to 10K+ leads/day |
 | [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) | DevOps | Logs, metrics, tracing, alerting |
@@ -319,6 +305,14 @@ Key conventions:
 
 ---
 
+## Disclaimer
+
+This repository contains a sanitized version of the runtime architecture. Sensitive operational data, private leads, API credentials, and internal customer information are intentionally excluded. See [`SECURITY.md`](SECURITY.md) for details.
+
+---
+
 ## License
 
 Private — internal use only. Not for redistribution.
+
+VRASHOWS ©
