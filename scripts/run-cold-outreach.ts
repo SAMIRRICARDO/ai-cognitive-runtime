@@ -12,7 +12,7 @@
  *   tsx scripts/run-cold-outreach.ts --all    # loads all uncontacted leads across all sources
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, appendFileSync } from "fs";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
@@ -214,6 +214,26 @@ for (let i = 0; i < toProcess.length; i++) {
     const ok = record.status === "sent" || record.status === "queued";
     if (ok) sent++; else failed++;
     results.push({ lead, status: record.status, resendId: record.resendId, elapsed, error: record.error });
+
+    // Real-time write to outbound-log.json so next batch deduplication works immediately
+    if (ok && !DRY_RUN) {
+      const logEntry = JSON.stringify({
+        date: new Date().toISOString(),
+        company: lead.company,
+        contactName: lead.contactName,
+        email: lead.primaryEmail,
+        status: "sent",
+        resendId: record.resendId ?? null,
+        sentAt: new Date().toISOString(),
+        source: "run-cold-outreach",
+      });
+      const outboundLogPath = resolve(LOGS_DIR, "outbound-log.json");
+      const existing = existsSync(outboundLogPath)
+        ? JSON.parse(readFileSync(outboundLogPath, "utf8")) as any[]
+        : [];
+      existing.push(JSON.parse(logEntry));
+      writeFileSync(outboundLogPath, JSON.stringify(existing, null, 2), "utf8");
+    }
 
     const statusColor = ok ? c.green : c.red;
     const pLabel = lead.status === "HOT" ? c.green("[HOT] ") : c.yellow("[WARM]");
