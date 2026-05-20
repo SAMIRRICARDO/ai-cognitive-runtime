@@ -40,6 +40,7 @@ const LEAD_SOURCES = [
   { path: "data/leads/validated/telecom-leads-validated.json", campaign: "telecom-enterprise-v1",     event: "Futurecom 2026", format: "validated" },
   { path: "data/leads/futurecom/validated-top5.json",          campaign: "futurecom-2026-enterprise-v1", event: "Futurecom 2026", format: "validated" },
   { path: "data/leads/futurecom/validated-remaining20.json",   campaign: "futurecom-2026-enterprise-v1", event: "Futurecom 2026", format: "validated" },
+  { path: "data/leads/futurecom/validated-expansion-batch-01.json", campaign: "futurecom-2026-expansion", event: "Futurecom 2026", format: "validated" },
   { path: "data/leads/futurecom/futurecom-expansion-batch-01.json", campaign: "futurecom-2026-expansion", event: "Futurecom 2026", format: "expansion" },
 ];
 
