@@ -29,7 +29,10 @@ const BUSINESS_END = process.env.NO_SEND_AFTER || "16:00";
 const WEEKEND_BLOCK = process.env.WEEKEND_BLOCK !== "false";
 const OUTBOUND_RATE_DELAY_MS = Number(process.env.OUTBOUND_RATE_DELAY_MS ?? DEFAULT_RATE_DELAY_MS);
 const OUTBOUND_BCC_EMAIL = process.env.OUTBOUND_BCC_EMAIL || undefined;
+const MEDIA_KIT_PDF_PATH = process.env.MEDIA_KIT_PDF || undefined;
 const SEND_EMAIL_MODULE = "../tools/send-email.js";
+
+const PLAIN_TEXT_SIGNATURE = `\n--\nVRASHOWS\nOperações & Experiência Corporativa · VRASHOWS\nsamir.ricardo@vrashows.com.br | www.vrashows.com.br\nWhatsapp (11) 95357-7804`;
 
 type FollowupStage = "d3-light" | "d7-credibility" | "d15-reopen";
 
@@ -40,6 +43,7 @@ interface FollowupOptions {
   rateDelayMs?: number;
   maxRetries?: number;
   now?: Date;
+  attachmentPath?: string;
 }
 
 interface SentRecord {
@@ -313,7 +317,7 @@ A VRASHOWS apoia marcas enterprise quando a operação do evento precisa funcion
 
 Se eventos como Futurecom, feiras B2B ou encontros corporativos estiverem no radar da ${record.company}, posso te mostrar rapidamente como costumamos estruturar esse suporte.
 
-Faz sentido conversarmos em algum momento desta semana?`,
+Faz sentido conversarmos em algum momento desta semana?${PLAIN_TEXT_SIGNATURE}`,
     };
   }
 
@@ -331,7 +335,7 @@ Nesses cenários, o valor está menos em "mais um fornecedor" e mais em ter uma 
 
 Se a ${record.company} estiver planejando Futurecom ou outro evento B2B de grande porte, posso compartilhar uma visão objetiva de como a VRASHOWS organiza esse tipo de operação.
 
-Podemos falar por 15 minutos nos próximos dias?`,
+Podemos falar por 15 minutos nos próximos dias?${PLAIN_TEXT_SIGNATURE}`,
     };
   }
 
@@ -348,7 +352,7 @@ Achei que poderia fazer sentido falar com a ${record.company} porque a VRASHOWS 
 
 Se esse tema ainda não estiver no radar, sem problema. Se fizer sentido para algum evento futuro, posso retomar com uma conversa curta e objetiva.
 
-Devo procurar outra pessoa do time ou pauso por aqui?`,
+Devo procurar outra pessoa do time ou pauso por aqui?${PLAIN_TEXT_SIGNATURE}`,
   };
 }
 
@@ -404,6 +408,7 @@ async function sendWithRetry(candidate: Candidate, opts: FollowupOptions) {
         bodyText: string;
         emailType: "follow-up" | "re-engagement";
         sequenceNumber: number;
+        attachmentPath?: string;
       }, opts: {
         dryRun: boolean;
         rateDelayMs: number;
@@ -421,6 +426,7 @@ async function sendWithRetry(candidate: Candidate, opts: FollowupOptions) {
         bodyText: candidate.bodyText,
         emailType: candidate.stage === "d15-reopen" ? "re-engagement" : "follow-up",
         sequenceNumber: candidate.sequenceNumber,
+        ...(opts.attachmentPath ? { attachmentPath: opts.attachmentPath } : {}),
       },
       {
         dryRun: false,
@@ -473,6 +479,20 @@ export async function runFollowupWorker(opts: FollowupOptions = {}) {
     return run;
   }
 
+  const attachmentPath = opts.attachmentPath ?? MEDIA_KIT_PDF_PATH;
+
+  if (!dryRun) {
+    if (!attachmentPath) {
+      console.error("[followup-worker] ABORTED — MEDIA_KIT_PDF not configured. Set MEDIA_KIT_PDF in .env.");
+      process.exit(1);
+    }
+    if (!existsSync(attachmentPath)) {
+      console.error(`[followup-worker] ABORTED — Media kit PDF not found: ${attachmentPath}`);
+      process.exit(1);
+    }
+    console.log(`[followup-worker] PDF attachment validated: ${attachmentPath}`);
+  }
+
   const records = loadOutboundRecords();
   const candidates = selectCandidates(records, log, now);
   const limit = Math.min(opts.limit ?? MAX_FOLLOWUPS_PER_BATCH, MAX_FOLLOWUPS_PER_BATCH);
@@ -485,7 +505,7 @@ export async function runFollowupWorker(opts: FollowupOptions = {}) {
   for (let index = 0; index < batch.length; index += 1) {
     const candidate = batch[index]!;
     console.log(`[followup-worker] ${index + 1}/${batch.length}: ${candidate.company} -> ${candidate.email} (${candidate.stage})`);
-    const result = await sendWithRetry(candidate, { ...opts, dryRun, live });
+    const result = await sendWithRetry(candidate, { ...opts, dryRun, live, attachmentPath });
     const attemptedAt = new Date().toISOString();
 
     results.push({
@@ -551,7 +571,7 @@ async function main() {
   const now = nowArg ? new Date(nowArg) : new Date();
 
   try {
-    await runFollowupWorker({ live, dryRun, limit, rateDelayMs, maxRetries, now });
+    await runFollowupWorker({ live, dryRun, limit, rateDelayMs, maxRetries, now, attachmentPath: MEDIA_KIT_PDF_PATH });
   } catch (error) {
     console.error("[followup-worker] Unexpected failure:", error instanceof Error ? error.message : error);
     process.exit(1);

@@ -127,6 +127,21 @@ leads.sort((a, b) => {
 
 const toProcess = leads.slice(0, LIMIT);
 
+// ─── PDF pre-flight validation ────────────────────────────────────────────────
+
+if (!PREVIEW_ONLY) {
+  if (!ATTACH_PATH) {
+    console.error("ABORTED — MEDIA_KIT_PDF not configured.");
+    console.error("  Set MEDIA_KIT_PDF in .env or pass --attach <path>.");
+    process.exit(1);
+  }
+  if (!existsSync(ATTACH_PATH)) {
+    console.error(`ABORTED — Media kit PDF not found: ${ATTACH_PATH}`);
+    console.error("  Verify the path and try again.");
+    process.exit(1);
+  }
+}
+
 // ─── Colors ───────────────────────────────────────────────────────────────────
 
 const USE_COLOR = process.stdout.isTTY && !process.env.NO_COLOR;

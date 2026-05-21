@@ -104,17 +104,21 @@ function buildHtmlEmail(opts: {
             </td>
           </tr>
 
-          <!-- Signature — premium, not sales -->
+          <!-- Signature — oficial institucional VRASHOWS -->
           <tr>
             <td style="padding:0 44px 36px;">
               <table cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #e2e8f0;padding-top:24px;width:100%;">
                 <tr>
                   <td style="vertical-align:top;">
-                    <p style="margin:0 0 3px;font-size:15px;font-weight:700;color:#0f172a;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">${fromName}</p>
-                    <p style="margin:0 0 3px;font-size:12px;color:#64748b;letter-spacing:0.2px;">Operações &amp; Experiência Corporativa · <a href="https://vrashows.com.br" style="color:#64748b;text-decoration:none;">VRASHOWS</a></p>
-                    <p style="margin:0 0 0;font-size:12px;">
-                      <a href="mailto:${senderEmail}" style="color:#2563eb;text-decoration:none;">${senderEmail}</a>
+                    <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#0f172a;font-family:'Segoe UI',Helvetica,Arial,sans-serif;letter-spacing:0.3px;">VRASHOWS</p>
+                    <p style="margin:0 0 4px;font-size:12px;color:#64748b;letter-spacing:0.2px;">Operações &amp; Experiência Corporativa · VRASHOWS</p>
+                    <p style="margin:0 0 4px;font-size:12px;">
+                      <a href="mailto:samir.ricardo@vrashows.com.br" style="color:#2563eb;text-decoration:none;">samir.ricardo@vrashows.com.br</a>
                     </p>
+                    <p style="margin:0 0 4px;font-size:12px;">
+                      <a href="https://www.vrashows.com.br" style="color:#64748b;text-decoration:none;">www.vrashows.com.br</a>
+                    </p>
+                    <p style="margin:0 0 0;font-size:12px;color:#64748b;">Whatsapp (11) 95357-7804</p>
                   </td>
                 </tr>
               </table>

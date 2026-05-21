@@ -201,6 +201,12 @@ const ABRINT_HTML = `<p style="margin:0 0 16px;">Na <strong>ABRINT 2026</strong>
 const ATTACHMENT_TEXT = `Estou encaminhando em anexo nosso material institucional com mais detalhes sobre a estrutura e metodologia da VRASHOWS.`;
 const ATTACHMENT_HTML = `<p style="margin:0 0 16px;">Estou encaminhando em anexo nosso material institucional com mais detalhes sobre a estrutura e metodologia da VRASHOWS.</p>`;
 
+const PLAIN_TEXT_SIGNATURE = `--
+VRASHOWS
+Operações & Experiência Corporativa · VRASHOWS
+samir.ricardo@vrashows.com.br | www.vrashows.com.br
+Whatsapp (11) 95357-7804`;
+
 function buildCta(lead: ValidatedLead): { text: string; html: string } {
   const text = lead.recommendedCTA;
   const html = `<p style="margin:0 0 0;">${text}</p>`;
@@ -250,6 +256,8 @@ export function buildPersonalizedEmail(lead: ValidatedLead): PersonalizedEmail {
     ATTACHMENT_TEXT,
     "",
     cta.text,
+    "",
+    PLAIN_TEXT_SIGNATURE,
   ];
   const bodyText = bodyTextParts.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 

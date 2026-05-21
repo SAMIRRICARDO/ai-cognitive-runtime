@@ -46,6 +46,7 @@ const NOW_ARG = val("--now");
 const NOW = NOW_ARG ? new Date(NOW_ARG) : new Date();
 const TARGET_EVENT = val("--event") ?? "Futurecom 2026";
 const CAMPAIGN = val("--campaign") ?? "futurecom-2026-followup-v1";
+const ATTACH_PATH = process.env.MEDIA_KIT_PDF || "";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -119,16 +120,20 @@ const D7_SEGMENT_LINE: SegmentLines = {
 const BASE_SIGNATURE = `<table cellpadding="0" cellspacing="0" border="0" style="margin-top:28px;border-top:1px solid #e2e8f0;padding-top:20px;width:100%;">
   <tr>
     <td>
-      <p style="margin:0;font-size:13px;font-weight:700;color:#0f172a;letter-spacing:0.2px;">Samir Ricardo</p>
-      <p style="margin:2px 0 0;font-size:11px;color:#64748b;">Founder · VRASHOWS</p>
-      <p style="margin:6px 0 0;font-size:11px;color:#64748b;">
-        <a href="https://vrashows.com.br" style="color:#0f172a;text-decoration:none;font-weight:600;">vrashows.com.br</a>
-        &nbsp;·&nbsp;
-        <a href="mailto:samir.ricardo@vrashows.com.br" style="color:#64748b;text-decoration:none;">samir.ricardo@vrashows.com.br</a>
+      <p style="margin:0;font-size:13px;font-weight:700;color:#0f172a;letter-spacing:0.3px;">VRASHOWS</p>
+      <p style="margin:2px 0 0;font-size:11px;color:#64748b;">Operações &amp; Experiência Corporativa · VRASHOWS</p>
+      <p style="margin:4px 0 0;font-size:11px;">
+        <a href="mailto:samir.ricardo@vrashows.com.br" style="color:#2563eb;text-decoration:none;">samir.ricardo@vrashows.com.br</a>
       </p>
+      <p style="margin:2px 0 0;font-size:11px;">
+        <a href="https://www.vrashows.com.br" style="color:#0f172a;text-decoration:none;font-weight:600;">www.vrashows.com.br</a>
+      </p>
+      <p style="margin:2px 0 0;font-size:11px;color:#64748b;">Whatsapp (11) 95357-7804</p>
     </td>
   </tr>
 </table>`;
+
+const PLAIN_TEXT_SIG = `\n--\nVRASHOWS\nOperações & Experiência Corporativa · VRASHOWS\nsamir.ricardo@vrashows.com.br | www.vrashows.com.br\nWhatsapp (11) 95357-7804`;
 
 const CTA_BUTTON = `<p style="margin:24px 0 0;">
   <a href="https://vrashows.com.br"
@@ -185,7 +190,7 @@ Só queria garantir que meu email anterior chegou — às vezes fica no filtro d
 
 Caso não tenha tido oportunidade de ver o material, estou à disposição para uma conversa rápida sobre como a VRASHOWS pode apoiar a operação da ${company} no ${TARGET_EVENT} — ${segLine}
 
-Sem urgência — só deixo aberto caso faça sentido neste momento.`;
+Sem urgência — só deixo aberto caso faça sentido neste momento.${PLAIN_TEXT_SIG}`;
 
   const bodyHtml = wrapEmail(`<p>${greeting}</p>
 
@@ -216,7 +221,7 @@ Na ABRINT 2026, estruturamos toda a operação para a Brasil TecPar — staff pr
 
 Acredito que esse modelo faz sentido para o que a ${company} planeja para o ${TARGET_EVENT} — ${segLine}
 
-Se quiser, posso detalhar como adaptaríamos essa estrutura para vocês.`;
+Se quiser, posso detalhar como adaptaríamos essa estrutura para vocês.${PLAIN_TEXT_SIG}`;
 
   const bodyHtml = wrapEmail(`<p>${greeting}</p>
 
@@ -244,7 +249,7 @@ Respeito totalmente que o momento pode não ser agora.
 
 Quando o planejamento para o ${TARGET_EVENT} ou o próximo ciclo de eventos da ${company} avançar, fico à disposição — esse é exatamente o momento em que uma conversa faz mais sentido: antes da pressão operacional do evento.
 
-Até lá, qualquer dúvida sobre operação enterprise é só acionar.`;
+Até lá, qualquer dúvida sobre operação enterprise é só acionar.${PLAIN_TEXT_SIG}`;
 
   const bodyHtml = wrapEmail(`<p>${greeting}</p>
 
@@ -491,6 +496,7 @@ function buildEntry(record: ContactRecord, stage: FollowupStage): QueueEntry {
     email: {
       to: record.email,
       ...emailContent,
+      ...(ATTACH_PATH ? { attachmentPath: ATTACH_PATH } : {}),
     },
     quality: {
       score: qualityScore,
@@ -617,7 +623,7 @@ const queue = {
   campaign: CAMPAIGN,
   targetEvent: TARGET_EVENT,
   followupStage: STAGE_ARG,
-  attachmentPath: "",
+  attachmentPath: ATTACH_PATH,
   totalEntries: entries.length,
   hotCount,
   warmCount,
