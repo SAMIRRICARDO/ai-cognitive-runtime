@@ -1,6 +1,49 @@
-# VRASHOWS AI Runtime
+# VRASHOWS AI Runtime · IALEADS
 
-> AI-native orchestration platform for autonomous outbound operations — built on Claude (strategic layer), multi-agent pipelines, semantic memory, and a cost-governed delivery engine.
+> AI-native orchestration platform for autonomous outbound operations — built on Claude (strategic layer), multi-agent pipelines, local-first operational memory, and a cost-governed delivery engine.
+
+---
+
+## IALEADS Runtime Evolution — 22/05/2026
+
+A plataforma evoluiu para uma arquitetura **AI-native, memory-aware, local-first, lightweight e SaaS-ready**.
+
+### O que mudou
+
+| Dimensão | Antes | Agora |
+|---|---|---|
+| Memória operacional | PostgreSQL + pgvector | **SQLite local-first** |
+| RAG | Obsidian vault (externo) | **JSONL local em `memory/`** |
+| Infraestrutura | Docker Compose obrigatório | **Zero infra — roda sem containers** |
+| Custo por lead | ~$0.10 (Sonnet) | **< $0.01 (Cheap Mode + cache)** |
+| Governança | Ad-hoc | **`AGENTS.md` + `runtime-config.json`** |
+| Analytics | Logs dispersos | **`memory/analytics/` estruturado** |
+
+### Por que não PostgreSQL
+
+A plataforma **não utiliza PostgreSQL neste momento**. Motivo deliberado:
+
+- Evitar infraestrutura pesada em fase de validação
+- Eliminar dependência de Docker para operação local
+- Reduzir consumo de disco e memória RAM
+- Manter startup instantâneo sem `infra:up`
+- Reduzir custo operacional e complexidade de deploy
+- SQLite atende 100% das necessidades até escalonamento para SaaS multi-tenant
+
+> PostgreSQL + pgvector permanecem na arquitetura como próxima fase de escalonamento (ver `docs/PRODUCTION_ROADMAP.md`).
+
+### Capacidades adicionadas
+
+- **SQLite operational memory** — `memory/cache/ialeads-runtime.sqlite`
+- **Lightweight local-first RAG** — JSONL por categoria em `memory/`
+- **Analytics operacional** — tracking de tokens, custos e cache hits por dia
+- **Governança de custos IA** — `AGENTS.md` + `config/runtime-config.json`
+- **Outbound protection** — guards de horário, fim de semana e batch único ativo
+- **Cache layer** — hash de empresas já processadas evita reprocessamento
+- **Deduplicação operacional** — cross-file contra todo o histórico em `data/leads/`
+- **Observabilidade runtime** — token usage + latência + custo por execução
+- **Contexto persistente** — prompts, enrichments e campanhas reutilizados
+- **Runtime memory-aware** — agentes recuperam contexto antes de raciocinar
 
 ---
 
@@ -77,14 +120,14 @@ flowchart TD
 |---|---|
 | Runtime | TypeScript + Node.js (ESM) |
 | AI — Strategic | Anthropic Claude (Opus / Sonnet) |
-| AI — Operational | Claude Haiku (cheap mode) |
-| Embeddings | OpenAI `text-embedding-3-small` |
-| Short-term memory | Redis |
-| Long-term memory | PostgreSQL + pgvector |
-| Semantic memory | Obsidian vault (markdown RAG) |
+| AI — Operational | `gpt-4o-mini` / Claude Haiku (cheap mode) |
+| Operational memory | **SQLite** (`memory/cache/ialeads-runtime.sqlite`) |
+| Local RAG | **JSONL** (`memory/` — prompts, outbound, campaigns, companies) |
+| Analytics | **JSONL** (`memory/analytics/YYYY-MM-DD.jsonl`) |
 | Email delivery | Resend API |
 | Web search | Tavily API |
-| Infra | Docker Compose (Redis + Postgres) |
+| Infra | **Zero infra** — sem Docker obrigatório em modo local-first |
+| _Escalonamento futuro_ | _Redis + PostgreSQL + pgvector (fase SaaS)_ |
 
 ---
 
@@ -209,32 +252,91 @@ Leads (validated JSON)
 
 ## Memory Architecture
 
+### Modo atual — Local-first (sem infra)
+
 ```
-Input → [Short-term Redis cache] → [Semantic pgvector search] → [Obsidian RAG]
-                                                          ↓
-                                              Context injected to agent
-                                                          ↓
-                                          Agent response → [Memory compressor]
-                                                          ↓
-                                               Stored back to pgvector
+Input → [SQLite cache lookup] → [JSONL local RAG] → Context injected to agent
+              ↓                         ↓
+     Hash deduplication          Prompt / enrichment reuse
+              ↓                         ↓
+     Agent response → [Append to JSONL] → [SQLite persist]
+                              ↓
+                    memory/analytics/ (token + cost tracking)
 ```
 
-- **Redis**: conversation context, response cache (TTL-based)
-- **pgvector**: semantic embeddings for long-term memory retrieval
-- **Obsidian vault**: architectural decisions, campaign learnings, entity notes
+### SQLite Operational Memory
+
+Arquivo: `memory/cache/ialeads-runtime.sqlite`
+
+| Tabela | Conteúdo |
+|---|---|
+| `companies` | Empresas já processadas (hash + metadados) |
+| `leads` | Leads validados com score e status |
+| `outbound_history` | Histórico de envios com resend ID e status |
+| `prompts_memory` | Prompts reutilizáveis por segmento/contexto |
+| `campaigns` | Campanhas executadas com métricas |
+| `runtime_logs` | Logs operacionais estruturados |
+
+Objetivo: evitar reprocessamento e reduzir chamadas à API em ~60%.
+
+### Local RAG Structure
+
+```
+memory/
+├── prompts/          # prompts por segmento — reutilizados sem nova chamada AI
+├── outbound/         # histórico de outreach por empresa/contato
+├── campaigns/        # contexto e resultados por campanha
+├── companies/        # perfis de empresas enriquecidos
+├── logs/             # logs operacionais por data
+└── analytics/        # métricas diárias de tokens, custo e cache
+    ├── YYYY-MM-DD.jsonl
+    ├── summary.json
+    └── dashboard-schema.json
+```
+
+Persistência em **JSONL** — append-only, sem banco, sem servidor.
+
+### Modo futuro — Escalonamento SaaS
+
+```
+Input → [Redis cache] → [pgvector semantic search] → [Obsidian RAG]
+                                    ↓
+                        Context injected to agent
+                                    ↓
+                    Agent response → [Memory compressor]
+                                    ↓
+                         Stored back to pgvector
+```
+
+Ativado quando `ENABLE_MEMORY=true` e infra Docker disponível.
 
 ---
 
 ## Cost Architecture
 
-4-layer cost governance model:
+4-layer cost governance model (definido em [`AGENTS.md`](AGENTS.md) e [`config/runtime-config.json`](config/runtime-config.json)):
 
-1. **Model routing** — Haiku for lightweight tasks, Sonnet for orchestration, Opus for planning
-2. **Token caps** — per-agent max_tokens, global MAX_OUTPUT_TOKENS
-3. **Iteration caps** — MAX_TOOL_ITERATIONS prevents runaway loops
-4. **Budget enforcement** — per-call cost recorded, daily/monthly budget alerts
+1. **Model routing** — `gpt-4o-mini` / Haiku para ops, Sonnet para orquestração, Opus para planejamento
+2. **Token caps** — `max_tokens` ≤ 300 por chamada operacional (`maxOutputTokens` em `runtime-config.json`)
+3. **Iteration caps** — máx 2 retries por operação, encerramento imediato após batch
+4. **Cache-first** — SQLite + JSONL evitam chamadas repetidas à API
 
-Target: **< $0.05 per enriched lead** in cheap mode. See [`docs/COST_GOVERNANCE.md`](docs/COST_GOVERNANCE.md).
+Target: **< $0.01 por lead enriquecido** em cheap mode com cache ativo. See [`docs/COST_GOVERNANCE.md`](docs/COST_GOVERNANCE.md).
+
+### Analytics Operacional
+
+Tracking diário em `memory/analytics/`:
+
+```jsonl
+{"date":"2026-05-22","agent":"lead-acquisition","model":"gpt-4o-mini","inputTokens":1240,"outputTokens":180,"cacheHits":8,"estimatedCostUSD":0.0004,"latencyMs":920,"batchSize":25}
+```
+
+Campos rastreados por execução:
+- `inputTokens` / `outputTokens` — consumo por agente
+- `cacheHits` — economias por reuso de contexto
+- `estimatedCostUSD` — custo estimado por run
+- `latencyMs` — performance por chamada
+- `batchSize` — volume processado
 
 ---
 
@@ -260,12 +362,27 @@ Dashboard: `node dashboard/server.js` → `http://localhost:4200`
 
 ## Infrastructure
 
+### Modo local-first (atual — sem Docker)
+
+```bash
+cp .env.example .env        # preencher ANTHROPIC_API_KEY, RESEND_API_KEY
+npm install
+tsx scheduler/lead-acquisition-scheduler.ts   # aquisição de leads
+tsx scheduler/outbound-scheduler.ts --live    # envio de emails
+```
+
+Sem containers. SQLite e JSONL inicializados automaticamente.
+
+### Modo completo (Redis + Postgres — escalonamento futuro)
+
 ```bash
 npm run infra:up       # start Redis + Postgres
 npm run infra:down     # stop containers
 npm run infra:reset    # wipe volumes and restart
 npm run infra:logs     # tail container logs
 ```
+
+Ativar com `ENABLE_MEMORY=true` no `.env`.
 
 ---
 
