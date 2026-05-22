@@ -88,7 +88,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 const allBatches  = chunk(allLeads, BATCH_SIZE);
 const batches     = allBatches.slice(START_BATCH - 1); // start from --start-batch
-const hasAttachment = existsSync(ATTACH_PATH);
+const hasAttachment = ATTACH_PATH ? existsSync(ATTACH_PATH) : false;
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
@@ -211,7 +211,7 @@ for (let bi = 0; bi < batches.length; bi++) {
           bodyHtml:       email.bodyHtml,
           emailType:      "cold-outreach",
           sequenceNumber: 1,
-          ...(hasAttachment ? { attachmentPath: ATTACH_PATH } : {}),
+          ...(hasAttachment && ATTACH_PATH ? { attachmentPath: ATTACH_PATH } : {}),
         },
         {
           dryRun:      DRY_RUN,

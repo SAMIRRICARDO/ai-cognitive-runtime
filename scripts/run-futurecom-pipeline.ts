@@ -19,6 +19,8 @@ import { fileURLToPath } from "url";
 import { FuturecomResearcherAgent } from "../agents/futurecom-researcher/agent.js";
 import { LeadEnrichmentAgent } from "../agents/lead-enrichment-agent/agent.js";
 import { scoreLeads } from "../agents/lead-validation/scorer.js";
+import { isCheapMode } from "../config/env.js";
+import { runLeadAcquisitionScheduler } from "../scheduler/lead-acquisition-scheduler.js";
 import type { LeadProfile } from "../agents/futurecom-researcher/types.js";
 import type { AgentStep } from "../agents/_base/types.js";
 import type { EnrichedContact } from "../agents/lead-enrichment-agent/types.js";
@@ -35,8 +37,8 @@ const flag = (name: string): string | undefined => {
 const hasFlag = (name: string): boolean => args.includes(name);
 
 const minScore = parseInt(flag("--min-score") ?? "50", 10);
-const maxLeads = parseInt(flag("--max-leads") ?? "12", 10);
-const maxContacts = parseInt(flag("--max-contacts") ?? "3", 10);
+const maxLeads = Math.min(parseInt(flag("--max-leads") ?? "12", 10), 25);
+const maxContacts = isCheapMode ? 1 : parseInt(flag("--max-contacts") ?? "3", 10);
 const rawSegments = flag("--segments") ?? "telecom,cloud,ai,cybersecurity,connectivity,infrastructure,enterprise-software";
 const jsonOutput = hasFlag("--json");
 
@@ -132,6 +134,11 @@ function mapLeadToCsvRow(lead: LeadProfile) {
 }
 
 const main = async () => {
+  if (isCheapMode && !hasFlag("--full-agent")) {
+    await runLeadAcquisitionScheduler({ force: hasFlag("--force") });
+    return;
+  }
+
   if (!jsonOutput) {
     console.log("\nVRASHOWS Futurecom Pipeline — research → enrich → validate\n");
   }

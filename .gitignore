@@ -1,60 +1,116 @@
+# ==========================================
 # Environment — NEVER commit secrets
+# ==========================================
 .env
 .env.local
+.env.*
 .env.*.local
 
+# Claude local settings
+.claude/settings.local.json
+
+# ==========================================
 # Dependencies
+# ==========================================
 node_modules/
 
-# Build
+# ==========================================
+# Build / Coverage
+# ==========================================
 dist/
 coverage/
 
+# ==========================================
 # Logs — generated at runtime
+# ==========================================
 logs/
 *.log
 
-# Lead data — real contacts and enriched emails NEVER committed
+# Runtime logs
+memory/logs/
+
+# ==========================================
+# Lead data — NEVER commit real leads
+# ==========================================
 data/leads/*.json
 data/leads/*.csv
 data/leads/validated/
 data/leads/futurecom/
 
-# Generated outreach artifacts — rebuilt each campaign run
+# ==========================================
+# Generated outreach artifacts
+# ==========================================
 data/outreach/
 
-# Dashboard live metrics — contains real operational data
+# ==========================================
+# Dashboard / Runtime Metrics
+# ==========================================
 dashboard/metrics.json
 
-# Cache and exports
+# Analytics runtime
+memory/analytics/
+
+# ==========================================
+# Lightweight RAG Runtime Memory
+# ==========================================
+memory/prompts/
+memory/outbound/
+memory/campaigns/
+memory/companies/
+
+# ==========================================
+# SQLite Operational Memory
+# ==========================================
+memory/cache/
+*.sqlite
+*.sqlite-journal
+
+# ==========================================
+# Cache / Exports
+# ==========================================
 cache/
 exports/
 
+# ==========================================
 # Python virtualenv
+# ==========================================
 .venv/
 
-# Large binary assets — store outside git or use git-lfs
+# ==========================================
+# Large binary assets
+# ==========================================
 assets/pdfs/
 assets/leads/
 *.pdf
 
-# Backups — local only, never committed
+# ==========================================
+# Backups — local only
+# ==========================================
 backups/
 
-# Private usage reports and cost analytics
+# ==========================================
+# Private usage reports and analytics
+# ==========================================
 usage/
 metrics/
 
+# ==========================================
 # Temp restore artifacts
+# ==========================================
 .pg_restore_tmp.sql
 .git_commit_msg.txt
 
+# ==========================================
 # Temp / OS
+# ==========================================
 .DS_Store
 Thumbs.db
 *.tmp
 *.temp
+*.txt
 
+# ==========================================
 # IDE
+# ==========================================
 .vscode/
 .idea/

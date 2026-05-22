@@ -16,6 +16,9 @@ import { Resend } from "resend";
 import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
 import { RedisMemory } from "../memory/short-term/redis.js";
+import { getIALeadsCache } from "../memory/sqlite-cache.js";
+import { recordAnalytics } from "../memory/analytics.js";
+import { saveLocalMemory } from "../memory/local-rag.js";
 import type { ToolHandler } from "../agents/_base/types.js";
 import type { EmailRecord, EmailType, EmailSenderOptions } from "../agents/email-sender-agent/types.js";
 import { validateSendEmailInput } from "../agents/email-sender-agent/schemas.js";
@@ -207,6 +210,34 @@ export async function sendEmail(
     sentAt,
   };
 
+  const localCache = getIALeadsCache();
+  const existingOutbound = localCache.hasOutbound({
+    email: input.recipientEmail,
+    emailType,
+    sequenceNumber,
+  });
+  if (existingOutbound) {
+    logger.info("[send-email] skipped — local SQLite outbound cache hit", {
+      email: input.recipientEmail,
+      company: input.company,
+      emailType,
+      sequenceNumber,
+    });
+    recordAnalytics({
+      provider: "cache",
+      source: "send-email",
+      cacheHits: 1,
+      estimatedSavingsUsd: 0.001,
+      metadata: { emailType, sequenceNumber },
+    });
+    return {
+      ...baseRecord,
+      messageId: `cached:${input.recipientEmail}:${sentAt}`,
+      status: "skipped",
+      error: `Already recorded in local outbound cache (${existingOutbound.sent_at})`,
+    };
+  }
+
   // ── Deduplication check ──────────────────────────────────────────────────
   if (memory && deduplicationWindowDays > 0) {
     const dedupKey = `${DEDUP_KEY_PREFIX}${input.recipientEmail}`;
@@ -331,6 +362,31 @@ export async function sendEmail(
       const ttl = deduplicationWindowDays * 86400;
       await memory.set(`${DEDUP_KEY_PREFIX}${input.recipientEmail}`, sentAt, ttl).catch(() => {});
     }
+
+    localCache.recordOutbound({
+      email: input.recipientEmail,
+      company: input.company,
+      emailType,
+      sequenceNumber,
+      status: "sent",
+      sentAt,
+      metadata: { resendId, subject: input.subject },
+    });
+    localCache.upsertCompany({ company: input.company, status: "contacted" });
+    saveLocalMemory({
+      collection: "outbound",
+      content: `${emailType} sent to ${input.company} <${input.recipientEmail}>`,
+      tags: ["outbound", emailType, input.company],
+      metadata: { resendId, sequenceNumber, subject: input.subject },
+      id: `outbound:${input.recipientEmail}:${emailType}:${sequenceNumber}`,
+    });
+    recordAnalytics({
+      provider: "outbound",
+      source: "send-email",
+      requests: 1,
+      outboundExecuted: 1,
+      metadata: { emailType, sequenceNumber, company: input.company },
+    });
 
     // Rate-limiting delay (non-blocking for last send, still applied for safety)
     if (rateDelayMs > 0) {

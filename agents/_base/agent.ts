@@ -7,6 +7,9 @@ import { responseCache, ResponseCache } from "./cache.js";
 import { estimateTokens, compressContext } from "./context.js";
 import { calculateCost, recordCost, formatCost } from "../../config/costs.js";
 import { memoryManager } from "../../memory/manager.js";
+import { buildLocalContext } from "../../memory/local-rag.js";
+import { recordAnalytics } from "../../memory/analytics.js";
+import { getIALeadsCache } from "../../memory/sqlite-cache.js";
 import type {
   AgentConfig,
   AgentResult,
@@ -88,6 +91,36 @@ export abstract class BaseAgent {
 
     // 3. Memory injection (opt-in)
     let effectiveSystemPrompt = this.config.systemPrompt;
+    const localContext = buildLocalContext(userMessage, ["prompts", "campaigns", "companies", "logs"], 4);
+    if (localContext) {
+      effectiveSystemPrompt += localContext;
+      memoriesLoaded += (localContext.match(/^- /gm) ?? []).length;
+    }
+
+    const sqliteCache = getIALeadsCache();
+    const sqlitePromptKind = `agent:${this.config.name}:${resolvedModel}`;
+    const canUseSqlitePromptCache = (this.config.tools ?? []).length === 0;
+    if (canUseSqlitePromptCache) {
+      const cached = sqliteCache.getPrompt(sqlitePromptKind, userMessage);
+      if (cached) {
+        logger.info(`[${this.config.name}] sqlite prompt cache hit`, { kind: sqlitePromptKind });
+        recordAnalytics({
+          provider: "cache",
+          source: this.config.name,
+          cacheHits: 1,
+          estimatedSavingsUsd: 0.002,
+          metadata: { kind: sqlitePromptKind },
+        });
+        return {
+          output: typeof cached.response === "string" ? cached.response : JSON.stringify(cached.response),
+          usage: totalUsage,
+          fromCache: true,
+          routing: routingDecision,
+          iterations: 0,
+          durationMs: Date.now() - startTime,
+        };
+      }
+    }
     if (this.config.memoryEnabled) {
       try {
         await memoryManager.initialize();
@@ -189,6 +222,22 @@ export abstract class BaseAgent {
     // 4. Cost tracking
     const costBreakdown = calculateCost(resolvedModel, totalUsage);
     await recordCost(this.config.name, resolvedModel, totalUsage, costBreakdown);
+    recordAnalytics({
+      provider: "claude",
+      source: this.config.name,
+      model: resolvedModel,
+      inputTokens: totalUsage.inputTokens,
+      outputTokens: totalUsage.outputTokens,
+      estimatedCostUsd: costBreakdown.totalCost,
+      estimatedSavingsUsd: costBreakdown.savings,
+      requests: iterations,
+      cacheHits: totalUsage.cacheReadTokens > 0 ? 1 : 0,
+      metadata: {
+        cacheReadTokens: totalUsage.cacheReadTokens,
+        cacheCreationTokens: totalUsage.cacheCreationTokens,
+        contextCompressed,
+      },
+    });
 
     const durationMs = Date.now() - startTime;
     logger.info(`[${this.config.name}] done`, {
@@ -204,6 +253,15 @@ export abstract class BaseAgent {
       const cacheKey = responseCache.key(resolvedModel, this.config.systemPrompt, userMessage);
       const ttl = this.config.cacheTtl ?? ResponseCache.TTL[routingTier];
       await responseCache.set(cacheKey, { output: finalOutput, model: resolvedModel, cachedAt: Date.now() }, ttl);
+    }
+
+    if (canUseSqlitePromptCache && finalOutput) {
+      sqliteCache.savePrompt({
+        kind: sqlitePromptKind,
+        prompt: userMessage,
+        response: finalOutput,
+        metadata: { model: resolvedModel, agent: this.config.name },
+      });
     }
 
     // 6. Save memories from this run (opt-in, non-blocking)

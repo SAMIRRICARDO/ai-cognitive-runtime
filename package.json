@@ -29,7 +29,9 @@
     "restore:list": "tsx scripts/restore-runtime.ts --list",
     "export-memories": "tsx scripts/export-memories.ts",
     "import-memories": "tsx scripts/import-memories.ts",
-    "health": "tsx scripts/system-health.ts"
+    "health": "tsx scripts/system-health.ts",
+    "leads:acquire": "tsx scheduler/lead-acquisition-scheduler.ts",
+    "leads:acquire:daemon": "tsx scheduler/lead-acquisition-scheduler.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -43,6 +45,7 @@
     "p-retry": "^6.2.0",
     "pg": "^8.13.0",
     "pgvector": "^0.2.0",
+    "puppeteer-core": "^25.0.4",
     "redis": "^4.7.0",
     "resend": "^6.4.2",
     "tsx": "^4.19.0",

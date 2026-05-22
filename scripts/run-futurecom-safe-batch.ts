@@ -79,7 +79,7 @@ interface SafeBatch {
   createdAt: string;
   source: string;
   maxRecipients: number;
-  bcc: string;
+  bcc: string | null;
   criteria: {
     minEventFitScore: number;
     allowedRoles: string[];
@@ -247,7 +247,7 @@ async function saveOutputs(topLeads: ValidatedLead[]) {
     createdAt: new Date().toISOString(),
     source: SOURCE_PATH,
     maxRecipients: MAX_BATCH_SIZE,
-    bcc: BCC_EMAIL,
+    bcc: BCC_EMAIL ?? null,
     criteria: {
       minEventFitScore: MIN_EVENT_FIT_SCORE,
       allowedRoles: ["marketing", "events", "brand", "experience", "partnerships", "field marketing"],

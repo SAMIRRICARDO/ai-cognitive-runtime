@@ -72,7 +72,7 @@ const raw = JSON.parse(readFileSync(LEADS_FILE, "utf8")) as FuturecomLeadFile;
 const allLeads = raw.leads.filter(l => l.status === "HOT" || l.status === "WARM");
 const leads = allLeads.slice(0, LIMIT);
 
-const hasAttachment = existsSync(ATTACH_PATH);
+const hasAttachment = ATTACH_PATH ? existsSync(ATTACH_PATH) : false;
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
@@ -89,7 +89,7 @@ if (!JSON_OUT) {
   console.log(`  Leads:      ${c.bold(String(leads.length))} de ${allLeads.length} disponíveis (HOT: ${leads.filter(l => l.status === "HOT").length})`);
   console.log(`  BCC:        ${BCC_ADDRESS}`);
   console.log(`  Anexo PDF:  ${hasAttachment ? c.green("encontrado ✓") : c.yellow("não encontrado — envio sem PDF")}`);
-  if (!hasAttachment) console.log(`  PDF path:   ${c.dim(ATTACH_PATH)}`);
+  if (!hasAttachment) console.log(`  PDF path:   ${c.dim(ATTACH_PATH ?? "not configured")}`);
   if (LIVE && RATE_DELAY > 0) {
     console.log(`  Intervalo:  ${c.cyan(rateLabel)} entre envios (comportamento humano)`);
   }
@@ -159,7 +159,7 @@ interface BatchResult {
   elapsed: number;
   qualityScore: number;
   outreachPriority: number;
-  bcc: string;
+  bcc: string | null;
   hasAttachment: boolean;
   error: string | null;
   sentAt: string;
@@ -198,7 +198,7 @@ for (let i = 0; i < leads.length; i++) {
         bodyHtml:       email.bodyHtml,
         emailType:      "cold-outreach",
         sequenceNumber: 1,
-        ...(hasAttachment ? { attachmentPath: ATTACH_PATH } : {}),
+        ...(hasAttachment && ATTACH_PATH ? { attachmentPath: ATTACH_PATH } : {}),
       },
       {
         dryRun:       DRY_RUN,
@@ -222,7 +222,7 @@ for (let i = 0; i < leads.length; i++) {
       elapsed,
       qualityScore:    email.quality.score,
       outreachPriority: lead.outreachPriority,
-      bcc:             BCC_ADDRESS,
+      bcc:             BCC_ADDRESS ?? null,
       hasAttachment,
       error:           record.error ?? null,
       sentAt,
@@ -256,7 +256,7 @@ for (let i = 0; i < leads.length; i++) {
       elapsed,
       qualityScore:    email.quality.score,
       outreachPriority: lead.outreachPriority,
-      bcc:             BCC_ADDRESS,
+      bcc:             BCC_ADDRESS ?? null,
       hasAttachment,
       error:           message,
       sentAt,

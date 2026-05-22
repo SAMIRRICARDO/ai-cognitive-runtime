@@ -21,6 +21,7 @@ import type { ToolHandler, AgentRunOptions } from "../_base/types.js";
 
 import { webSearchTool, memoryReadTool, memoryWriteTool } from "../../tools/index.js";
 import { logger } from "../../config/logger.js";
+import { isCheapMode } from "../../config/env.js";
 import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 
 import { validateEnrichedContact, saveContactInputSchema } from "./schemas.js";
@@ -165,11 +166,11 @@ export class LeadEnrichmentAgent extends BaseAgent {
       name: "lead-enrichment-agent",
       description: "Enriches company leads with decision maker profiles for VRASHOWS outreach",
       systemPrompt,
-      model: Models.default,
-      maxTokens: getMaxTokens(ModelConfig.maxTokens.extended),
+      model: isCheapMode ? Models.fast : Models.default,
+      maxTokens: getMaxTokens(isCheapMode ? ModelConfig.maxTokens.cheap : ModelConfig.maxTokens.extended),
       temperature: ModelConfig.temperature.deterministic,
-      maxIterations: getMaxIterations(40),
-      memoryEnabled: true,
+      maxIterations: getMaxIterations(isCheapMode ? 2 : 40),
+      memoryEnabled: !isCheapMode,
       memorySaveEnabled: false,
     });
   }
@@ -178,9 +179,11 @@ export class LeadEnrichmentAgent extends BaseAgent {
     const promptPath = join(__dirname, "../../prompts/agents/lead-enrichment-agent.md");
     const systemPrompt = await readFile(promptPath, "utf8");
     const agent = new LeadEnrichmentAgent(systemPrompt);
-    agent.registerTool(webSearchTool);
-    agent.registerTool(memoryReadTool);
-    agent.registerTool(memoryWriteTool);
+    if (!isCheapMode) {
+      agent.registerTool(webSearchTool);
+      agent.registerTool(memoryReadTool);
+      agent.registerTool(memoryWriteTool);
+    }
     agent.registerTool(createEmailResolverTool());
     agent.registerTool(createSaveContactTool(agent.contacts));
     return agent;
@@ -208,22 +211,24 @@ export class LeadEnrichmentAgent extends BaseAgent {
       maxContactsPerCompany = 5,
       event = "Futurecom 2026",
     } = options;
+    const limitedCompanies = companies.slice(0, 25);
+    const contactLimit = isCheapMode ? 1 : maxContactsPerCompany;
 
     this.contacts = [];
     const sessionStartedAt = new Date().toISOString();
 
     logger.info("[lead-enrichment-agent] starting enrichment session", {
-      companies: companies.length,
+      companies: limitedCompanies.length,
       minSeniority,
-      maxContactsPerCompany,
+      maxContactsPerCompany: contactLimit,
       event,
     });
 
-    const leadContextBlock = this.buildLeadContextBlock(companies, leadContext);
-    const prompt = this.buildPrompt(companies, {
+    const leadContextBlock = this.buildLeadContextBlock(limitedCompanies, leadContext);
+    const prompt = this.buildPrompt(limitedCompanies, {
       areas,
       minSeniority,
-      maxContactsPerCompany,
+      maxContactsPerCompany: contactLimit,
       event,
       leadContextBlock,
     });
@@ -237,9 +242,9 @@ export class LeadEnrichmentAgent extends BaseAgent {
     );
 
     // Assemble per-company summaries
-    const companyMap = this.buildCompanyMap(companies, filtered, maxContactsPerCompany);
+    const companyMap = this.buildCompanyMap(limitedCompanies, filtered, contactLimit);
 
-    const gaps = companies.filter(
+    const gaps = limitedCompanies.filter(
       (co) => !companyMap.find((c) => c.company.toLowerCase() === co.toLowerCase() && c.totalContacts > 0)
     );
 
@@ -252,7 +257,7 @@ export class LeadEnrichmentAgent extends BaseAgent {
     });
 
     return {
-      companiesProcessed: companies.length,
+      companiesProcessed: limitedCompanies.length,
       contacts: filtered,
       companies: companyMap,
       gaps,
@@ -347,38 +352,30 @@ export class LeadEnrichmentAgent extends BaseAgent {
       ? `Focus areas: ${opts.areas.join(", ")}.`
       : "Focus areas: marketing, events, brand, customer-experience, communications, sponsorship.";
 
-    return `
-Enrich the following companies with decision maker contact intelligence for VRASHOWS.
+    if (isCheapMode) {
+      return `
+JSON/tool output only. No reasoning.
+Event: ${opts.event}
+Max contacts/company: ${opts.maxContactsPerCompany}
+Areas: ${opts.areas?.join(", ") ?? "marketing, events, brand"}
+${opts.leadContextBlock}
+Companies:
+${companies.map((c, i) => `${i + 1}. ${c}`).join("\n")}
+For each company: pick one likely marketing/events decision maker, resolve email, call save_contact.
+Final response: {"ok":true}
+`.trim();
+    }
 
+    return `
+Enrich companies with decision maker contact intelligence for VRASHOWS.
 Target event: ${opts.event}
-Minimum seniority: ${opts.minSeniority} (include manager level and above)
+Minimum seniority: ${opts.minSeniority}
 Max contacts per company: ${opts.maxContactsPerCompany}
 ${areaFocus}
 ${opts.leadContextBlock}
-
 Target companies:
 ${companies.map((c, i) => `${i + 1}. ${c}`).join("\n")}
-
-For each company:
-1. Search for decision makers in marketing, events, brand, CX, and communications
-2. Find their full name, role, and LinkedIn profile
-3. Infer their corporate email using the company's domain pattern
-4. Assess their priority and decision-making authority relative to event operations
-5. Call save_contact for each valid contact found
-
-Search strategy per company:
-- "[Company] diretor marketing linkedin"
-- "[Company] gerente eventos corporativos"
-- "[Company] head of events OR brand OR marketing"
-- "[Company] CMO OR VP marketing"
-- "[Company] patrocínio Futurecom"
-
-Priority criteria:
-- High: Director/VP/C-level in marketing, events, brand, CX — confirmed budget authority
-- Medium: Managers in same areas
-- Low: Procurement, adjacent roles
-
-Process all ${companies.length} companies before responding.
+Call resolve_email_pattern before save_contact. Process all ${companies.length} companies.
 `.trim();
   }
 }

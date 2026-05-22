@@ -19,6 +19,7 @@ import {
 } from "../../tools/index.js";
 
 import { logger } from "../../config/logger.js";
+import { isCheapMode } from "../../config/env.js";
 import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 
 import {
@@ -113,17 +114,17 @@ export class FuturecomResearcherAgent extends BaseAgent {
 
       systemPrompt,
 
-      model: Models.default,
+      model: isCheapMode ? Models.fast : Models.default,
 
-      maxTokens: getMaxTokens(ModelConfig.maxTokens.extended),
+      maxTokens: getMaxTokens(isCheapMode ? ModelConfig.maxTokens.cheap : ModelConfig.maxTokens.extended),
 
       temperature: ModelConfig.temperature.deterministic,
 
-      maxIterations: getMaxIterations(20),
+      maxIterations: getMaxIterations(isCheapMode ? 2 : 20),
 
-      memoryEnabled: true,
+      memoryEnabled: !isCheapMode,
 
-      memorySaveEnabled: true,
+      memorySaveEnabled: !isCheapMode,
     });
   }
 
@@ -167,6 +168,7 @@ export class FuturecomResearcherAgent extends BaseAgent {
       maxLeads = 20,
       segments,
     } = opts;
+    const leadLimit = Math.min(maxLeads, 25);
 
     this.leads = [];
 
@@ -178,21 +180,16 @@ export class FuturecomResearcherAgent extends BaseAgent {
         : "";
 
     const fullQuery = `
-Event:
-${event}
-
-Task:
-${query}
-
+Event: ${event}
+Task: ${query}
 ${segmentFilter}
-
-Requirements:
-- Return up to ${maxLeads} companies
-- Minimum score: ${minScore}
-- Use save_lead for every qualified company
-- Focus on enterprise exhibitors
-- Focus on operational complexity
-- Focus on event investment potential
+Rules:
+- JSON/tool output only
+- Max ${leadLimit} companies
+- Min score ${minScore}
+- Short strategicNotes, max 1 sentence
+- No reasoning or explanations
+- Use save_lead only for qualified companies
 `;
 
     logger.info(
@@ -213,7 +210,7 @@ Requirements:
     const filtered = this.leads
       .filter((l) => l.initialScore >= minScore)
       .sort((a, b) => b.initialScore - a.initialScore)
-      .slice(0, maxLeads);
+      .slice(0, leadLimit);
 
     const sessionCompletedAt =
       new Date().toISOString();

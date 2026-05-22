@@ -1,0 +1,13 @@
+{
+  "cheapMode": true,
+  "preferredModel": "gpt-4o-mini",
+  "maxLeadsPerBatch": 25,
+  "maxDailyRuns": 1,
+  "runTime": "07:30",
+  "weekendBlocked": true,
+  "maxOutputTokens": 300,
+  "avoidReasoning": true,
+  "jsonOnly": true,
+  "humanThrottle": true,
+  "maxOutboundHour": 16
+}

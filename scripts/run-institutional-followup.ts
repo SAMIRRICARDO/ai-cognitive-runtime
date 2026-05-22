@@ -209,15 +209,38 @@ function buildEmail(contact: ContactRecord): { subject: string; bodyText: string
 
   const subject = `VRASHOWS · material institucional para o Futurecom 2026`;
 
+  // Template oficial v3.0 — 2026-05-21
   const bodyText = `${greeting}
 
-Deixo aqui o material institucional da VRASHOWS — um complemento ao nosso contato anterior.
+Grandes marcas não participam de eventos como o Futurecom apenas com um stand — existe toda uma operação estratégica por trás da experiência, logística e presença da marca no evento.
 
-O material detalha nossa abordagem operacional, a estrutura de entrega em eventos enterprise e os pilares que sustentam a presença de grandes marcas no Futurecom e em outros eventos B2B de alta complexidade.
+É exatamente nesse ponto que a VRASHOWS atua.
 
-Pode ser um ponto de partida útil para quando o planejamento de eventos avançar na ${company}.
+Somos especializados em operação completa para feiras de negócios e eventos enterprise, centralizando em um único parceiro tudo o que normalmente exige múltiplos fornecedores e uma grande carga operacional da equipe interna.
 
-Qualquer dúvida ou interesse em conversar — estou à disposição.
+Cuidamos de toda a estrutura operacional para que sua equipe possa focar exclusivamente em relacionamento, networking e geração de negócios durante o evento.
+
+Entre as soluções que entregamos:
+• operação de stands e ativações
+• vans executivas e transfers corporativos
+• logística de brindes, alimentos e bebidas
+• vans de carga e suporte operacional
+• recepcionistas e modelos
+• segurança
+• fotógrafos e videomakers
+• suporte operacional completo durante o evento
+• coordenação e execução ponta a ponta
+
+Nosso objetivo é transformar a participação da marca em eventos em uma operação organizada, eficiente e sem improvisos.
+
+Anexei nosso material institucional para que você possa conhecer melhor a estrutura da VRASHOWS, nossa abordagem operacional e como apoiamos marcas em eventos B2B de alta complexidade.
+
+Acredito que o material pode trazer insights interessantes para futuras operações e ativações da ${company} em eventos corporativos.
+
+Também deixo nosso site para uma visão mais ampla das soluções:
+www.vrashows.com.br
+
+Fico à disposição caso faça sentido conversarmos em algum momento.
 
 --
 VRASHOWS
@@ -227,13 +250,36 @@ Whatsapp (11) 95357-7804`;
 
   const bodyHtml = `<p style="margin:0 0 18px;font-size:15px;">${greeting}</p>
 
-<p style="margin:0 0 16px;">Deixo aqui o material institucional da <strong>VRASHOWS</strong> — um complemento ao nosso contato anterior.</p>
+<p style="margin:0 0 16px;">Grandes marcas não participam de eventos como o Futurecom apenas com um stand — existe toda uma operação estratégica por trás da experiência, logística e presença da marca no evento.</p>
 
-<p style="margin:0 0 16px;">O material detalha nossa abordagem operacional, a estrutura de entrega em eventos enterprise e os pilares que sustentam a presença de grandes marcas no Futurecom e em outros eventos B2B de alta complexidade.</p>
+<p style="margin:0 0 16px;">É exatamente nesse ponto que a <strong>VRASHOWS</strong> atua.</p>
 
-<p style="margin:0 0 16px;">Pode ser um ponto de partida útil para quando o planejamento de eventos avançar na <strong>${company}</strong>.</p>
+<p style="margin:0 0 16px;">Somos especializados em operação completa para feiras de negócios e eventos enterprise, centralizando em um único parceiro tudo o que normalmente exige múltiplos fornecedores e uma grande carga operacional da equipe interna.</p>
 
-<p style="margin:0 0 0;">Qualquer dúvida ou interesse em conversar — estou à disposição.</p>`;
+<p style="margin:0 0 16px;">Cuidamos de toda a estrutura operacional para que sua equipe possa focar exclusivamente em relacionamento, networking e geração de negócios durante o evento.</p>
+
+<p style="margin:0 0 10px;">Entre as soluções que entregamos:</p>
+<table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; operação de stands e ativações</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; vans executivas e transfers corporativos</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; logística de brindes, alimentos e bebidas</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; vans de carga e suporte operacional</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; recepcionistas e modelos</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; segurança</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; fotógrafos e videomakers</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; suporte operacional completo durante o evento</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; coordenação e execução ponta a ponta</td></tr>
+</table>
+
+<p style="margin:0 0 16px;">Nosso objetivo é transformar a participação da marca em eventos em uma operação organizada, eficiente e sem improvisos.</p>
+
+<p style="margin:0 0 16px;">Anexei nosso material institucional para que você possa conhecer melhor a estrutura da <strong>VRASHOWS</strong>, nossa abordagem operacional e como apoiamos marcas em eventos B2B de alta complexidade.</p>
+
+<p style="margin:0 0 16px;">Acredito que o material pode trazer insights interessantes para futuras operações e ativações da <strong>${company}</strong> em eventos corporativos.</p>
+
+<p style="margin:0 0 16px;">Também deixo nosso site para uma visão mais ampla das soluções: <a href="https://www.vrashows.com.br" style="color:#0f172a;font-weight:600;">www.vrashows.com.br</a></p>
+
+<p style="margin:0 0 0;">Fico à disposição caso faça sentido conversarmos em algum momento.</p>`;
 
   return { subject, bodyText, bodyHtml };
 }

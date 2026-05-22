@@ -53,7 +53,11 @@ export function seedToRawLeadFile(
     if (opts.excludeCompanies?.has(company.company.toLowerCase())) continue;
 
     for (const contact of company.contacts) {
-      const emailResult = emailPatternResolver.resolve(contact.name, company.company);
+      const emailResult = emailPatternResolver.resolve({
+        name: contact.name,
+        company: company.company,
+        website: company.website,
+      });
 
       const lead: RawLead = {
         company: company.company,

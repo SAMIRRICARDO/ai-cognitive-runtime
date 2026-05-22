@@ -10,7 +10,7 @@ export const ModelConfig = {
   maxTokens: {
     default: 8192,
     extended: 16384,
-    cheap: 2048,
+    cheap: 512,
   },
   temperature: {
     deterministic: 0,
@@ -35,7 +35,8 @@ export function getMaxTokens(preferred?: number): number {
  * Agent-specific overrides are still capped by MAX_TOOL_ITERATIONS if set.
  */
 export function getMaxIterations(preferred?: number): number {
-  const base = preferred ?? (isCheapMode ? 5 : 10);
+  const base = preferred ?? (isCheapMode ? 3 : 10);
+  if (isCheapMode) return Math.min(base, env.MAX_TOOL_ITERATIONS ?? 3);
   if (env.MAX_TOOL_ITERATIONS) return Math.min(base, env.MAX_TOOL_ITERATIONS);
   return base;
 }

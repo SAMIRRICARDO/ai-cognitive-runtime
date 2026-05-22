@@ -5,6 +5,10 @@
  * No LLM required — all personalization is rule-based and auditable.
  *
  * Produces inner body HTML + plain-text for send-email's template wrapper.
+ *
+ * Template oficial v3.0 — 2026-05-21
+ * Posicionamento: parceiro operacional estratégico para eventos enterprise e feiras de negócios.
+ * Centralização operacional em um único fornecedor, operação sem improvisos.
  */
 
 import type { ValidatedLead } from "../lead-validation/types.js";
@@ -69,17 +73,17 @@ function buildIntro(lead: ValidatedLead, firstName: string): { text: string; htm
     introText = [
       `${firstName},`,
       "",
-      `Sei que o seu tempo é escasso — vou direto ao ponto.`,
+      `Vou direto ao ponto.`,
       "",
       companyCtx ? `${companyCtx}\n\n` : "",
-      `Sou Samir Ricardo, da VRASHOWS. Somos um hub de operações integradas para eventos corporativos enterprise — assumimos toda a logística, staff e produção executiva para que a liderança possa focar 100% em relacionamento e negócios.`,
+      `Grandes marcas não participam de eventos como o Futurecom apenas com um stand — existe toda uma operação estratégica por trás da experiência, logística e presença da marca no evento. É exatamente nesse ponto que a VRASHOWS atua.`,
     ].join("\n").replace("\n\n\n", "\n\n");
 
     introHtml = [
       `<p style="margin:0 0 18px;font-size:15px;"><strong>${firstName},</strong></p>`,
-      `<p style="margin:0 0 16px;">Sei que o seu tempo é escasso — vou direto ao ponto.</p>`,
+      `<p style="margin:0 0 16px;">Vou direto ao ponto.</p>`,
       companyCtx ? `<p style="margin:0 0 16px;">${companyCtx}</p>` : "",
-      `<p style="margin:0 0 16px;">Sou Samir Ricardo, da <strong>VRASHOWS</strong>. Somos um hub de operações integradas para eventos corporativos enterprise — assumimos toda a logística, staff e produção executiva para que a liderança possa focar 100% em relacionamento e negócios.</p>`,
+      `<p style="margin:0 0 16px;">Grandes marcas não participam de eventos como o Futurecom apenas com um stand — existe toda uma operação estratégica por trás da experiência, logística e presença da marca no evento. É exatamente nesse ponto que a <strong>VRASHOWS</strong> atua.</p>`,
     ].filter(Boolean).join("\n");
 
   } else if (area.includes("marketing") && (role.includes("events") || role.includes("brand") || role.includes("eventos"))) {
@@ -87,16 +91,16 @@ function buildIntro(lead: ValidatedLead, firstName: string): { text: string; htm
       `Olá ${firstName},`,
       "",
       companyCtx ? `${companyCtx}\n` : "",
-      `Coordenar uma operação de eventos enterprise com dezenas de fornecedores, equipes de campo e demandas simultâneas exige algo que vai muito além de gestão de fornecedores — exige um parceiro que assuma a operação e entregue controle total, sem ruído.`,
+      `Grandes marcas não participam de eventos como o Futurecom apenas com um stand — coordenar toda a operação por trás da experiência, logística e presença da marca é um trabalho que vai muito além da gestão de fornecedores.`,
       "",
-      `É exatamente esse o papel da VRASHOWS.`,
+      `É exatamente nesse ponto que a VRASHOWS atua.`,
     ].join("\n").replace("\n\n\n", "\n\n");
 
     introHtml = [
       `<p style="margin:0 0 18px;font-size:15px;">Olá ${firstName},</p>`,
       companyCtx ? `<p style="margin:0 0 16px;">${companyCtx}</p>` : "",
-      `<p style="margin:0 0 16px;">Coordenar uma operação de eventos enterprise com dezenas de fornecedores, equipes de campo e demandas simultâneas exige algo que vai muito além de gestão de fornecedores — exige um parceiro que assuma a operação e entregue controle total, sem ruído.</p>`,
-      `<p style="margin:0 0 16px;">É exatamente esse o papel da <strong>VRASHOWS</strong>.</p>`,
+      `<p style="margin:0 0 16px;">Grandes marcas não participam de eventos como o Futurecom apenas com um stand — coordenar toda a operação por trás da experiência, logística e presença da marca é um trabalho que vai muito além da gestão de fornecedores.</p>`,
+      `<p style="margin:0 0 16px;">É exatamente nesse ponto que a <strong>VRASHOWS</strong> atua.</p>`,
     ].filter(Boolean).join("\n");
 
   } else if (area.includes("marketing") && role.includes("partner")) {
@@ -104,24 +108,7 @@ function buildIntro(lead: ValidatedLead, firstName: string): { text: string; htm
       `Olá ${firstName},`,
       "",
       companyCtx ? `${companyCtx}\n` : "",
-      `Apoiar o ecossistema de parceiros em eventos enterprise — com qualidade de execução que reflita o posicionamento da marca — é uma das operações mais complexas do calendário corporativo. Staff qualificado, logística integrada, experiência do visitante: cada detalhe impacta a percepção dos parceiros.`,
-      "",
-      `A VRASHOWS existe exatamente para isso.`,
-    ].join("\n").replace("\n\n\n", "\n\n");
-
-    introHtml = [
-      `<p style="margin:0 0 18px;font-size:15px;">Olá ${firstName},</p>`,
-      companyCtx ? `<p style="margin:0 0 16px;">${companyCtx}</p>` : "",
-      `<p style="margin:0 0 16px;">Apoiar o ecossistema de parceiros em eventos enterprise — com qualidade de execução que reflita o posicionamento da marca — é uma das operações mais complexas do calendário corporativo. Staff qualificado, logística integrada, experiência do visitante: cada detalhe impacta a percepção dos parceiros.</p>`,
-      `<p style="margin:0 0 16px;">A <strong>VRASHOWS</strong> existe exatamente para isso.</p>`,
-    ].filter(Boolean).join("\n");
-
-  } else if (area.includes("partnerships")) {
-    introText = [
-      `Olá ${firstName},`,
-      "",
-      companyCtx ? `${companyCtx}\n` : "",
-      `Desenvolver e ativar um ecossistema de parceiros enterprise em eventos do porte do Futurecom requer uma operação bastidores que seja invisível — mas absolutamente confiável. Cada parceiro que interage com a operação forma uma impressão da marca anfitriã.`,
+      `Grandes marcas não participam de eventos como o Futurecom apenas com um stand — apoiar o ecossistema de parceiros com qualidade de execução que reflita o posicionamento da marca é uma das operações mais complexas do calendário enterprise.`,
       "",
       `A VRASHOWS é esse parceiro operacional.`,
     ].join("\n").replace("\n\n\n", "\n\n");
@@ -129,7 +116,24 @@ function buildIntro(lead: ValidatedLead, firstName: string): { text: string; htm
     introHtml = [
       `<p style="margin:0 0 18px;font-size:15px;">Olá ${firstName},</p>`,
       companyCtx ? `<p style="margin:0 0 16px;">${companyCtx}</p>` : "",
-      `<p style="margin:0 0 16px;">Desenvolver e ativar um ecossistema de parceiros enterprise em eventos do porte do Futurecom requer uma operação bastidores que seja invisível — mas absolutamente confiável. Cada parceiro que interage com a operação forma uma impressão da marca anfitriã.</p>`,
+      `<p style="margin:0 0 16px;">Grandes marcas não participam de eventos como o Futurecom apenas com um stand — apoiar o ecossistema de parceiros com qualidade de execução que reflita o posicionamento da marca é uma das operações mais complexas do calendário enterprise.</p>`,
+      `<p style="margin:0 0 16px;">A <strong>VRASHOWS</strong> é esse parceiro operacional.</p>`,
+    ].filter(Boolean).join("\n");
+
+  } else if (area.includes("partnerships")) {
+    introText = [
+      `Olá ${firstName},`,
+      "",
+      companyCtx ? `${companyCtx}\n` : "",
+      `Grandes marcas não participam de eventos como o Futurecom apenas com um stand — ativar um ecossistema de parceiros enterprise nessa escala requer uma operação bastidores absolutamente confiável e invisível para quem está no palco.`,
+      "",
+      `A VRASHOWS é esse parceiro operacional.`,
+    ].join("\n").replace("\n\n\n", "\n\n");
+
+    introHtml = [
+      `<p style="margin:0 0 18px;font-size:15px;">Olá ${firstName},</p>`,
+      companyCtx ? `<p style="margin:0 0 16px;">${companyCtx}</p>` : "",
+      `<p style="margin:0 0 16px;">Grandes marcas não participam de eventos como o Futurecom apenas com um stand — ativar um ecossistema de parceiros enterprise nessa escala requer uma operação bastidores absolutamente confiável e invisível para quem está no palco.</p>`,
       `<p style="margin:0 0 16px;">A <strong>VRASHOWS</strong> é esse parceiro operacional.</p>`,
     ].filter(Boolean).join("\n");
 
@@ -138,57 +142,61 @@ function buildIntro(lead: ValidatedLead, firstName: string): { text: string; htm
       `Olá ${firstName},`,
       "",
       companyCtx ? `${companyCtx}\n` : "",
-      `Grandes eventos corporativos exigem muito mais do que execução operacional. Exigem controle, velocidade de resposta e uma experiência consistente do início ao fim — mesmo quando dezenas de fornecedores, equipes e demandas acontecem simultaneamente.`,
+      `Grandes marcas não participam de eventos como o Futurecom apenas com um stand — existe toda uma operação estratégica por trás da experiência, logística e presença da marca no evento.`,
       "",
-      `É exatamente nesse cenário que a VRASHOWS atua.`,
+      `É exatamente nesse ponto que a VRASHOWS atua.`,
     ].join("\n").replace("\n\n\n", "\n\n");
 
     introHtml = [
       `<p style="margin:0 0 18px;font-size:15px;">Olá ${firstName},</p>`,
       companyCtx ? `<p style="margin:0 0 16px;">${companyCtx}</p>` : "",
-      `<p style="margin:0 0 16px;">Grandes eventos corporativos exigem muito mais do que execução operacional. Exigem controle, velocidade de resposta e uma experiência consistente do início ao fim — mesmo quando dezenas de fornecedores, equipes e demandas acontecem simultaneamente.</p>`,
-      `<p style="margin:0 0 16px;">É exatamente nesse cenário que a <strong>VRASHOWS</strong> atua.</p>`,
+      `<p style="margin:0 0 16px;">Grandes marcas não participam de eventos como o Futurecom apenas com um stand — existe toda uma operação estratégica por trás da experiência, logística e presença da marca no evento.</p>`,
+      `<p style="margin:0 0 16px;">É exatamente nesse ponto que a <strong>VRASHOWS</strong> atua.</p>`,
     ].filter(Boolean).join("\n");
   }
 
   return { text: introText, html: introHtml };
 }
 
-// ─── Hub positioning block ────────────────────────────────────────────────────
+// ─── Hub positioning block — v3.0 ────────────────────────────────────────────
 
-const HUB_BLOCK_TEXT = `Somos um hub de soluções integradas para eventos corporativos e experiências de marca, assumindo toda a operação para que sua equipe possa concentrar energia no que realmente importa: relacionamento, negócios e resultado.
+const HUB_BLOCK_TEXT = `Somos especializados em operação completa para feiras de negócios e eventos enterprise, centralizando em um único parceiro tudo o que normalmente exige múltiplos fornecedores e uma grande carga operacional da equipe interna.
 
-Coordenamos de forma integrada:
-• logística operacional
-• staff premium
-• produção executiva
-• hospitality
-• suporte 360° em tempo real
-• experiência do visitante
+Cuidamos de toda a estrutura operacional para que sua equipe possa focar exclusivamente em relacionamento, networking e geração de negócios durante o evento.
 
-Tudo com acompanhamento próximo, agilidade operacional e execução sem improvisos.`;
+Entre as soluções que entregamos:
+• operação de stands e ativações
+• vans executivas e transfers corporativos
+• logística de brindes, alimentos e bebidas
+• vans de carga e suporte operacional
+• recepcionistas e modelos
+• segurança
+• fotógrafos e videomakers
+• suporte operacional completo durante o evento
+• coordenação e execução ponta a ponta
 
-const HUB_BLOCK_HTML = `<p style="margin:0 0 16px;">Somos um hub de soluções integradas para eventos corporativos e experiências de marca, assumindo toda a operação para que sua equipe possa concentrar energia no que realmente importa: relacionamento, negócios e resultado.</p>
-<p style="margin:0 0 10px;">Coordenamos de forma integrada:</p>
+Nosso objetivo é transformar a participação da marca em eventos em uma operação organizada, eficiente e sem improvisos.`;
+
+const HUB_BLOCK_HTML = `<p style="margin:0 0 16px;">Somos especializados em operação completa para feiras de negócios e eventos enterprise, centralizando em um único parceiro tudo o que normalmente exige múltiplos fornecedores e uma grande carga operacional da equipe interna.</p>
+<p style="margin:0 0 16px;">Cuidamos de toda a estrutura operacional para que sua equipe possa focar exclusivamente em relacionamento, networking e geração de negócios durante o evento.</p>
+<p style="margin:0 0 10px;">Entre as soluções que entregamos:</p>
 <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
-  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; logística operacional</td></tr>
-  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; staff premium</td></tr>
-  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; produção executiva</td></tr>
-  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; hospitality</td></tr>
-  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; suporte 360&deg; em tempo real</td></tr>
-  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; experiência do visitante</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; operação de stands e ativações</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; vans executivas e transfers corporativos</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; logística de brindes, alimentos e bebidas</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; vans de carga e suporte operacional</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; recepcionistas e modelos</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; segurança</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; fotógrafos e videomakers</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; suporte operacional completo durante o evento</td></tr>
+  <tr><td style="padding:3px 0;color:#1e293b;font-size:15px;">&#8226;&nbsp; coordenação e execução ponta a ponta</td></tr>
 </table>
-<p style="margin:0 0 16px;">Tudo com acompanhamento próximo, agilidade operacional e execução sem improvisos.</p>`;
+<p style="margin:0 0 16px;">Nosso objetivo é transformar a participação da marca em eventos em uma operação organizada, eficiente e sem improvisos.</p>`;
 
-// C-level gets a shorter hub block
-const HUB_BLOCK_SHORT_TEXT = `Na VRASHOWS, assumimos toda a operação — logística, staff premium, produção executiva, hospitality e suporte 360° — para que a liderança foque em relacionamento e resultado.`;
+// C-level gets a condensed hub block
+const HUB_BLOCK_SHORT_TEXT = `Somos especializados em operação completa para eventos enterprise — centralizando em um único parceiro: stands, transfers executivos, logística, staff, segurança e coordenação ponta a ponta. Para que a liderança foque 100% em negócios e relacionamento.`;
 
-const HUB_BLOCK_SHORT_HTML = `<p style="margin:0 0 16px;">Na <strong>VRASHOWS</strong>, assumimos toda a operação — logística, staff premium, produção executiva, hospitality e suporte 360° — para que a liderança foque em relacionamento e resultado.</p>`;
-
-// ─── Tagline block ────────────────────────────────────────────────────────────
-
-const TAGLINE_TEXT = `"Enquanto você fecha negócios, nós controlamos a operação."`;
-const TAGLINE_HTML = `<p style="background:#f8fafc;border-left:3px solid #0f172a;padding:14px 18px;margin:24px 0;font-style:italic;color:#334155;font-size:14px;line-height:1.6;"><em>&ldquo;Enquanto você fecha negócios, nós controlamos a operação.&rdquo;</em></p>`;
+const HUB_BLOCK_SHORT_HTML = `<p style="margin:0 0 16px;">Somos especializados em operação completa para eventos enterprise — centralizando em um único parceiro: stands, transfers executivos, logística, staff, segurança e coordenação ponta a ponta. Para que a liderança foque 100% em negócios e relacionamento.</p>`;
 
 // ─── ABRINT case block ────────────────────────────────────────────────────────
 
@@ -196,16 +204,28 @@ const ABRINT_TEXT = `Na ABRINT 2026, atuamos ao lado da Brasil TecPar conduzindo
 
 const ABRINT_HTML = `<p style="margin:0 0 16px;">Na <strong>ABRINT 2026</strong>, atuamos ao lado da <strong>Brasil TecPar</strong> conduzindo toda a operação do evento com foco em fluidez operacional, experiência do público e suporte integral à equipe da marca — reduzindo ruído operacional e permitindo total foco em networking e geração de negócios.</p>`;
 
-// ─── Closing blocks ───────────────────────────────────────────────────────────
+// ─── Attachment + media kit block — v3.0 ─────────────────────────────────────
 
-const ATTACHMENT_TEXT = `Estou encaminhando em anexo nosso material institucional com mais detalhes sobre a estrutura e metodologia da VRASHOWS.`;
-const ATTACHMENT_HTML = `<p style="margin:0 0 16px;">Estou encaminhando em anexo nosso material institucional com mais detalhes sobre a estrutura e metodologia da VRASHOWS.</p>`;
+const ATTACHMENT_TEXT = `Anexei nosso material institucional para que você possa conhecer melhor a estrutura da VRASHOWS, nossa abordagem operacional e como apoiamos marcas em eventos B2B de alta complexidade.
+
+Acredito que o material pode trazer insights interessantes para futuras operações e ativações da sua empresa em eventos corporativos.
+
+Também deixo nosso site para uma visão mais ampla das soluções:
+www.vrashows.com.br`;
+
+const ATTACHMENT_HTML = `<p style="margin:0 0 16px;">Anexei nosso material institucional para que você possa conhecer melhor a estrutura da <strong>VRASHOWS</strong>, nossa abordagem operacional e como apoiamos marcas em eventos B2B de alta complexidade.</p>
+<p style="margin:0 0 16px;">Acredito que o material pode trazer insights interessantes para futuras operações e ativações da sua empresa em eventos corporativos.</p>
+<p style="margin:0 0 16px;">Também deixo nosso site para uma visão mais ampla das soluções: <a href="https://www.vrashows.com.br" style="color:#0f172a;font-weight:600;">www.vrashows.com.br</a></p>`;
+
+// ─── Signature ────────────────────────────────────────────────────────────────
 
 const PLAIN_TEXT_SIGNATURE = `--
 VRASHOWS
 Operações & Experiência Corporativa · VRASHOWS
 samir.ricardo@vrashows.com.br | www.vrashows.com.br
 Whatsapp (11) 95357-7804`;
+
+// ─── CTA ─────────────────────────────────────────────────────────────────────
 
 function buildCta(lead: ValidatedLead): { text: string; html: string } {
   const text = lead.recommendedCTA;
@@ -244,13 +264,11 @@ export function buildPersonalizedEmail(lead: ValidatedLead): PersonalizedEmail {
   const hubHtml = isExecutive ? HUB_BLOCK_SHORT_HTML : HUB_BLOCK_HTML;
   const cta = buildCta(lead);
 
-  // ── Plain text assembly
+  // ── Plain text assembly — v3.0 template
   const bodyTextParts = [
     intro.text,
     "",
     hubText,
-    "",
-    TAGLINE_TEXT,
     "",
     ...(lead.useCaseABRINT ? [ABRINT_TEXT, ""] : []),
     ATTACHMENT_TEXT,
@@ -261,11 +279,10 @@ export function buildPersonalizedEmail(lead: ValidatedLead): PersonalizedEmail {
   ];
   const bodyText = bodyTextParts.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 
-  // ── HTML assembly
+  // ── HTML assembly — v3.0 template
   const bodyHtmlParts = [
     intro.html,
     hubHtml,
-    TAGLINE_HTML,
     ...(lead.useCaseABRINT ? [ABRINT_HTML] : []),
     ATTACHMENT_HTML,
     cta.html,

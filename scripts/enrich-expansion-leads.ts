@@ -2,7 +2,7 @@
 /**
  * enrich-expansion-leads.ts — AI-powered contact enrichment for expansion batch
  *
- * Uses Claude Haiku (cheap mode) to generate a plausible decision-maker contact
+ * Uses gpt-4o-mini (cheap mode) to generate a plausible decision-maker contact
  * for each company, then resolves email patterns via EmailPatternResolver.
  * Outputs a ValidatedLead file compatible with run-continuous-outbound.ts.
  *
@@ -16,8 +16,11 @@ import "dotenv/config";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { emailPatternResolver } from "../agents/lead-enrichment-agent/email-resolver.js";
+import { getIALeadsCache } from "../memory/sqlite-cache.js";
+import { recordAnalytics, estimateOpenAICost } from "../memory/analytics.js";
+import { saveLocalMemory } from "../memory/local-rag.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -30,7 +33,8 @@ const val = (f: string) => { const i = args.indexOf(f); return i !== -1 ? args[i
 
 const SOURCE = val("--source") ?? "data/leads/futurecom/futurecom-expansion-batch-01.json";
 const DRY_RUN = flag("--dry-run") || flag("--preview");
-const BATCH_SIZE = Number(val("--batch") ?? "5"); // companies per AI call
+const BATCH_SIZE = Math.min(Number(val("--batch") ?? "3"), 5); // companies per AI call
+const MAX_OUTPUT_TOKENS = Number(process.env.MAX_OUTPUT_TOKENS ?? "700");
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -63,10 +67,9 @@ interface AIContact {
 
 // ─── AI enrichment ────────────────────────────────────────────────────────────
 
-const client = new Anthropic();
-const MODEL = process.env.CHEAP_MODE === "true" || process.env.DEV_MODE === "true"
-  ? "claude-haiku-4-5-20251001"
-  : "claude-haiku-4-5-20251001"; // always Haiku for this task
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const MODEL = process.env.ACQUISITION_MODEL ?? "gpt-4o-mini";
+const localCache = getIALeadsCache();
 
 async function generateContacts(companies: ExpansionCompany[]): Promise<AIContact[]> {
   const companiesJson = JSON.stringify(
@@ -82,21 +85,21 @@ async function generateContacts(companies: ExpansionCompany[]): Promise<AIContac
     null, 2
   );
 
-  const prompt = `You are a B2B lead enrichment specialist. Given these enterprise companies that are likely sponsors or participants of Futurecom 2026 (Brazil's largest telecom/tech event), generate ONE decision-maker contact per company.
+  const prompt = `Return JSON only. No markdown. No reasoning.
+Generate ONE likely marketing/events decision-maker per company for Futurecom 2026.
 
 COMPANIES:
 ${companiesJson}
 
 RULES:
-- Generate realistic Brazilian or LATAM professional names
-- Use accented characters correctly (e.g., João, María, André, Fernanda)
-- Pick the most relevant role from suggestedRoles for event/brand/marketing decisions
-- LinkedIn URLs: use pattern linkedin.com/in/firstname-lastname (lowercase, hyphen-separated)
-- rationale: 1 short sentence in PT-BR (max 20 words) — why this person for VRASHOWS event ops
-- recommendedApproach: 1 short sentence in PT-BR — personalization angle
-- recommendedCTA: max 8 words in PT-BR
+- Realistic Brazilian/LATAM name
+- Role from suggestedRoles
+- LinkedIn pattern: linkedin.com/in/firstname-lastname
+- rationale max 12 words
+- recommendedApproach max 12 words
+- recommendedCTA max 6 words
 
-RESPOND WITH ONLY A JSON ARRAY — no markdown, no explanation:
+JSON array schema:
 [
   {
     "company": "...",
@@ -111,13 +114,42 @@ RESPOND WITH ONLY A JSON ARRAY — no markdown, no explanation:
   }
 ]`;
 
-  const response = await client.messages.create({
+  const cachedPrompt = localCache.getPrompt("enrichment", prompt);
+  if (cachedPrompt) {
+    recordAnalytics({
+      provider: "cache",
+      source: "enrich-expansion-leads",
+      cacheHits: 1,
+      estimatedSavingsUsd: 0.01,
+      metadata: { kind: "prompt", companies: companies.map((c) => c.company) },
+    });
+    return cachedPrompt.response as AIContact[];
+  }
+
+  const response = await client.responses.create({
     model: MODEL,
-    max_tokens: 3000,
-    messages: [{ role: "user", content: prompt }],
+    input: prompt,
+    max_output_tokens: MAX_OUTPUT_TOKENS,
+    temperature: 0,
   });
 
-  const text = response.content[0]?.type === "text" ? response.content[0].text : "";
+  const text = response.output_text ?? "";
+  const usage = response.usage as
+    | { input_tokens?: number; output_tokens?: number; total_tokens?: number }
+    | undefined;
+  const inputTokens = usage?.input_tokens ?? 0;
+  const outputTokens = usage?.output_tokens ?? 0;
+  recordAnalytics({
+    provider: "openai",
+    source: "enrich-expansion-leads",
+    model: MODEL,
+    inputTokens,
+    outputTokens,
+    totalTokens: usage?.total_tokens,
+    estimatedCostUsd: estimateOpenAICost(MODEL, inputTokens, outputTokens),
+    requests: 1,
+    metadata: { companies: companies.map((c) => c.company) },
+  });
 
   // Extract JSON array from response (handles markdown fences and leading text)
   const arrayMatch = text.match(/\[[\s\S]*\]/);
@@ -128,6 +160,12 @@ RESPOND WITH ONLY A JSON ARRAY — no markdown, no explanation:
 
   try {
     const parsed = JSON.parse(arrayMatch[0]) as AIContact[];
+    localCache.savePrompt({
+      kind: "enrichment",
+      prompt,
+      response: parsed,
+      metadata: { model: MODEL, companies: companies.map((c) => c.company) },
+    });
     return parsed;
   } catch {
     // Try to recover partial JSON (truncated response)
@@ -226,6 +264,18 @@ const sourceData = JSON.parse(readFileSync(sourcePath, "utf8"));
 const companies: ExpansionCompany[] = Array.isArray(sourceData.leads) ? sourceData.leads : [];
 const campaignId = sourceData.campaign ?? "futurecom-2026-expansion";
 const targetEvent = sourceData.targetEvent ?? "Futurecom 2026";
+localCache.upsertCampaign({
+  campaignId,
+  name: targetEvent,
+  metadata: { source: SOURCE, model: MODEL },
+});
+saveLocalMemory({
+  collection: "campaigns",
+  content: `${campaignId}: ${targetEvent}`,
+  tags: ["campaign", campaignId],
+  metadata: { source: SOURCE },
+  id: `campaign:${campaignId}`,
+});
 
 console.log(`\n${c.bold("VRASHOWS — Expansion Lead Enrichment")}`);
 console.log(c.dim(`Source: ${SOURCE} · Companies: ${companies.length} · Model: ${MODEL}`));
@@ -246,15 +296,36 @@ if (DRY_RUN) {
 // ─── Run enrichment in batches ────────────────────────────────────────────────
 
 console.log(`\n${hr}`);
-console.log(`${c.bold("Running AI enrichment...")} (${Math.ceil(companies.length / BATCH_SIZE)} batch(es) of up to ${BATCH_SIZE})\n`);
 
 const enrichedLeads: ReturnType<typeof buildValidatedLead>[] = [];
 const failed: string[] = [];
+const pendingCompanies: ExpansionCompany[] = [];
+let cachedLeadCount = 0;
 
-for (let i = 0; i < companies.length; i += BATCH_SIZE) {
-  const batch = companies.slice(i, i + BATCH_SIZE);
+for (const company of companies) {
+  const cached = localCache.getLeadByCompany(company.company);
+  if (cached?.enrichment && Object.keys(cached.enrichment).length > 0) {
+    enrichedLeads.push(cached.enrichment as ReturnType<typeof buildValidatedLead>);
+    cachedLeadCount += 1;
+    recordAnalytics({
+      provider: "cache",
+      source: "enrich-expansion-leads",
+      cacheHits: 1,
+      estimatedSavingsUsd: 0.01,
+      metadata: { company: company.company, kind: "lead-enrichment" },
+    });
+    console.log(`  ${c.cyan("cache")} ${c.bold(company.company)} — enrichment reused`);
+  } else {
+    pendingCompanies.push(company);
+  }
+}
+
+console.log(`${c.bold("Running AI enrichment...")} (${Math.ceil(pendingCompanies.length / BATCH_SIZE)} batch(es) of up to ${BATCH_SIZE}; cache hits: ${enrichedLeads.length})\n`);
+
+for (let i = 0; i < pendingCompanies.length; i += BATCH_SIZE) {
+  const batch = pendingCompanies.slice(i, i + BATCH_SIZE);
   const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-  const totalBatches = Math.ceil(companies.length / BATCH_SIZE);
+  const totalBatches = Math.ceil(pendingCompanies.length / BATCH_SIZE);
   console.log(c.dim(`Batch ${batchNum}/${totalBatches}: ${batch.map((b) => b.company).join(", ")}`));
 
   try {
@@ -270,6 +341,26 @@ for (let i = 0; i < companies.length; i += BATCH_SIZE) {
 
       const lead = buildValidatedLead(company, contact, campaignId, targetEvent);
       enrichedLeads.push(lead);
+      localCache.upsertCompany({
+        company: company.company,
+        website: company.website,
+        segment: company.segment,
+        status: "enriched",
+        metadata: { campaignId, targetEvent },
+      });
+      localCache.upsertLead({
+        company: company.company,
+        contactName: contact.contactName,
+        email: lead.primaryEmail,
+        enrichment: lead,
+      });
+      saveLocalMemory({
+        collection: "companies",
+        content: `${company.company}: ${company.segment}, score ${company.eventFitScore}`,
+        tags: ["company", company.segment, campaignId],
+        metadata: { website: company.website, eventFitScore: company.eventFitScore },
+        id: `company:${company.company.toLowerCase()}`,
+      });
 
       const emailLabel = lead.primaryEmail ? c.green(lead.primaryEmail) : c.yellow("no email");
       const confLabel = lead.confidence === "high" ? c.green(lead.confidence) : lead.confidence === "medium" ? c.yellow(lead.confidence) : lead.confidence;
@@ -282,7 +373,7 @@ for (let i = 0; i < companies.length; i += BATCH_SIZE) {
   }
 
   // Small delay between batches to be gentle on the API
-  if (i + BATCH_SIZE < companies.length) {
+  if (i + BATCH_SIZE < pendingCompanies.length) {
     await new Promise((r) => setTimeout(r, 500));
   }
 }
@@ -323,6 +414,12 @@ const output = {
 };
 
 writeFileSync(outPath, JSON.stringify(output, null, 2), "utf8");
+recordAnalytics({
+  provider: "runtime",
+  source: "enrich-expansion-leads",
+  leadsGenerated: enrichedLeads.length - cachedLeadCount,
+  metadata: { totalLeads: enrichedLeads.length, cachedLeads: cachedLeadCount },
+});
 
 console.log(`\n${hr}`);
 console.log(`  ${c.green("Enrichment complete!")}`);
