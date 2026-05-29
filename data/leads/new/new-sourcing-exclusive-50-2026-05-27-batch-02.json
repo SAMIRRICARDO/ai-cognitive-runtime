@@ -1,0 +1,358 @@
+﻿{
+    "_meta":  {
+                  "description":  "IALEADS exclusive sourcing seed batch 2 of 2. No outbound executed.",
+                  "createdAt":  "2026-05-27",
+                  "status":  "needs_enrichment",
+                  "dedupePolicy":  "Exclude any email/company found in data/leads/blocklist/do-not-contact-latest.json and prior new sourcing files before enrichment or outbound.",
+                  "governance":  {
+                                     "cheapMode":  true,
+                                     "maxLeadsPerBatch":  25,
+                                     "requiresSplitBatches":  true,
+                                     "blocklistRequiredBeforeEnrichment":  true,
+                                     "blocklistRequiredBeforeOutbound":  true
+                                 },
+                  "sources":  [
+                                  "https://websummit.com/partners/event-partners/",
+                                  "https://rio.websummit.com/partners/",
+                                  "https://www.futurecom.com.br/imprensa/releases-futurecom-2025/ecossistemas-de-conectividade-e-a-realidade-digital-reunem-grandes-marcas-na-30-a-edicao-do-futurecom/",
+                                  "https://prod65.futurecom.com.br/content/dam/markets/braz/futurecom/pt/2025/arquivos/FUTURECOM-CONFIRMADOS%20MEETUP%20V1.pdf"
+                              ],
+                  "totalCompanies":  25
+              },
+    "campaign":  "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+    "targetEvent":  "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+    "targetSegments":  [
+                           "technology",
+                           "AI",
+                           "cloud",
+                           "telecom",
+                           "SaaS"
+                       ],
+    "leads":  [
+                  {
+                      "company":  "Forte Telecom",
+                      "website":  "fortetelecom.com.br",
+                      "linkedin":  "linkedin.com/company/forte-telecom",
+                      "segment":  "telecommunications / connectivity",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in Rio de Janeiro telecom services",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Huge Networks",
+                      "website":  "hugenetworks.com.br",
+                      "linkedin":  "linkedin.com/company/huge-networks",
+                      "segment":  "cybersecurity / networks",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in cybersecurity",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Growth Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "I-Systems",
+                      "website":  "i-systems.com.br",
+                      "linkedin":  "linkedin.com/company/i-systems",
+                      "segment":  "industrial automation / process optimization",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in industrial process optimization",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Icaro Tech",
+                      "website":  "icarotech.com",
+                      "linkedin":  "linkedin.com/company/icaro-tech",
+                      "segment":  "software development / automation",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in application development and automation",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Growth Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Moderna Certificacoes",
+                      "website":  "modernacertificacoes.com.br",
+                      "linkedin":  "linkedin.com/company/moderna-certificacoes",
+                      "segment":  "telecom certification / regulatory technology",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in Anatel certification services",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Think Technology",
+                      "website":  "thinktechnology.com.br",
+                      "linkedin":  "linkedin.com/company/think-technology",
+                      "segment":  "fiber network solutions / telecom equipment",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in fiber optic network infrastructure",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Channel Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "TP-Link",
+                      "website":  "tp-link.com",
+                      "linkedin":  "linkedin.com/company/tp-link",
+                      "segment":  "connectivity / networking hardware",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in residential and SMB connectivity",
+                      "targetRoles":  [
+                                          "Brand Marketing Manager",
+                                          "Events Marketing Manager",
+                                          "Channel Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "YouCast",
+                      "website":  "youcast.tv.br",
+                      "linkedin":  "linkedin.com/company/youcast",
+                      "segment":  "IPTV / media distribution platform",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in IPTV channel distribution",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Growth Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Zopone",
+                      "website":  "zopone.com.br",
+                      "linkedin":  "linkedin.com/company/zopone",
+                      "segment":  "telecom engineering / communications infrastructure",
+                      "eventFit":  "Futurecom confirmed exhibitor profile in communications engineering",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Escola da Nuvem",
+                      "website":  "escoladanuvem.org",
+                      "linkedin":  "linkedin.com/company/escola-da-nuvem",
+                      "segment":  "cloud education / workforce technology",
+                      "eventFit":  "Futurecom meetup presence in women in TIC and cloud ecosystem",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Partnerships Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Bizzut HR Tech",
+                      "website":  "bizzut.com.br",
+                      "linkedin":  "linkedin.com/company/bizzut",
+                      "segment":  "HR tech / SaaS / workforce technology",
+                      "eventFit":  "Futurecom meetup presence in women in TIC and HR technology ecosystem",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Growth Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Open Data Center Brasil",
+                      "website":  "opendatacenter.com.br",
+                      "linkedin":  "linkedin.com/company/open-data-center-brasil",
+                      "segment":  "data center / cloud infrastructure",
+                      "eventFit":  "Futurecom meetup presence in data center track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "OpenX",
+                      "website":  "openx.com.br",
+                      "linkedin":  "linkedin.com/company/openx-brasil",
+                      "segment":  "technology / data center / infrastructure",
+                      "eventFit":  "Futurecom meetup presence in data center track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Growth Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Elea Data Center",
+                      "website":  "elea.com",
+                      "linkedin":  "linkedin.com/company/elea-data-centers",
+                      "segment":  "data center / cloud infrastructure",
+                      "eventFit":  "Futurecom meetup presence in data center and mission-critical infrastructure",
+                      "targetRoles":  [
+                                          "Brand Marketing Manager",
+                                          "Events Marketing Manager",
+                                          "Field Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "RBT Internet",
+                      "website":  "rbtinternet.com.br",
+                      "linkedin":  "linkedin.com/company/rbt-internet",
+                      "segment":  "ISP / internet services",
+                      "eventFit":  "Futurecom meetup presence in data center and ISP ecosystem",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Digicon",
+                      "website":  "digicon.com.br",
+                      "linkedin":  "linkedin.com/company/digicon-sa",
+                      "segment":  "smart cities / mobility technology",
+                      "eventFit":  "Futurecom meetup presence in smart cities track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "UniQHub",
+                      "website":  "uniqhub.com.br",
+                      "linkedin":  "linkedin.com/company/uniqhub",
+                      "segment":  "smart cities / technology platform",
+                      "eventFit":  "Futurecom meetup presence in smart cities track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Growth Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "YOFC",
+                      "website":  "yofc.com",
+                      "linkedin":  "linkedin.com/company/yofc",
+                      "segment":  "fiber optics / telecom infrastructure",
+                      "eventFit":  "Futurecom meetup presence in smart cities and telecom infrastructure",
+                      "targetRoles":  [
+                                          "Marketing Manager LATAM",
+                                          "Events Manager",
+                                          "Channel Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Qlik",
+                      "website":  "qlik.com",
+                      "linkedin":  "linkedin.com/company/qlik",
+                      "segment":  "SaaS / analytics / data integration",
+                      "eventFit":  "Futurecom meetup presence and enterprise analytics event fit",
+                      "targetRoles":  [
+                                          "Field Marketing Manager",
+                                          "Events Marketing Manager",
+                                          "Growth Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Defense Secure",
+                      "website":  "defensesecure.com.br",
+                      "linkedin":  "linkedin.com/company/defense-secure",
+                      "segment":  "cybersecurity / telecom services",
+                      "eventFit":  "Futurecom meetup presence in smart cities and telecom services",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "ALGCOM",
+                      "website":  "algcom.com.br",
+                      "linkedin":  "linkedin.com/company/algcom",
+                      "segment":  "telecom equipment / wireless connectivity",
+                      "eventFit":  "Futurecom meetup presence in ISP internationalization track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Channel Marketing Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "Ecossistema 5G",
+                      "website":  "ecossistema5g.com.br",
+                      "linkedin":  "linkedin.com/company/ecossistema-5g",
+                      "segment":  "5G ecosystem / telecom innovation",
+                      "eventFit":  "Futurecom meetup presence in ISP internationalization track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Partnerships Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "GigaFibra",
+                      "website":  "gigafibra.net.br",
+                      "linkedin":  "linkedin.com/company/gigafibra",
+                      "segment":  "ISP / fiber broadband",
+                      "eventFit":  "Futurecom meetup presence in ISP internationalization track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "HIT Brasil",
+                      "website":  "hitbrasil.com.br",
+                      "linkedin":  "linkedin.com/company/hit-brasil",
+                      "segment":  "telecom / ISP strategy",
+                      "eventFit":  "Futurecom meetup presence in ISP internationalization track",
+                      "targetRoles":  [
+                                          "Marketing Manager",
+                                          "Events Manager",
+                                          "Partnerships Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  },
+                  {
+                      "company":  "QMC Telecom",
+                      "website":  "qmctelecom.com",
+                      "linkedin":  "linkedin.com/company/qmc-telecom",
+                      "segment":  "telecom infrastructure / wireless infrastructure",
+                      "eventFit":  "Futurecom meetup presence in ISP internationalization track",
+                      "targetRoles":  [
+                                          "Marketing Manager LATAM",
+                                          "Events Manager",
+                                          "Brand Manager"
+                                      ],
+                      "status":  "needs_enrichment"
+                  }
+              ]
+}

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VRAXIA — Sistema Operacional de IA para Enterprise</title>
+  <meta name="description" content="VRAXIA unifica agentes especializados de IA em uma única infraestrutura corporativa modular e observável. Memória corporativa. Legado cognitivo em escala." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #060608;
+      --bg-2:     #0d0d12;
+      --bg-3:     #111118;
+      --border:   rgba(255,255,255,0.07);
+      --text:     #e8e8f0;
+      --muted:    #7a7a92;
+      --accent:   #7b61ff;
+      --accent-2: #a78bfa;
+      --green:    #22c55e;
+      --font:     'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+    h1 { font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+    h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+    h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    p  { color: var(--muted); max-width: 62ch; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    section { padding: 7rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1.25rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(6,6,8,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.12em; color: var(--text); text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.75rem; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 500;
+      text-decoration: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; border: 1px solid transparent; }
+    .btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.04); }
+
+    /* HERO */
+    #hero { padding: 12rem 0 7rem; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+    .hero-glow {
+      position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(ellipse, rgba(123,97,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.4rem 1rem; border: 1px solid rgba(123,97,255,0.3);
+      border-radius: 100px; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent-2);
+      background: rgba(123,97,255,0.08); margin-bottom: 2.5rem;
+    }
+    .hero-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; flex-shrink: 0; }
+    .hero-tag .sep { color: rgba(255,255,255,0.15); }
+    #hero h1 { margin-bottom: 1.75rem; }
+    #hero h1 em { font-style: normal; color: var(--accent-2); }
+    .hero-eyeline {
+      display: block; font-size: 0.95rem; font-weight: 400; letter-spacing: 0.02em;
+      color: var(--muted); margin-bottom: 0.5rem; text-transform: none;
+    }
+    .hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 50ch; margin-bottom: 2.5rem; line-height: 1.7; }
+    .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .hero-divider { margin-top: 5rem; padding-top: 3rem; border-top: 1px solid var(--border); display: flex; gap: 3rem; flex-wrap: wrap; }
+    .hero-stat strong { display: block; font-size: 1.5rem; font-weight: 700; color: var(--text); }
+    .hero-stat span { font-size: 0.82rem; color: var(--muted); }
+
+    /* SECTION LABELS */
+    .section-label { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .section-label h3 { margin: 0; }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 40px; }
+
+    /* PROBLEM */
+    #problem .lead { font-size: clamp(1.4rem, 2.5vw, 2rem); font-weight: 500; color: var(--text); max-width: 70ch; line-height: 1.45; margin-bottom: 2rem; }
+    #problem .lead em { font-style: normal; color: var(--muted); }
+    .problem-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 3rem; }
+    .problem-point { background: var(--bg-2); padding: 1.75rem; }
+    .problem-point .icon { font-size: 1.3rem; margin-bottom: 0.75rem; }
+    .problem-point strong { display: block; color: var(--text); font-size: 0.95rem; margin-bottom: 0.4rem; }
+    .problem-point p { font-size: 0.85rem; max-width: none; }
+
+    /* WHAT IS */
+    #what .not-list { display: flex; gap: 1rem; flex-wrap: wrap; margin: 2rem 0; }
+    .not-badge { padding: 0.5rem 1rem; border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; font-size: 0.82rem; color: #f87171; background: rgba(239,68,68,0.06); }
+    .capabilities-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 2.5rem; }
+    .cap-card { background: var(--bg-2); padding: 1.75rem; transition: background 0.2s; }
+    .cap-card:hover { background: var(--bg-3); }
+    .cap-card .cap-icon { font-size: 1.4rem; margin-bottom: 1rem; }
+    .cap-card strong { display: block; color: var(--text); margin-bottom: 0.4rem; }
+    .cap-card p { font-size: 0.85rem; max-width: none; }
+
+    /* HUMAN RAG */
+    #humanrag { background: var(--bg-2); }
+    .rag-hero { background: linear-gradient(135deg, rgba(123,97,255,0.1), rgba(167,139,250,0.05)); border: 1px solid rgba(123,97,255,0.2); border-radius: 16px; padding: 3rem; margin-bottom: 3rem; }
+    .rag-hero blockquote { font-size: clamp(1.1rem, 2vw, 1.35rem); font-style: italic; color: var(--text); line-height: 1.55; border-left: 3px solid var(--accent); padding-left: 1.5rem; margin-top: 1.5rem; }
+    .rag-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 3rem; }
+    .rag-col { background: var(--bg); padding: 2rem; }
+    .rag-col.active { background: rgba(123,97,255,0.06); }
+    .rag-col h4 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem; }
+    .rag-col h4.accent { color: var(--accent-2); }
+    .rag-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .rag-col ul li { font-size: 0.9rem; color: var(--muted); display: flex; align-items: flex-start; gap: 0.5rem; }
+    .rag-col ul li::before { content: '—'; color: var(--border); flex-shrink: 0; }
+    .rag-col.active ul li::before { content: '→'; color: var(--accent); }
+    .rag-col.active ul li { color: var(--text); }
+    .psychagent-card { border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; background: var(--bg); }
+    .psychagent-card h4 { font-size: 1.2rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+    .psychagent-card .subtitle { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.5rem; max-width: none; }
+    .psychagent-card .body { font-size: 0.88rem; color: var(--muted); max-width: none; }
+    .psych-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1.5rem; }
+    .psych-tag { padding: 0.6rem 0.9rem; background: rgba(123,97,255,0.08); border: 1px solid rgba(123,97,255,0.15); border-radius: 8px; font-size: 0.82rem; color: var(--accent-2); }
+
+    /* AGENTS */
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 2.5rem; }
+    .module-card { background: var(--bg-2); padding: 1.75rem; transition: background 0.2s; cursor: default; }
+    .module-card:hover { background: var(--bg-3); }
+    .module-card .mod-icon { font-size: 1.3rem; margin-bottom: 1rem; }
+    .module-card strong { display: block; color: var(--text); margin-bottom: 0.35rem; font-size: 0.95rem; }
+    .module-card p { font-size: 0.82rem; max-width: none; }
+    .mod-status { display: inline-block; margin-top: 1rem; padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.05em; background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+
+    /* USE CASES */
+    .verticals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 2.5rem; }
+    .vertical-card { background: var(--bg-2); padding: 1.75rem; display: flex; flex-direction: column; gap: 0.5rem; transition: background 0.2s; }
+    .vertical-card:hover { background: var(--bg-3); }
+    .v-industry { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+    .v-use { font-size: 0.83rem; color: var(--muted); }
+
+    /* ROADMAP */
+    #roadmap { background: var(--bg-2); }
+    .roadmap-track { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 2.5rem 0; }
+    .roadmap-phase { background: var(--bg); padding: 2rem; }
+    .roadmap-phase.active { background: rgba(123,97,255,0.06); }
+    .phase-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.25rem; }
+    .phase-label.now { color: var(--green); }
+    .phase-label.next { color: var(--accent-2); }
+    .phase-label.future { color: var(--muted); }
+    .roadmap-phase ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .roadmap-phase ul li { font-size: 0.88rem; color: var(--muted); display: flex; align-items: flex-start; gap: 0.5rem; }
+    .roadmap-phase ul li::before { content: '→'; color: var(--border); flex-shrink: 0; }
+    .roadmap-phase.active ul li::before { color: var(--accent); }
+    .roadmap-phase.active ul li { color: var(--text); }
+
+    /* CTA */
+    #cta { text-align: center; padding: 9rem 0; position: relative; overflow: hidden; }
+    .cta-glow { position: absolute; bottom: -30%; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(123,97,255,0.1) 0%, transparent 70%); pointer-events: none; }
+    .eyebrow { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 1.5rem; }
+    #cta h2 { margin: 0 auto 1.25rem; max-width: 18ch; }
+    .cta-sub { display: block; font-size: 1.05rem; color: var(--muted); margin: 0 auto 2.5rem; max-width: 40ch; }
+    .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .audience-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 4rem; text-align: left; }
+    .audience-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; }
+    .aud-tag { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 0.75rem; }
+    .audience-card p { font-size: 0.88rem; max-width: none; line-height: 1.6; }
+
+    /* FOOTER */
+    footer { padding: 2.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .f-logo { font-size: 0.9rem; font-weight: 700; letter-spacing: 0.12em; color: var(--muted); }
+    .f-tagline { font-size: 0.8rem; color: var(--muted); opacity: 0.5; }
+
+    @media (max-width: 700px) {
+      .nav-links { display: none; }
+      .rag-compare { grid-template-columns: 1fr; }
+      .roadmap-track { grid-template-columns: 1fr; }
+      #hero { padding: 10rem 0 5rem; }
+      .hero-divider { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">VRAXIA</a>
+  <ul class="nav-links">
+    <li><a href="#humanrag">Human RAG</a></li>
+    <li><a href="#agents">Agentes</a></li>
+    <li><a href="#usecases">Casos de Uso</a></li>
+    <li><a href="#cta">Contato</a></li>
+  </ul>
+  <a href="#cta" class="btn btn-primary">Solicitar Demo</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="container">
+    <div class="hero-tag">
+      <span class="dot"></span>
+      <span>Sistema Operacional de IA</span>
+      <span class="sep">·</span>
+      <span>Enterprise</span>
+    </div>
+    <h1>
+      <span class="hero-eyeline">Transforme conhecimento humano em</span>
+      Capital <em>Organizacional Permanente.</em>
+    </h1>
+    <p class="hero-sub">
+      Agentes especializados. Memória corporativa. Legado cognitivo — em escala.<br>
+      Construído para organizações que não podem perder o que seus melhores profissionais sabem.
+    </p>
+    <div class="hero-ctas">
+      <a href="#cta" class="btn btn-primary">Solicitar Demo →</a>
+      <a href="#usecases" class="btn btn-outline">Ver Casos de Uso</a>
+    </div>
+    <div class="hero-divider">
+      <div class="hero-stat">
+        <strong>8</strong>
+        <span>Módulos de Negócio</span>
+      </div>
+      <div class="hero-stat">
+        <strong>Human RAG</strong>
+        <span>Inovação Central</span>
+      </div>
+      <div class="hero-stat">
+        <strong>7</strong>
+        <span>Verticais Enterprise</span>
+      </div>
+      <div class="hero-stat">
+        <strong>Full</strong>
+        <span>Camada de Observabilidade</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="container">
+    <div class="section-label"><h3>O Problema</h3></div>
+    <p class="lead">
+      Todo ano, empresas perdem o que as tornou grandes.<br>
+      <em>Quando um profissional sênior sai, seu julgamento vai junto.</em>
+    </p>
+    <p>Seu raciocínio. Seu reconhecimento de padrões. Sua memória institucional.<br>
+    Nenhum documento captura isso. Nenhum onboarding transfere. Nenhum sistema preserva.</p>
+    <div class="problem-points">
+      <div class="problem-point">
+        <div class="icon">📉</div>
+        <strong>Perda de Conhecimento</strong>
+        <p>A expertise crítica desaparece no momento em que os principais profissionais saem da organização.</p>
+      </div>
+      <div class="problem-point">
+        <div class="icon">🔁</div>
+        <strong>Onboarding Lento</strong>
+        <p>Novos colaboradores passam meses reaprendendo o que seus antecessores já sabiam.</p>
+      </div>
+      <div class="problem-point">
+        <div class="icon">🧩</div>
+        <strong>Inteligência Fragmentada</strong>
+        <p>Ferramentas de IA operam em silos — sem uma camada operacional unificada entre departamentos.</p>
+      </div>
+      <div class="problem-point">
+        <div class="icon">📊</div>
+        <strong>Sem Observabilidade</strong>
+        <p>Decisões são tomadas sem visibilidade de como o conhecimento organizacional está sendo utilizado.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT IS VRAXIA -->
+<section id="what">
+  <div class="container">
+    <div class="section-label"><h3>O que é a VRAXIA</h3></div>
+    <h2>Não é um chatbot.<br>Não é só automação.</h2>
+    <div class="not-list">
+      <span class="not-badge">✗ Não é um chatbot</span>
+      <span class="not-badge">✗ Não é só automação</span>
+      <span class="not-badge">✗ Não é mais uma ferramenta SaaS</span>
+    </div>
+    <p>VRAXIA é um Sistema Operacional Corporativo de IA — uma infraestrutura modular e observável que unifica agentes especializados, automatiza processos empresariais e transforma conhecimento organizacional em ativo permanente.</p>
+    <div class="capabilities-grid">
+      <div class="cap-card">
+        <div class="cap-icon">🤖</div>
+        <strong>Agentes Especializados</strong>
+        <p>Agentes de IA criados para cada domínio de negócio — treinados para seu contexto operacional específico.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">⚙️</div>
+        <strong>Automação Empresarial</strong>
+        <p>Execução de ponta a ponta em Comercial, Financeiro, RH, Jurídico e Operações.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">🧠</div>
+        <strong>Conhecimento Organizacional</strong>
+        <p>Inteligência corporativa centralizada e consultável — sempre disponível, nunca perdida.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">🔭</div>
+        <strong>Observabilidade</strong>
+        <p>Visibilidade total de cada decisão do agente, uso de tokens, latência e custo.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">📈</div>
+        <strong>Analytics</strong>
+        <p>Insights operacionais em nível de sistema — em todos os departamentos e agentes.</p>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">💾</div>
+        <strong>Memória Corporativa</strong>
+        <p>Memória organizacional persistente, semântica e de longo prazo — em evolução contínua.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HUMAN RAG -->
+<section id="humanrag">
+  <div class="container">
+    <div class="section-label"><h3>Inovação Central</h3></div>
+    <div class="rag-hero">
+      <h2>Human RAG</h2>
+      <p style="margin-top:0.75rem; color:var(--muted); max-width:none;">
+        O RAG tradicional recupera documentos.<br>
+        O Human RAG captura <strong style="color:var(--accent-2)">raciocínio.</strong>
+      </p>
+      <blockquote>
+        "Preservar e escalar o julgamento dos melhores profissionais — para que o conhecimento de uma pessoa excepcional não desapareça quando ela sai."
+      </blockquote>
+    </div>
+
+    <div class="rag-compare">
+      <div class="rag-col">
+        <h4>RAG Tradicional</h4>
+        <ul>
+          <li>Recupera documentos armazenados</li>
+          <li>Retorna fragmentos de texto</li>
+          <li>Sem contexto de raciocínio</li>
+          <li>Base de conhecimento estática</li>
+          <li>Granularidade de documento</li>
+        </ul>
+      </div>
+      <div class="rag-col active">
+        <h4 class="accent">Human RAG</h4>
+        <ul>
+          <li>Captura padrões de raciocínio</li>
+          <li>Codifica julgamento e decisões</li>
+          <li>Preserva contexto cognitivo</li>
+          <li>Memória organizacional viva</li>
+          <li>Granularidade de especialista</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="psychagent-card">
+      <h4>PsychAgent — Motor de Perfilamento Cognitivo</h4>
+      <p class="subtitle">Constrói um perfil psicológico calibrado para aumentar a fidelidade do gêmeo digital de cada profissional.</p>
+      <p class="body">O PsychAgent realiza avaliação cognitiva e comportamental por IA — não para substituir pessoas, mas para preservar e escalar seu ativo mais valioso: como elas pensam.</p>
+      <div class="psych-grid">
+        <div class="psych-tag">Inferência de Personalidade</div>
+        <div class="psych-tag">Estilo Decisório</div>
+        <div class="psych-tag">Valores Fundamentais</div>
+        <div class="psych-tag">Comportamento sob Pressão</div>
+        <div class="psych-tag">Vieses Cognitivos</div>
+        <div class="psych-tag">Perfil Psicológico</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section id="agents">
+  <div class="container">
+    <div class="section-label"><h3>Agentes Especializados</h3></div>
+    <h2>Um agente por domínio.<br>Uma plataforma para tudo.</h2>
+    <p style="margin-top:1rem;">Arquitetura modular — ative exatamente o que sua organização precisa. Escale quando estiver pronto.</p>
+    <div class="modules-grid">
+      <div class="module-card">
+        <div class="mod-icon">💼</div>
+        <strong>Comercial</strong>
+        <p>Inteligência de vendas e automação de pipeline.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+      <div class="module-card">
+        <div class="mod-icon">📣</div>
+        <strong>Marketing</strong>
+        <p>Orquestração de campanhas e análise de audiência.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+      <div class="module-card">
+        <div class="mod-icon">📊</div>
+        <strong>Financeiro</strong>
+        <p>Análise financeira e automação de relatórios.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+      <div class="module-card">
+        <div class="mod-icon">👥</div>
+        <strong>RH</strong>
+        <p>Inteligência de talentos e aceleração de onboarding.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+      <div class="module-card">
+        <div class="mod-icon">⚖️</div>
+        <strong>Jurídico</strong>
+        <p>Análise de contratos e monitoramento de compliance.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+      <div class="module-card">
+        <div class="mod-icon">🔧</div>
+        <strong>Operações</strong>
+        <p>Orquestração de workflows e automação de processos.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+      <div class="module-card">
+        <div class="mod-icon">📉</div>
+        <strong>Analytics</strong>
+        <p>Insights interdepartamentais e monitoramento de KPIs.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+      <div class="module-card">
+        <div class="mod-icon">🧬</div>
+        <strong>Conhecimento Corporativo</strong>
+        <p>Captura de expertise e recuperação de conhecimento.</p>
+        <span class="mod-status">Ativo</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="usecases">
+  <div class="container">
+    <div class="section-label"><h3>Casos de Uso</h3></div>
+    <h2>Construído para setores onde<br>conhecimento é vantagem competitiva.</h2>
+    <div class="verticals-grid">
+      <div class="vertical-card">
+        <div class="v-industry">Tecnologia</div>
+        <div class="v-use">Preservação de conhecimento de engenharia · Inteligência de P&D · Aceleração de onboarding</div>
+      </div>
+      <div class="vertical-card">
+        <div class="v-industry">Telecom</div>
+        <div class="v-use">Automação de operações · Captura de conhecimento de rede · Inteligência de incidentes</div>
+      </div>
+      <div class="vertical-card">
+        <div class="v-industry">Logística</div>
+        <div class="v-use">Orquestração de processos · Memória operacional · Inteligência de rotas e decisões</div>
+      </div>
+      <div class="vertical-card">
+        <div class="v-industry">Engenharia</div>
+        <div class="v-use">Codificação de expertise técnica · Inteligência de projetos · Análise de especificações</div>
+      </div>
+      <div class="vertical-card">
+        <div class="v-industry">Saúde</div>
+        <div class="v-use">Preservação de conhecimento clínico · Automação de compliance · Inteligência de protocolos</div>
+      </div>
+      <div class="vertical-card">
+        <div class="v-industry">Financeiro</div>
+        <div class="v-use">Inteligência de risco · Gestão de conhecimento regulatório · Rastreabilidade de decisões</div>
+      </div>
+      <div class="vertical-card">
+        <div class="v-industry">Indústria</div>
+        <div class="v-use">Captura de expertise de produção · Inteligência operacional · Memória de processos</div>
+      </div>
+    </div>
+    <p style="margin-top:2rem; font-size:0.88rem;">Foco: empresas de médio e grande porte. Ambientes de alta complexidade. Conhecimento crítico em jogo.</p>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <div class="section-label"><h3>Roadmap</h3></div>
+    <h2>Da plataforma<br>ao padrão operacional.</h2>
+    <div class="roadmap-track">
+      <div class="roadmap-phase active">
+        <div class="phase-label now">● Agora</div>
+        <ul>
+          <li>Showcase comercial</li>
+          <li>Validação de mercado</li>
+          <li>Core em produção</li>
+          <li>Demonstração de arquitetura</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-label next">◎ Próximo</div>
+        <ul>
+          <li>Lançamento SaaS Enterprise</li>
+          <li>Plataforma Human RAG</li>
+          <li>Onboarding enterprise</li>
+          <li>Infraestrutura multi-tenant</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-label future">○ Futuro</div>
+        <ul>
+          <li>Marketplace de Agentes</li>
+          <li>AI OS Corporativo</li>
+          <li>Redes de conhecimento cross-org</li>
+          <li>Cognitive Legacy em escala</li>
+        </ul>
+      </div>
+    </div>
+    <p>A VRAXIA está em validação comercial ativa. O core está em produção. O roadmap mira SaaS Enterprise, Marketplace de Agentes e o Sistema Operacional Corporativo de IA completo.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <div class="container">
+    <span class="eyebrow">Pronto quando você estiver</span>
+    <h2>O ativo mais valioso da sua organização está saindo pela porta da frente.</h2>
+    <span class="cta-sub">A VRAXIA preserva. Escala. Perpetua.</span>
+    <div class="cta-actions">
+      <a href="mailto:contact@vraxia.com" class="btn btn-primary">Solicitar Demo →</a>
+      <a href="#agents" class="btn btn-outline">Ver Agentes</a>
+    </div>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="aud-tag">Para Recrutadores</div>
+        <p>Um sistema multi-agente de IA em nível de produção — Human RAG, PsychAgent, observabilidade completa, orquestração modular. Construído do zero em TypeScript.</p>
+      </div>
+      <div class="audience-card">
+        <div class="aud-tag">Para CTOs</div>
+        <p>Infraestrutura de IA plug-and-play com modularidade enterprise, memória semântica, retrieval com pgvector e orquestração de agentes observável em todas as unidades de negócio.</p>
+      </div>
+      <div class="audience-card">
+        <div class="aud-tag">Para Investidores</div>
+        <p>Uma plataforma de Cognitive Legacy endereçando um problema sistêmico em todos os setores — com caminho claro de showcase para SaaS Enterprise e Marketplace de Agentes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="f-logo">VRAXIA</span>
+  <span class="f-tagline">Inteligência Operacional. Conhecimento Permanente. Escala Enterprise.</span>
+</footer>
+
+</body>
+</html>

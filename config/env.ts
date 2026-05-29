@@ -15,6 +15,8 @@ const envSchema = z.object({
   RESEND_FROM_NAME:     z.string().optional(),
   MEDIA_KIT_PDF:        z.string().optional(),
   OUTBOUND_BCC_EMAIL:   z.string().email().optional(),
+  RESEND_WEBHOOK_SECRET: z.string().optional(),
+  WEBHOOK_PORT:          z.coerce.number().int().positive().default(4000),
 
   // ── Models ────────────────────────────────────────────────────────────────
   DEFAULT_MODEL:  z.string().default("claude-haiku-4-5-20251001"),

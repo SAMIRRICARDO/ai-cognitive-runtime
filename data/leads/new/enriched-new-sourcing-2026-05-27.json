@@ -1,0 +1,651 @@
+{
+  "_meta": {
+    "description": "Futurecom expansion batch 01 — AI-enriched contacts with email patterns",
+    "enrichedAt": "2026-05-27T12:44:22.123Z",
+    "sourceFile": "data/leads/new/new-sourcing-2026-05-27.json",
+    "model": "gpt-4o-mini",
+    "totalLeads": 10,
+    "hotCount": 0,
+    "warmCount": 10,
+    "failedCount": 0,
+    "failedCompanies": []
+  },
+  "campaign": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+  "targetEvent": "Futurecom 2026",
+  "validatedAt": "2026-05-27T12:44:22.123Z",
+  "totalLeads": 10,
+  "hotCount": 0,
+  "warmCount": 10,
+  "leads": [
+    {
+      "company": "Pipefy",
+      "contactName": "Lucas Silva",
+      "role": "Events Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@pipefy.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@pipefy.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@pipefy.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@pipefy.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@pipefy.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@pipefy.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@pipefy.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in managing large-scale tech events.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight Pipefy's innovative solutions.",
+      "recommendedCTA": "Schedule a demo",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:00.057Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "pipefy.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "pipefy.com",
+      "segment": "SaaS / workflow automation / AI agents"
+    },
+    {
+      "company": "StackSpot",
+      "contactName": "Mariana Costa",
+      "role": "Field Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@stackspot.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@stackspot.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@stackspot.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@stackspot.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@stackspot.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@stackspot.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@stackspot.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Strong background in AI product marketing.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Focus on AI product demos.",
+      "recommendedCTA": "Join our demo",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:00.066Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "stackspot.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "stackspot.com",
+      "segment": "AI agents / software development platform"
+    },
+    {
+      "company": "Pendo",
+      "contactName": "Rafael Almeida",
+      "role": "Field Marketing Manager LATAM",
+      "linkedin": "linkedin.com/in/rafael-almeida",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "rafael.almeida@pendo.io",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "ralmeida@pendo.io",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "r.almeida@pendo.io",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafael@pendo.io",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafael_almeida@pendo.io",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafaelalmeida@pendo.io",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "rafael.almeida@pendo.io",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Experienced in product-led growth strategies.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Leverage partner ecosystem for visibility.",
+      "recommendedCTA": "Connect with us",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:00.071Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "pendo.io",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "pendo.io",
+      "segment": "SaaS / product analytics / AI"
+    },
+    {
+      "company": "SendPulse",
+      "contactName": "Lucas Silva",
+      "role": "Marketing Manager Brazil",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@sendpulse.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@sendpulse.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@sendpulse.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@sendpulse.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@sendpulse.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@sendpulse.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@sendpulse.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on marketing automation in Brazil.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight partnership benefits at Futurecom.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:09.844Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "sendpulse.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "sendpulse.com",
+      "segment": "SaaS / marketing automation / CRM"
+    },
+    {
+      "company": "Snov.io",
+      "contactName": "Mariana Costa",
+      "role": "Growth Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@snov.io",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@snov.io",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@snov.io",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@snov.io",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@snov.io",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@snov.io",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@snov.io",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Target B2B lead generation strategies.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize lead intelligence solutions.",
+      "recommendedCTA": "Connect for collaboration",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:09.850Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "snov.io",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "snov.io",
+      "segment": "SaaS / lead intelligence / sales automation"
+    },
+    {
+      "company": "AEVO",
+      "contactName": "Rafael Almeida",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/rafael-almeida",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "rafael.almeida@aevo.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "ralmeida@aevo.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "r.almeida@aevo.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafael@aevo.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafael_almeida@aevo.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafaelalmeida@aevo.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "rafael.almeida@aevo.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Engage enterprise innovation audience effectively.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Showcase innovation management tools.",
+      "recommendedCTA": "Join us at Futurecom",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:09.855Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "aevo.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "aevo.com.br",
+      "segment": "SaaS / innovation management"
+    },
+    {
+      "company": "CESAR",
+      "contactName": "Lucas Silva",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@cesar.org.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@cesar.org.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@cesar.org.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@cesar.org.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@cesar.org.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@cesar.org.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@cesar.org.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on innovation and digital transformation.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight CESAR's tech innovations.",
+      "recommendedCTA": "Connect for collaboration.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:18.436Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "cesar.org.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "cesar.org.br",
+      "segment": "technology innovation / AI / digital transformation"
+    },
+    {
+      "company": "Loja Integrada",
+      "contactName": "Fernanda Costa",
+      "role": "Growth Marketing Manager",
+      "linkedin": "linkedin.com/in/fernanda-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "fernanda.costa@lojaintegrada.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "fcosta@lojaintegrada.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "f.costa@lojaintegrada.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "fernanda@lojaintegrada.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "fernanda_costa@lojaintegrada.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "fernandacosta@lojaintegrada.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "fernanda.costa@lojaintegrada.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Enhance digital commerce branding.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Showcase e-commerce success stories.",
+      "recommendedCTA": "Let's discuss partnership.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:18.439Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "lojaintegrada.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "lojaintegrada.com.br",
+      "segment": "SaaS / e-commerce platform"
+    },
+    {
+      "company": "Connectoway",
+      "contactName": "Rafael Almeida",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/rafael-almeida",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "rafael.almeida@connectoway.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "ralmeida@connectoway.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "r.almeida@connectoway.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafael@connectoway.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafael_almeida@connectoway.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "rafaelalmeida@connectoway.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "rafael.almeida@connectoway.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Promote telecom technology demos effectively.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Engage with interactive demos.",
+      "recommendedCTA": "Schedule a demo.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:18.442Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "connectoway.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "connectoway.com.br",
+      "segment": "telecom / connectivity / network solutions"
+    },
+    {
+      "company": "Zup Innovation",
+      "contactName": "Lucas Silva",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@zup.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@zup.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@zup.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@zup.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@zup.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@zup.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@zup.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in organizing tech-focused events.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight AI and developer engagement opportunities.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026",
+      "validatedAt": "2026-05-27T12:44:22.119Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "zup.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "zup.com.br",
+      "segment": "technology services / AI / software engineering"
+    }
+  ]
+}

@@ -1,0 +1,1596 @@
+{
+  "_meta": {
+    "description": "Futurecom expansion batch 01 — AI-enriched contacts with email patterns",
+    "enrichedAt": "2026-05-27T13:28:23.521Z",
+    "sourceFile": "data/leads/new/new-sourcing-exclusive-50-2026-05-27-batch-02.json",
+    "model": "gpt-4o-mini",
+    "totalLeads": 25,
+    "hotCount": 0,
+    "warmCount": 25,
+    "failedCount": 0,
+    "failedCompanies": []
+  },
+  "campaign": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+  "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+  "validatedAt": "2026-05-27T13:28:23.521Z",
+  "totalLeads": 25,
+  "hotCount": 0,
+  "warmCount": 25,
+  "leads": [
+    {
+      "company": "Forte Telecom",
+      "contactName": "Lucas Silva",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@fortetelecom.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@fortetelecom.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@fortetelecom.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@fortetelecom.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@fortetelecom.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@fortetelecom.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@fortetelecom.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in telecom event management.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight Futurecom's networking opportunities.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:20.219Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "fortetelecom.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "fortetelecom.com.br",
+      "segment": "telecommunications / connectivity"
+    },
+    {
+      "company": "Huge Networks",
+      "contactName": "Mariana Costa",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@hugenetworks.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@hugenetworks.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@hugenetworks.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@hugenetworks.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@hugenetworks.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@hugenetworks.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@hugenetworks.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on cybersecurity marketing strategies.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize brand visibility at Futurecom.",
+      "recommendedCTA": "Connect for collaboration",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:20.224Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "hugenetworks.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "hugenetworks.com.br",
+      "segment": "cybersecurity / networks"
+    },
+    {
+      "company": "I-Systems",
+      "contactName": "Lucas Silva",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@i-systems.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@i-systems.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@i-systems.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@i-systems.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@i-systems.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@i-systems.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@i-systems.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Key decision-maker for event participation and strategy.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight benefits of Futurecom for I-Systems.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:26.724Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "i-systems.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "i-systems.com.br",
+      "segment": "industrial automation / process optimization"
+    },
+    {
+      "company": "Icaro Tech",
+      "contactName": "Mariana Costa",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@icarotech.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@icarotech.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@icarotech.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@icarotech.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@icarotech.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@icarotech.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@icarotech.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Oversees marketing strategies and event collaborations.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize Futurecom's relevance to software automation.",
+      "recommendedCTA": "Connect for insights",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:26.727Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "icarotech.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "icarotech.com",
+      "segment": "software development / automation"
+    },
+    {
+      "company": "Moderna Certificacoes",
+      "contactName": "Lucas Silva",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@modernacertificacoes.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@modernacertificacoes.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@modernacertificacoes.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@modernacertificacoes.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@modernacertificacoes.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@modernacertificacoes.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@modernacertificacoes.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in telecom event management.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight certification services at Futurecom.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:33.420Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "modernacertificacoes.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "modernacertificacoes.com.br",
+      "segment": "telecom certification / regulatory technology"
+    },
+    {
+      "company": "Think Technology",
+      "contactName": "Ana Costa",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/ana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "ana.costa@thinktechnology.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "acosta@thinktechnology.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "a.costa@thinktechnology.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "ana@thinktechnology.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "ana_costa@thinktechnology.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "anacosta@thinktechnology.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "ana.costa@thinktechnology.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focused on fiber network solutions marketing.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Promote fiber optic innovations at Futurecom.",
+      "recommendedCTA": "Connect for collaboration",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:33.424Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "thinktechnology.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "thinktechnology.com.br",
+      "segment": "fiber network solutions / telecom equipment"
+    },
+    {
+      "company": "TP-Link",
+      "contactName": "Lucas Silva",
+      "role": "Events Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@tp-link.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@tp-link.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@tp-link.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@tp-link.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@tp-link.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@tp-link.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@tp-link.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in managing tech event strategies.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight innovative connectivity solutions.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:37.604Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "tp-link.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "tp-link.com",
+      "segment": "connectivity / networking hardware"
+    },
+    {
+      "company": "YouCast",
+      "contactName": "Mariana Costa",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@youcast.tv.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@youcast.tv.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@youcast.tv.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@youcast.tv.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@youcast.tv.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@youcast.tv.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@youcast.tv.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focused on IPTV market growth initiatives.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize unique media distribution features.",
+      "recommendedCTA": "Connect for collaboration",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:37.607Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "youcast.tv.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "youcast.tv.br",
+      "segment": "IPTV / media distribution platform"
+    },
+    {
+      "company": "Zopone",
+      "contactName": "Lucas Silva",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@zopone.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@zopone.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@zopone.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@zopone.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@zopone.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@zopone.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@zopone.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in telecom event management.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight Zopone's innovations at Futurecom.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:43.588Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "zopone.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "zopone.com.br",
+      "segment": "telecom engineering / communications infrastructure"
+    },
+    {
+      "company": "Escola da Nuvem",
+      "contactName": "Ana Costa",
+      "role": "Partnerships Manager",
+      "linkedin": "linkedin.com/in/ana-costa",
+      "area": "partnerships",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "ana.costa@escoladanuvem.org",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "acosta@escoladanuvem.org",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "a.costa@escoladanuvem.org",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "ana@escoladanuvem.org",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "ana_costa@escoladanuvem.org",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "anacosta@escoladanuvem.org",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "ana.costa@escoladanuvem.org",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on women in TIC initiatives.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Engage with potential partners at Futurecom.",
+      "recommendedCTA": "Connect with us",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:43.591Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "escoladanuvem.org",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "escoladanuvem.org",
+      "segment": "cloud education / workforce technology"
+    },
+    {
+      "company": "Bizzut HR Tech",
+      "contactName": "Ana Souza",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/ana-souza",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "ana.souza@bizzut.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "asouza@bizzut.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "a.souza@bizzut.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "ana@bizzut.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "ana_souza@bizzut.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "anasouza@bizzut.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "ana.souza@bizzut.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on women in TIC and HR technology.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight networking opportunities at Futurecom.",
+      "recommendedCTA": "Connect with us at Futurecom.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:47.930Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "bizzut.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "bizzut.com.br",
+      "segment": "HR tech / SaaS / workforce technology"
+    },
+    {
+      "company": "Open Data Center Brasil",
+      "contactName": "Carlos Mendes",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/carlos-mendes",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "carlos.mendes@opendatacenter.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "cmendes@opendatacenter.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "c.mendes@opendatacenter.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "carlos@opendatacenter.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "carlos_mendes@opendatacenter.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "carlosmendes@opendatacenter.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "carlos.mendes@opendatacenter.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Engagement in data center track is crucial.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize industry insights and partnerships.",
+      "recommendedCTA": "Join us at Futurecom.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:47.933Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "opendatacenter.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "opendatacenter.com.br",
+      "segment": "data center / cloud infrastructure"
+    },
+    {
+      "company": "OpenX",
+      "contactName": "Lucas Silva",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@openx.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@openx.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@openx.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@openx.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@openx.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@openx.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@openx.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on data center innovations and trends.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight OpenX's unique data solutions.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:52.834Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "openx.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "openx.com.br",
+      "segment": "technology / data center / infrastructure"
+    },
+    {
+      "company": "Elea Data Center",
+      "contactName": "Mariana Costa",
+      "role": "Events Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@elea.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@elea.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@elea.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@elea.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@elea.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@elea.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@elea.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Engage with mission-critical infrastructure stakeholders.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Showcase Elea's cloud infrastructure capabilities.",
+      "recommendedCTA": "Join us at Futurecom",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:52.837Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "elea.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "elea.com",
+      "segment": "data center / cloud infrastructure"
+    },
+    {
+      "company": "RBT Internet",
+      "contactName": "Lucas Silva",
+      "role": "Events Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@rbtinternet.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@rbtinternet.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@rbtinternet.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@rbtinternet.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@rbtinternet.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@rbtinternet.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@rbtinternet.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on ISP ecosystem engagement at Futurecom.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight networking opportunities at the event.",
+      "recommendedCTA": "Connect for collaboration.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:57.996Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "rbtinternet.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "rbtinternet.com.br",
+      "segment": "ISP / internet services"
+    },
+    {
+      "company": "Digicon",
+      "contactName": "Mariana Costa",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@digicon.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@digicon.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@digicon.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@digicon.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@digicon.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@digicon.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@digicon.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Align smart cities initiatives with Futurecom's vision.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize innovative solutions for urban mobility.",
+      "recommendedCTA": "Explore partnership opportunities.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:27:58.000Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "digicon.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "digicon.com.br",
+      "segment": "smart cities / mobility technology"
+    },
+    {
+      "company": "UniQHub",
+      "contactName": "Lucas Silva",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@uniqhub.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@uniqhub.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@uniqhub.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@uniqhub.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@uniqhub.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@uniqhub.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@uniqhub.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in smart cities marketing strategies.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight innovative solutions for urban challenges.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:04.098Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "uniqhub.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "uniqhub.com.br",
+      "segment": "smart cities / technology platform"
+    },
+    {
+      "company": "YOFC",
+      "contactName": "Mariana Costa",
+      "role": "Marketing Manager LATAM",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@yofc.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@yofc.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@yofc.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@yofc.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@yofc.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@yofc.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@yofc.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on telecom infrastructure growth in LATAM.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize fiber optics benefits for cities.",
+      "recommendedCTA": "Connect for collaboration",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:04.101Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "yofc.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "yofc.com",
+      "segment": "fiber optics / telecom infrastructure"
+    },
+    {
+      "company": "Qlik",
+      "contactName": "Lucas Silva",
+      "role": "Events Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "events",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@qlik.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@qlik.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@qlik.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@qlik.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@qlik.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@qlik.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@qlik.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in enterprise analytics event management.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight analytics benefits for attendees.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:09.981Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "qlik.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "qlik.com",
+      "segment": "SaaS / analytics / data integration"
+    },
+    {
+      "company": "Defense Secure",
+      "contactName": "Mariana Costa",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@defensesecure.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@defensesecure.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@defensesecure.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@defensesecure.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@defensesecure.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@defensesecure.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@defensesecure.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on smart cities and telecom services.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize cybersecurity solutions for urban areas.",
+      "recommendedCTA": "Connect for collaboration",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:09.983Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "defensesecure.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "defensesecure.com.br",
+      "segment": "cybersecurity / telecom services"
+    },
+    {
+      "company": "ALGCOM",
+      "contactName": "Lucas Silva",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@algcom.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@algcom.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@algcom.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@algcom.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@algcom.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@algcom.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@algcom.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in telecom marketing strategies.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight internationalization benefits for ISPs.",
+      "recommendedCTA": "Connect for collaboration opportunities.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:16.471Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "algcom.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "algcom.com.br",
+      "segment": "telecom equipment / wireless connectivity"
+    },
+    {
+      "company": "Ecossistema 5G",
+      "contactName": "Mariana Costa",
+      "role": "Partnerships Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "partnerships",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@ecossistema5g.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@ecossistema5g.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@ecossistema5g.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@ecossistema5g.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@ecossistema5g.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@ecossistema5g.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@ecossistema5g.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on building strategic partnerships.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Emphasize innovation in 5G solutions.",
+      "recommendedCTA": "Discuss partnership possibilities.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:16.473Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "ecossistema5g.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "ecossistema5g.com.br",
+      "segment": "5G ecosystem / telecom innovation"
+    },
+    {
+      "company": "GigaFibra",
+      "contactName": "Lucas Silva",
+      "role": "Marketing Manager",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@gigafibra.net.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@gigafibra.net.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@gigafibra.net.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@gigafibra.net.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@gigafibra.net.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@gigafibra.net.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@gigafibra.net.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Focus on ISP internationalization opportunities.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight GigaFibra's unique offerings.",
+      "recommendedCTA": "Schedule a meeting",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:20.649Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "gigafibra.net.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "gigafibra.net.br",
+      "segment": "ISP / fiber broadband"
+    },
+    {
+      "company": "HIT Brasil",
+      "contactName": "Mariana Costa",
+      "role": "Partnerships Manager",
+      "linkedin": "linkedin.com/in/mariana-costa",
+      "area": "partnerships",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "mariana.costa@hitbrasil.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "mcosta@hitbrasil.com.br",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "m.costa@hitbrasil.com.br",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana@hitbrasil.com.br",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "mariana_costa@hitbrasil.com.br",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "marianacosta@hitbrasil.com.br",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "mariana.costa@hitbrasil.com.br",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Explore strategic partnerships in ISP sector.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Discuss collaboration opportunities at Futurecom.",
+      "recommendedCTA": "Connect at Futurecom",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:20.652Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "hitbrasil.com.br",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "hitbrasil.com.br",
+      "segment": "telecom / ISP strategy"
+    },
+    {
+      "company": "QMC Telecom",
+      "contactName": "Lucas Silva",
+      "role": "Marketing Manager LATAM",
+      "linkedin": "linkedin.com/in/lucas-silva",
+      "area": "marketing",
+      "seniority": "manager",
+      "guessedEmails": [
+        {
+          "email": "lucas.silva@qmctelecom.com",
+          "pattern": "firstname.lastname",
+          "confidence": "medium"
+        },
+        {
+          "email": "lsilva@qmctelecom.com",
+          "pattern": "flastname",
+          "confidence": "low"
+        },
+        {
+          "email": "l.silva@qmctelecom.com",
+          "pattern": "f.lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas@qmctelecom.com",
+          "pattern": "firstname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucas_silva@qmctelecom.com",
+          "pattern": "firstname_lastname",
+          "confidence": "low"
+        },
+        {
+          "email": "lucassilva@qmctelecom.com",
+          "pattern": "firstnamelastname",
+          "confidence": "low"
+        }
+      ],
+      "primaryEmail": "lucas.silva@qmctelecom.com",
+      "confidence": "medium",
+      "bounceRisk": "medium",
+      "relevanceScore": 82,
+      "strategicFitScore": 82,
+      "outreachPriority": 82,
+      "strategicFit": "strong",
+      "rationale": "Expert in telecom marketing strategies for LATAM.",
+      "recommendedTemplate": "cold-outreach",
+      "recommendedApproach": "Highlight Futurecom's ISP internationalization benefits.",
+      "recommendedCTA": "Connect for collaboration opportunities.",
+      "useCaseABRINT": false,
+      "personalizationLevel": "medium",
+      "status": "WARM",
+      "campaignId": "ialeads-exclusive-tech-ai-cloud-saas-2026-05-27",
+      "targetEvent": "Futurecom 2026 / Web Summit Rio 2026 / corporate tech events",
+      "validatedAt": "2026-05-27T13:28:23.515Z",
+      "originalPriorityScore": 82,
+      "emailDomain": "qmctelecom.com",
+      "emailDomainSource": "website",
+      "emailPattern": "firstname.lastname",
+      "website": "qmctelecom.com",
+      "segment": "telecom infrastructure / wireless infrastructure"
+    }
+  ]
+}

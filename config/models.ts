@@ -35,8 +35,8 @@ export function getMaxTokens(preferred?: number): number {
  * Agent-specific overrides are still capped by MAX_TOOL_ITERATIONS if set.
  */
 export function getMaxIterations(preferred?: number): number {
+  // Explicit env override is always the hard cap — takes priority over cheap mode defaults
+  if (env.MAX_TOOL_ITERATIONS) return env.MAX_TOOL_ITERATIONS;
   const base = preferred ?? (isCheapMode ? 3 : 10);
-  if (isCheapMode) return Math.min(base, env.MAX_TOOL_ITERATIONS ?? 3);
-  if (env.MAX_TOOL_ITERATIONS) return Math.min(base, env.MAX_TOOL_ITERATIONS);
   return base;
 }

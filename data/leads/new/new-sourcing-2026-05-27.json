@@ -1,0 +1,111 @@
+{
+  "_meta": {
+    "description": "New IALEADS sourcing seed after outbound blocklist. No enrichment or sending executed.",
+    "createdAt": "2026-05-27",
+    "status": "needs_enrichment",
+    "dedupePolicy": "Exclude any email/company found in data/leads/blocklist/do-not-contact-latest.json before enrichment or outbound.",
+    "sources": [
+      "https://rio.websummit.com/pt-br/partners/event-partners/",
+      "https://rio.websummit.com/en/blog/news/digais-ai-agent-triumphs-in-web-summit-rio-pitch-competition/",
+      "https://stackspot.com/en/blog/stackspot-ai-at-web-summit",
+      "https://www.linkedin.com/company/pipefy",
+      "https://www.linkedin.com/company/stackspot",
+      "https://br.linkedin.com/company/sendpulse"
+    ],
+    "totalCompanies": 10
+  },
+  "campaign": "ialeads-new-tech-ai-cloud-saas-2026-05-27",
+  "targetSegments": ["technology", "AI", "cloud", "telecom", "SaaS"],
+  "leads": [
+    {
+      "company": "Pipefy",
+      "website": "pipefy.com",
+      "linkedin": "linkedin.com/company/pipefy",
+      "segment": "SaaS / workflow automation / AI agents",
+      "eventFit": "Web Summit Rio partner/content presence and flagship internal events",
+      "targetRoles": ["Events Marketing Manager", "Brand Marketing Manager", "Growth Marketing Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "StackSpot",
+      "website": "stackspot.com",
+      "linkedin": "linkedin.com/company/stackspot",
+      "segment": "AI agents / software development platform",
+      "eventFit": "Web Summit Rio and TDC event presence with AI product demos",
+      "targetRoles": ["Field Marketing Manager", "Brand Experience Manager", "Growth Marketing Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "Pendo",
+      "website": "pendo.io",
+      "linkedin": "linkedin.com/company/pendo-io",
+      "segment": "SaaS / product analytics / AI",
+      "eventFit": "Web Summit partner ecosystem and strong product-led branding",
+      "targetRoles": ["Field Marketing Manager LATAM", "Growth Marketing Manager", "Brand Marketing Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "SendPulse",
+      "website": "sendpulse.com",
+      "linkedin": "linkedin.com/company/sendpulse",
+      "segment": "SaaS / marketing automation / CRM",
+      "eventFit": "Web Summit partner ecosystem and marketing automation positioning",
+      "targetRoles": ["Marketing Manager Brazil", "Growth Marketing Manager", "Events Marketing Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "Snov.io",
+      "website": "snov.io",
+      "linkedin": "linkedin.com/company/snovio",
+      "segment": "SaaS / lead intelligence / sales automation",
+      "eventFit": "Web Summit partner ecosystem and B2B lead generation positioning",
+      "targetRoles": ["Growth Marketing Manager", "Partner Marketing Manager", "Events Marketing Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "AEVO",
+      "website": "aevo.com.br",
+      "linkedin": "linkedin.com/company/aevo",
+      "segment": "SaaS / innovation management",
+      "eventFit": "Web Summit partner ecosystem and enterprise innovation audience",
+      "targetRoles": ["Marketing Manager", "Brand Manager", "Growth Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "CESAR",
+      "website": "cesar.org.br",
+      "linkedin": "linkedin.com/company/cesar",
+      "segment": "technology innovation / AI / digital transformation",
+      "eventFit": "Web Summit Rio showcase and innovation hub positioning",
+      "targetRoles": ["Marketing Manager", "Events Manager", "Brand Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "Loja Integrada",
+      "website": "lojaintegrada.com.br",
+      "linkedin": "linkedin.com/company/loja-integrada",
+      "segment": "SaaS / e-commerce platform",
+      "eventFit": "Web Summit partner ecosystem and digital commerce branding",
+      "targetRoles": ["Growth Marketing Manager", "Brand Marketing Manager", "Events Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "Connectoway",
+      "website": "connectoway.com.br",
+      "linkedin": "linkedin.com/company/connectoway",
+      "segment": "telecom / connectivity / network solutions",
+      "eventFit": "Futurecom 2025 presence with telecom technology demos",
+      "targetRoles": ["Marketing Manager", "Events Manager", "Channel Marketing Manager"],
+      "status": "needs_enrichment"
+    },
+    {
+      "company": "Zup Innovation",
+      "website": "zup.com.br",
+      "linkedin": "linkedin.com/company/zupinnovation",
+      "segment": "technology services / AI / software engineering",
+      "eventFit": "StackSpot developer and AI event ecosystem",
+      "targetRoles": ["Brand Manager", "Events Manager", "Growth Marketing Manager"],
+      "status": "needs_enrichment"
+    }
+  ]
+}

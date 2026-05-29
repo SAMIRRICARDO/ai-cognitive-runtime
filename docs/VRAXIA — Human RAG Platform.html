@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRAXIA — Human RAG Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:      #0A0A0A;
+  --surface: #111111;
+  --surface2:#181818;
+  --border:  #252525;
+  --gold:    #C8A96A;
+  --goldl:   #E8D5A3;
+  --gold2:   #9A7A2E;
+  --white:   #F5F0E8;
+  --muted:   #666666;
+  --green:   #1D9E75;
+  --blue:    #3A7BD5;
+  --red:     #E24B4A;
+  --amber:   #BA7517;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+/* Layout */
+.shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; min-width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 0;
+  position: fixed; left: 0; top: 0; bottom: 0;
+  z-index: 100;
+}
+.main { margin-left: 220px; flex: 1; padding: 32px 36px; max-width: 1100px; }
+/* Sidebar */
+.logo {
+  padding: 28px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-v { font-size: 28px; font-weight: 400; color: var(--white); letter-spacing: 2px; }
+.logo-tag { font-size: 9px; letter-spacing: 3px; color: var(--gold); margin-top: 2px; }
+.nav { padding: 16px 0; flex: 1; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; cursor: pointer;
+  color: var(--muted); font-size: 13px;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+}
+.nav-item:hover { color: var(--white); background: var(--surface2); }
+.nav-item.active { color: var(--gold); border-left-color: var(--gold); background: rgba(200,169,106,0.06); }
+.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 10px; color: var(--muted); letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+}
+/* Header */
+.page-header { margin-bottom: 28px; }
+.page-header h1 { font-size: 26px; font-weight: 400; color: var(--white); margin-bottom: 4px; }
+.page-header p { font-size: 13px; color: var(--muted); font-family: 'Courier New', monospace; }
+.gold-line { height: 1px; background: linear-gradient(90deg, var(--gold), transparent); margin: 16px 0 24px; }
+/* Stat cards */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold2);
+  padding: 18px 20px;
+}
+.stat-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); font-family: 'Courier New', monospace; text-transform: uppercase; margin-bottom: 8px; }
+.stat-value { font-size: 32px; color: var(--white); font-weight: 400; }
+.stat-value.gold { color: var(--gold); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: 'Courier New', monospace; }
+/* Sections */
+.section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px 22px;
+}
+.panel-title {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--gold); font-family: 'Courier New', monospace;
+  margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;
+}
+.panel-badge {
+  font-size: 9px; padding: 2px 8px; border: 1px solid var(--gold2);
+  color: var(--gold2); letter-spacing: 1px;
+}
+/* Professional cards */
+.prof-list { display: flex; flex-direction: column; gap: 10px; }
+.prof-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 14px;
+}
+.prof-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--gold2); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; color: var(--bg); font-weight: 600;
+  flex-shrink: 0;
+}
+.prof-info { flex: 1; }
+.prof-name { font-size: 13px; color: var(--white); }
+.prof-domain { font-size: 11px; color: var(--muted); font-family: 'Courier New', monospace; }
+.prof-stats { display: flex; gap: 10px; margin-top: 4px; }
+.prof-tag {
+  font-size: 10px; padding: 1px 7px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+.tag-green { background: rgba(29,158,117,0.15); color: var(--green); border: 1px solid rgba(29,158,117,0.3); }
+.tag-amber { background: rgba(186,117,23,0.15); color: var(--amber); border: 1px solid rgba(186,117,23,0.3); }
+.tag-blue  { background: rgba(58,123,213,0.15); color: var(--blue);  border: 1px solid rgba(58,123,213,0.3); }
+.tag-red   { background: rgba(226,75,74,0.15);  color: var(--red);   border: 1px solid rgba(226,75,74,0.3);  }
+/* Agent grid */
+.agent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.agent-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px;
+}
+.agent-icon {
+  width: 32px; height: 32px; background: rgba(200,169,106,0.1);
+  border: 1px solid var(--gold2); display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; font-size: 14px;
+}
+.agent-name { font-size: 12px; color: var(--white); margin-bottom: 2px; }
+.agent-area { font-size: 10px; color: var(--muted); font-family: 'Courier New', monospace; letter-spacing: 0.5px; }
+.agent-status { display: flex; align-items: center; gap: 5px; margin-top: 6px; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; }
+.status-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-label { font-size: 10px; color: var(--green); font-family: 'Courier New', monospace; }
+/* Pipeline diagram */
+.pipeline {
+  display: flex; align-items: center; gap: 0;
+  margin: 8px 0;
+}
+.pipe-step {
+  flex: 1; text-align: center; padding: 10px 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 10px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px; color: var(--muted);
+  position: relative;
+}
+.pipe-step.active { border-color: var(--gold2); color: var(--gold); }
+.pipe-step.core { background: rgba(200,169,106,0.08); border-color: var(--gold); color: var(--gold); }
+.pipe-arrow { font-size: 12px; color: var(--gold2); padding: 0 2px; flex-shrink: 0; }
+/* Radar chart */
+.chart-wrap { position: relative; height: 220px; }
+/* Activity feed */
+.activity-list { display: flex; flex-direction: column; gap: 8px; }
+.activity-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 10px 14px; display: flex; align-items: center; gap: 12px;
+}
+.activity-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.activity-content { flex: 1; }
+.activity-query { font-size: 12px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+.activity-meta { font-size: 10px; color: var(--muted); font-family: 'Courier New', monospace; margin-top: 2px; }
+.activity-latency { font-size: 11px; color: var(--muted); font-family: 'Courier New', monospace; }
+/* Big metric rows */
+.metric-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+.big-metric {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
+}
+.bm-label { font-size: 9px; letter-spacing: 2px; color: var(--muted); font-family: 'Courier New', monospace; text-transform: uppercase; }
+.bm-value { font-size: 24px; color: var(--gold); }
+.bm-bar { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+.bm-fill { height: 100%; background: var(--gold2); border-radius: 1px; transition: width 1s ease; }
+/* Footer tag */
+.conf-tag {
+  font-size: 9px; letter-spacing: 2px; color: var(--muted);
+  font-family: 'Courier New', monospace; text-align: right;
+  padding: 20px 0 8px; text-transform: uppercase;
+}
+/* Tabs */
+.page { display: none; }
+.page.active { display: block; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-v">VRAXIA</div>
+    <div class="logo-tag">AI SYSTEMS · HUMAN RAG</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showPage('overview')">
+      <span class="nav-dot"></span> Visão Geral
+    </div>
+    <div class="nav-item" onclick="showPage('psych')">
+      <span class="nav-dot"></span> PsychAgent
+    </div>
+    <div class="nav-item" onclick="showPage('agents')">
+      <span class="nav-dot"></span> Agentes VRAXIA
+    </div>
+    <div class="nav-item" onclick="showPage('pipeline')">
+      <span class="nav-dot"></span> Pipeline RAG
+    </div>
+    <div class="nav-item" onclick="showPage('metrics')">
+      <span class="nav-dot"></span> Métricas
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    v2.0.0 · LOCAL FIRST<br>
+    CONFIDENCIAL · USO INTERNO
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- OVERVIEW -->
+<div class="page active" id="page-overview">
+  <div class="page-header">
+    <h1>Human RAG Platform</h1>
+    <p>VRAXIA · Legado Cognitivo · Agentes Operacionais · Status: ONLINE</p>
+  </div>
+  <div class="gold-line"></div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Profissionais Ativos</div>
+      <div class="stat-value gold" id="s-professionals">7</div>
+      <div class="stat-sub">+2 este mês</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Chunks Cognitivos</div>
+      <div class="stat-value" id="s-chunks">2.847</div>
+      <div class="stat-sub">confiança média: 0.84</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Agentes Ativos</div>
+      <div class="stat-value" id="s-agents">7</div>
+      <div class="stat-sub">7 áreas cobertas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Queries este mês</div>
+      <div class="stat-value" id="s-queries">1.432</div>
+      <div class="stat-sub">latência média: 820ms</div>
+    </div>
+  </div>
+
+  <div class="section-grid">
+    <div class="panel">
+      <div class="panel-title">Profissionais <span class="panel-badge">HUMAN RAG</span></div>
+      <div class="prof-list">
+        <div class="prof-card">
+          <div class="prof-avatar">CR</div>
+          <div class="prof-info">
+            <div class="prof-name">Carlos Ribeiro</div>
+            <div class="prof-domain">Direito Tributário · 22 anos</div>
+            <div class="prof-stats">
+              <span class="prof-tag tag-green">analytical</span>
+              <span class="prof-tag tag-amber">averse</span>
+              <span class="prof-tag tag-blue">crt: 6/7</span>
+            </div>
+          </div>
+        </div>
+        <div class="prof-card">
+          <div class="prof-avatar">AF</div>
+          <div class="prof-info">
+            <div class="prof-name">Ana Ferreira</div>
+            <div class="prof-domain">Gestão de Produtos · 14 anos</div>
+            <div class="prof-stats">
+              <span class="prof-tag tag-blue">hybrid</span>
+              <span class="prof-tag tag-green">seeking</span>
+              <span class="prof-tag tag-blue">crt: 5/7</span>
+            </div>
+          </div>
+        </div>
+        <div class="prof-card">
+          <div class="prof-avatar">ML</div>
+          <div class="prof-info">
+            <div class="prof-name">Marcos Lima</div>
+            <div class="prof-domain">Cirurgia Cardíaca · 31 anos</div>
+            <div class="prof-stats">
+              <span class="prof-tag tag-green">analytical</span>
+              <span class="prof-tag tag-amber">neutral</span>
+              <span class="prof-tag tag-blue">crt: 7/7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Pipeline Human RAG <span class="panel-badge">ATIVO</span></div>
+      <div style="margin-bottom:14px">
+        <div class="pipeline">
+          <div class="pipe-step active">CAPTURA</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step active">DESTILAÇÃO</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step core">PSYCH</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step core">GÊMEO</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step active">AGENTES</div>
+        </div>
+      </div>
+      <div class="activity-list" id="activity-feed">
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <div class="activity-query">"Como estruturar tese tributária em CARF?"</div>
+            <div class="activity-meta">Carlos Ribeiro · há 3min</div>
+          </div>
+          <div class="activity-latency">812ms</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <div class="activity-query">"Priorização de backlog com recursos limitados"</div>
+            <div class="activity-meta">Ana Ferreira · há 11min</div>
+          </div>
+          <div class="activity-latency">741ms</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot" style="background:var(--amber)"></div>
+          <div class="activity-content">
+            <div class="activity-query">"Protocolo pós-operatório bypass coronário"</div>
+            <div class="activity-meta">Marcos Lima · há 28min</div>
+          </div>
+          <div class="activity-latency">934ms</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <div class="activity-query">"Negociação de contrato com fornecedor crítico"</div>
+            <div class="activity-meta">Carlos Ribeiro · há 45min</div>
+          </div>
+          <div class="activity-latency">698ms</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PSYCH AGENT -->
+<div class="page" id="page-psych">
+  <div class="page-header">
+    <h1>PsychAgent — Avaliação Psicológica IA</h1>
+    <p>100% IA · Zero dependência humana · 6 instrumentos simultâneos</p>
+  </div>
+  <div class="gold-line"></div>
+
+  <div class="metric-row">
+    <div class="big-metric">
+      <div class="bm-label">Sessões completas</div>
+      <div class="bm-value">47</div>
+      <div class="bm-bar"><div class="bm-fill" style="width:78%"></div></div>
+    </div>
+    <div class="big-metric">
+      <div class="bm-label">Custo médio por sessão</div>
+      <div class="bm-value" style="color:var(--green)">R$ 0,00</div>
+      <div class="bm-bar"><div class="bm-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+    <div class="big-metric">
+      <div class="bm-label">Trocas médias por sessão</div>
+      <div class="bm-value">18.4</div>
+      <div class="bm-bar"><div class="bm-fill" style="width:92%"></div></div>
+    </div>
+  </div>
+
+  <div class="section-grid">
+    <div class="panel">
+      <div class="panel-title">Big Five — Distribuição <span class="panel-badge">MÉDIA AMOSTRAL</span></div>
+      <div class="chart-wrap">
+        <canvas id="radarChart" role="img" aria-label="Radar chart Big Five médio dos profissionais"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Instrumentos Aplicados</div>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-family:'Courier New',monospace;color:var(--gold)">Big Five NEO-PI-R</span>
+            <span style="font-size:11px;color:var(--muted)">100% sessões</span>
+          </div>
+          <div class="bm-bar"><div class="bm-fill" style="width:100%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-family:'Courier New',monospace;color:var(--gold)">CRT Adaptado</span>
+            <span style="font-size:11px;color:var(--muted)">100% sessões</span>
+          </div>
+          <div class="bm-bar"><div class="bm-fill" style="width:100%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-family:'Courier New',monospace;color:var(--gold)">Schwartz Values Survey</span>
+            <span style="font-size:11px;color:var(--muted)">97% sessões</span>
+          </div>
+          <div class="bm-bar"><div class="bm-fill" style="width:97%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-family:'Courier New',monospace;color:var(--gold)">BEI Protocolo STAR</span>
+            <span style="font-size:11px;color:var(--muted)">100% sessões</span>
+          </div>
+          <div class="bm-bar"><div class="bm-fill" style="width:100%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-family:'Courier New',monospace;color:var(--gold)">AT-20 Inferido</span>
+            <span style="font-size:11px;color:var(--muted)">100% sessões</span>
+          </div>
+          <div class="bm-bar"><div class="bm-fill" style="width:100%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-family:'Courier New',monospace;color:var(--gold)">Vieses Cognitivos</span>
+            <span style="font-size:11px;color:var(--muted)">89% sessões</span>
+          </div>
+          <div class="bm-bar"><div class="bm-fill" style="width:89%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:20px">
+    <div class="panel-title">Perfil — Carlos Ribeiro <span class="panel-badge">EXEMPLO REAL</span></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:4px">
+      <div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:6px">ABERTURA</div>
+        <div style="font-size:24px;color:var(--gold)">72</div>
+        <div class="bm-bar" style="margin-top:4px"><div class="bm-fill" style="width:72%"></div></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:6px">CONSCIENC.</div>
+        <div style="font-size:24px;color:var(--gold)">88</div>
+        <div class="bm-bar" style="margin-top:4px"><div class="bm-fill" style="width:88%"></div></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:6px">EXTROVERSÃO</div>
+        <div style="font-size:24px;color:var(--gold)">41</div>
+        <div class="bm-bar" style="margin-top:4px"><div class="bm-fill" style="width:41%"></div></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:6px">AMABILIDADE</div>
+        <div style="font-size:24px;color:var(--gold)">58</div>
+        <div class="bm-bar" style="margin-top:4px"><div class="bm-fill" style="width:58%"></div></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:6px">NEUROTICISMO</div>
+        <div style="font-size:24px;color:var(--gold)">34</div>
+        <div class="bm-bar" style="margin-top:4px"><div class="bm-fill" style="width:34%"></div></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+      <span class="prof-tag tag-green">analytical</span>
+      <span class="prof-tag tag-amber">risk averse</span>
+      <span class="prof-tag tag-blue">crt: 6/7</span>
+      <span class="prof-tag tag-amber">ambiguity: 61/100</span>
+      <span class="prof-tag tag-red">bias: confirmação HIGH</span>
+    </div>
+  </div>
+</div>
+
+<!-- AGENTES -->
+<div class="page" id="page-agents">
+  <div class="page-header">
+    <h1>Agentes VRAXIA</h1>
+    <p>Human RAG como camada de inteligência central · 7 agentes operacionais</p>
+  </div>
+  <div class="gold-line"></div>
+
+  <div class="panel" style="margin-bottom:20px">
+    <div class="panel-title">Arquitetura — Human RAG como backbone</div>
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:11px;color:var(--muted);font-family:'Courier New',monospace;margin-bottom:12px">CAMADA DE INTELIGÊNCIA COGNITIVA</div>
+      <div style="background:rgba(200,169,106,0.08);border:1px solid var(--gold2);padding:12px 24px;display:inline-block;margin-bottom:20px">
+        <div style="font-size:14px;color:var(--gold);letter-spacing:1px">HUMAN RAG ENGINE</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace;margin-top:2px">PsychAgent · Destilação · Retrieval · Gêmeo Cognitivo</div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+        <div style="background:var(--surface2);border:1px solid var(--border);padding:8px 14px;font-size:11px;font-family:'Courier New',monospace;color:var(--muted)">↑ Comercial</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);padding:8px 14px;font-size:11px;font-family:'Courier New',monospace;color:var(--muted)">↑ RH</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);padding:8px 14px;font-size:11px;font-family:'Courier New',monospace;color:var(--muted)">↑ Jurídico</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);padding:8px 14px;font-size:11px;font-family:'Courier New',monospace;color:var(--muted)">↑ Operações</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);padding:8px 14px;font-size:11px;font-family:'Courier New',monospace;color:var(--muted)">↑ Financeiro</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);padding:8px 14px;font-size:11px;font-family:'Courier New',monospace;color:var(--muted)">↑ CX</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="agent-grid">
+    <div class="agent-card">
+      <div class="agent-icon">$</div>
+      <div>
+        <div class="agent-name">Agente Comercial</div>
+        <div class="agent-area">COMERCIAL</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Outreach, qualificação e pipeline de vendas calibrado pelo perfil do vendedor</div>
+        <div class="agent-status"><div class="status-dot active"></div><span class="status-label">ATIVO</span></div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">👤</div>
+      <div>
+        <div class="agent-name">Agente RH</div>
+        <div class="agent-area">RECURSOS HUMANOS</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Onboarding, avaliações e mapeamento de fit cultural</div>
+        <div class="agent-status"><div class="status-dot active"></div><span class="status-label">ATIVO</span></div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">§</div>
+      <div>
+        <div class="agent-name">Agente Jurídico</div>
+        <div class="agent-area">JURÍDICO</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Contratos, compliance e análise de risco com raciocínio do especialista</div>
+        <div class="agent-status"><div class="status-dot active"></div><span class="status-label">ATIVO</span></div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">⚙</div>
+      <div>
+        <div class="agent-name">Agente Operações</div>
+        <div class="agent-area">OPERAÇÕES</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Processos, automações e relatórios com heurísticas operacionais</div>
+        <div class="agent-status"><div class="status-dot active"></div><span class="status-label">ATIVO</span></div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">R$</div>
+      <div>
+        <div class="agent-name">Agente Financeiro</div>
+        <div class="agent-area">FINANCEIRO</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Análises, projeções e alertas com padrão decisório do CFO</div>
+        <div class="agent-status"><div class="status-dot active"></div><span class="status-label">ATIVO</span></div>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">★</div>
+      <div>
+        <div class="agent-name">Agente CX</div>
+        <div class="agent-area">CUSTOMER EXPERIENCE</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Atendimento, NPS e retenção com empatia calibrada</div>
+        <div class="agent-status"><div class="status-dot active"></div><span class="status-label">ATIVO</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<div class="page" id="page-pipeline">
+  <div class="page-header">
+    <h1>Pipeline Human RAG</h1>
+    <p>Captura → Destilação → Perfil Psicológico → Gêmeo Cognitivo → Resposta Calibrada</p>
+  </div>
+  <div class="gold-line"></div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
+    <div class="panel">
+      <div class="panel-title">Fase 1 — Captura <span class="panel-badge">LLaMA 3.1 8B · LOCAL</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Entrevistas conversacionais com o profissional. O agente extrai padrões de raciocínio, heurísticas e exceções — não apenas fatos. Transcrições de áudio/vídeo via Whisper local.</p>
+      <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--gold)">Input: conversa natural → Output: DecisionPattern[] com confidence scores</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Fase 2 — Destilação <span class="panel-badge">text-embedding-3-small</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Padrões extraídos são convertidos em CognitiveChunks com dois embeddings independentes: semântico (conteúdo) e contextual (domínio + conteúdo). Armazenados em pgvector com índice IVFFlat.</p>
+      <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--gold)">Input: DecisionPattern[] → Output: CognitiveChunk[] indexados em pgvector</div>
+    </div>
+    <div class="panel" style="border-color:var(--gold2)">
+      <div class="panel-title" style="color:var(--goldl)">Fase 3 — Avaliação Psicológica <span class="panel-badge">PsychAgent · LLaMA 3.1 70B</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">20 trocas conversacionais. 6 instrumentos aplicados simultaneamente de forma invisível. Resultado: PsychologicalProfile JSON que calibra TODOS os aspectos da geração.</p>
+      <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--gold)">Input: sessão 20 trocas → Output: PsychologicalProfile com BiasAlerts</div>
+    </div>
+    <div class="panel" style="border-color:var(--gold2)">
+      <div class="panel-title" style="color:var(--goldl)">Fase 4 — Retrieval + Geração Calibrada <span class="panel-badge">GPT-4o-mini · CHEAP MODE</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Query vetorizada recupera Top-K chunks por similaridade coseno. buildCalibratedPrompt injeta Big Five, vieses (medium+high), estilo decisório e padrões cognitivos. Resposta gerada como o profissional responderia — incluindo limitações reais.</p>
+      <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--gold)">Input: query + profile + chunks → Output: resposta calibrada com biasesActivated[]</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Stack Local-First</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px">
+      <div style="background:var(--surface2);border:1px solid var(--border);padding:12px">
+        <div style="font-size:10px;color:var(--gold);font-family:'Courier New',monospace;margin-bottom:6px">LLM LOCAL</div>
+        <div style="font-size:13px;color:var(--white)">Ollama + LLaMA 3.1</div>
+        <div style="font-size:11px;color:var(--green);margin-top:2px;font-family:'Courier New',monospace">Custo: R$ 0,00/sessão</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);padding:12px">
+        <div style="font-size:10px;color:var(--gold);font-family:'Courier New',monospace;margin-bottom:6px">VECTOR STORE</div>
+        <div style="font-size:13px;color:var(--white)">PostgreSQL + pgvector</div>
+        <div style="font-size:11px;color:var(--green);margin-top:2px;font-family:'Courier New',monospace">Self-hosted · local</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);padding:12px">
+        <div style="font-size:10px;color:var(--gold);font-family:'Courier New',monospace;margin-bottom:6px">CACHE</div>
+        <div style="font-size:13px;color:var(--white)">Redis 7</div>
+        <div style="font-size:11px;color:var(--green);margin-top:2px;font-family:'Courier New',monospace">Sessões TTL 4h</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- METRICS -->
+<div class="page" id="page-metrics">
+  <div class="page-header">
+    <h1>Métricas de Negócio</h1>
+    <p>Unit economics · ROI · Projeção de crescimento</p>
+  </div>
+  <div class="gold-line"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-label">Margem Bruta</div>
+      <div class="stat-value gold">&gt; 97%</div>
+      <div class="stat-sub">custo operacional ~R$0,05/query</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Setup Fee (base)</div>
+      <div class="stat-value">R$25k</div>
+      <div class="stat-sub">por empresa · 2-3 semanas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Recorrência Mensal</div>
+      <div class="stat-value">R$8k</div>
+      <div class="stat-sub">por empresa · SaaS</div>
+    </div>
+  </div>
+
+  <div class="section-grid">
+    <div class="panel">
+      <div class="panel-title">Projeção de Receita — 12 meses</div>
+      <div class="chart-wrap">
+        <canvas id="revenueChart" role="img" aria-label="Gráfico de projeção de receita mensal"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Comparativo vs Solução Humana</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--white)">Custo de avaliação psicológica</span>
+            <span style="font-size:12px;color:var(--green);font-family:'Courier New',monospace">-98%</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div style="flex:1;background:var(--red);height:8px;border-radius:2px"></div>
+            <span style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">R$4k/sessão</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <div style="width:2%;background:var(--green);height:8px;border-radius:2px;min-width:4px"></div>
+            <span style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">R$0,00/sessão</span>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--white)">Tempo de entrega do perfil</span>
+            <span style="font-size:12px;color:var(--green);font-family:'Courier New',monospace">-99%</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div style="flex:1;background:var(--red);height:8px;border-radius:2px"></div>
+            <span style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">5 dias</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <div style="width:1%;background:var(--green);height:8px;border-radius:2px;min-width:4px"></div>
+            <span style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">&lt; 2 horas</span>
+          </div>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--white)">Consistência entre avaliações</span>
+            <span style="font-size:12px;color:var(--green);font-family:'Courier New',monospace">+100%</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div style="width:60%;background:var(--amber);height:8px;border-radius:2px"></div>
+            <span style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">Humano: ~60%</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <div style="flex:1;background:var(--green);height:8px;border-radius:2px"></div>
+            <span style="font-size:10px;color:var(--muted);font-family:'Courier New',monospace">IA: 100%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Investimento — Uso dos Recursos <span class="panel-badge">CAPTAÇÃO</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">
+      <div style="background:var(--surface2);border:1px solid var(--border);padding:12px">
+        <div style="font-size:10px;color:var(--gold);font-family:'Courier New',monospace;margin-bottom:6px">PRODUTO</div>
+        <div style="font-size:20px;color:var(--white)">40%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Engineering + IA</div>
+        <div class="bm-bar" style="margin-top:8px"><div class="bm-fill" style="width:40%"></div></div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);padding:12px">
+        <div style="font-size:10px;color:var(--gold);font-family:'Courier New',monospace;margin-bottom:6px">GO-TO-MARKET</div>
+        <div style="font-size:20px;color:var(--white)">30%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Vendas + marketing</div>
+        <div class="bm-bar" style="margin-top:8px"><div class="bm-fill" style="width:30%"></div></div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);padding:12px">
+        <div style="font-size:10px;color:var(--gold);font-family:'Courier New',monospace;margin-bottom:6px">INFRA</div>
+        <div style="font-size:20px;color:var(--white)">20%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Cloud + hardware</div>
+        <div class="bm-bar" style="margin-top:8px"><div class="bm-fill" style="width:20%"></div></div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);padding:12px">
+        <div style="font-size:10px;color:var(--gold);font-family:'Courier New',monospace;margin-bottom:6px">OPERAÇÕES</div>
+        <div style="font-size:20px;color:var(--white)">10%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Legal + admin</div>
+        <div class="bm-bar" style="margin-top:8px"><div class="bm-fill" style="width:10%"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="conf-tag">VRAXIA AI SYSTEMS · CONFIDENCIAL · USO INTERNO · v2.0.0</div>
+</div>
+
+</main>
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  document.getElementById('page-' + id).classList.add('active')
+  event.currentTarget.classList.add('active')
+  if (id === 'psych' && !window._radarDone) initRadar()
+  if (id === 'metrics' && !window._revDone) initRevenue()
+}
+
+function initRadar() {
+  window._radarDone = true
+  new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: ['Abertura', 'Conscienc.', 'Extroversão', 'Amabilidade', 'Neuroticismo'],
+      datasets: [{
+        label: 'Média amostral',
+        data: [71, 82, 44, 62, 38],
+        borderColor: '#C8A96A',
+        backgroundColor: 'rgba(200,169,106,0.15)',
+        pointBackgroundColor: '#C8A96A',
+        borderWidth: 1.5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { display: false },
+          grid: { color: 'rgba(255,255,255,0.08)' },
+          angleLines: { color: 'rgba(255,255,255,0.08)' },
+          pointLabels: { color: '#888888', font: { size: 11, family: 'Courier New' } }
+        }
+      }
+    }
+  })
+}
+
+function initRevenue() {
+  window._revDone = true
+  const months = ['Jul','Ago','Set','Out','Nov','Dez','Jan','Fev','Mar','Abr','Mai','Jun']
+  const arr = n => Array.from({length:12},(_,i)=>Math.round(n*(1+i*0.15)))
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Setup Fees', data: [25,25,50,25,50,75,50,75,100,75,100,125], backgroundColor: 'rgba(200,169,106,0.6)', stack:'s' },
+        { label: 'Recorrência', data: [8,16,24,32,40,48,64,72,80,96,104,120], backgroundColor: 'rgba(200,169,106,0.25)', stack:'s' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { stacked:true, ticks: { color:'#666', font:{size:10,family:'Courier New'} }, grid:{display:false} },
+        y: { stacked:true, ticks: { color:'#666', font:{size:10,family:'Courier New'}, callback: v => 'R$'+v+'k' }, grid:{color:'rgba(255,255,255,0.05)'} }
+      }
+    }
+  })
+}
+</script>
+</body>
+</html>

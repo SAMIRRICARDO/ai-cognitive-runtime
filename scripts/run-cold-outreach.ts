@@ -90,7 +90,7 @@ function loadSentEmails(): Set<string> {
 function loadLeadsFromFile(path: string): ValidatedLead[] {
   const fullPath = resolve(ROOT, path);
   if (!existsSync(fullPath)) { console.error(`Not found: ${fullPath}`); return []; }
-  const data = JSON.parse(readFileSync(fullPath, "utf8"));
+  const data = JSON.parse(readFileSync(fullPath, "utf8").replace(/^﻿/, ""));
   return Array.isArray(data.leads) ? data.leads : Array.isArray(data) ? data : [];
 }
 

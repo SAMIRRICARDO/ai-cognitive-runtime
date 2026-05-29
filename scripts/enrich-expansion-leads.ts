@@ -32,6 +32,8 @@ const flag = (f: string) => args.includes(f);
 const val = (f: string) => { const i = args.indexOf(f); return i !== -1 ? args[i + 1] : undefined; };
 
 const SOURCE = val("--source") ?? "data/leads/futurecom/futurecom-expansion-batch-01.json";
+const OUTPUT = val("--output");
+const BLOCKLIST = val("--blocklist") ?? "data/leads/blocklist/do-not-contact-latest.json";
 const DRY_RUN = flag("--dry-run") || flag("--preview");
 const BATCH_SIZE = Math.min(Number(val("--batch") ?? "3"), 5); // companies per AI call
 const MAX_OUTPUT_TOKENS = Number(process.env.MAX_OUTPUT_TOKENS ?? "700");
@@ -53,6 +55,16 @@ interface ExpansionCompany {
   enterpriseScore: number;
 }
 
+interface RawSourcingCompany {
+  company: string;
+  website: string;
+  linkedin?: string;
+  segment: string;
+  eventFit?: string;
+  targetRoles?: string[];
+  status?: string;
+}
+
 interface AIContact {
   company: string;
   contactName: string;
@@ -67,7 +79,8 @@ interface AIContact {
 
 // ─── AI enrichment ────────────────────────────────────────────────────────────
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openAiApiKey = process.env.OPENAI_API_KEY?.replace(/\s+/g, "");
+const client = new OpenAI({ apiKey: openAiApiKey });
 const MODEL = process.env.ACQUISITION_MODEL ?? "gpt-4o-mini";
 const localCache = getIALeadsCache();
 
@@ -260,8 +273,43 @@ if (!existsSync(sourcePath)) {
   process.exit(1);
 }
 
-const sourceData = JSON.parse(readFileSync(sourcePath, "utf8"));
-const companies: ExpansionCompany[] = Array.isArray(sourceData.leads) ? sourceData.leads : [];
+function readJsonFile<T = unknown>(path: string): T {
+  return JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, "")) as T;
+}
+
+const sourceData = readJsonFile<any>(sourcePath);
+const blocklistPath = resolve(ROOT, BLOCKLIST);
+const blocklist = existsSync(blocklistPath)
+  ? readJsonFile<{ emails?: string[]; companies?: string[] }>(blocklistPath)
+  : {};
+const blockedEmails = new Set((blocklist.emails ?? []).map((email) => email.toLowerCase()));
+const blockedCompanies = new Set((blocklist.companies ?? []).map((company) => company.toLowerCase()));
+
+function normalizeCompany(raw: RawSourcingCompany | ExpansionCompany): ExpansionCompany {
+  const existing = raw as ExpansionCompany;
+  if (Array.isArray(existing.suggestedRoles)) return existing;
+
+  const seed = raw as RawSourcingCompany;
+  return {
+    company: seed.company,
+    website: seed.website,
+    segment: seed.segment,
+    probableEventFit: seed.eventFit ?? "enterprise event participation and brand activation",
+    probableBudgetLevel: "high",
+    strategicNotes: seed.eventFit ?? `${seed.company} fits IALEADS event-led B2B outreach.`,
+    possibleEvents: ["Web Summit Rio", "Futurecom", "Febraban Tech", "IT Forum"],
+    probableDepartments: ["marketing", "events", "brand", "growth"],
+    suggestedRoles: seed.targetRoles ?? ["Marketing Manager", "Events Manager", "Brand Manager", "Growth Marketing Manager"],
+    eventFitScore: 82,
+    marketingMaturity: "high",
+    enterpriseScore: 82,
+  };
+}
+
+const rawCompanies: Array<RawSourcingCompany | ExpansionCompany> = Array.isArray(sourceData.leads) ? sourceData.leads : [];
+const companies: ExpansionCompany[] = rawCompanies
+  .map(normalizeCompany)
+  .filter((company) => !blockedCompanies.has(company.company.toLowerCase()));
 const campaignId = sourceData.campaign ?? "futurecom-2026-expansion";
 const targetEvent = sourceData.targetEvent ?? "Futurecom 2026";
 localCache.upsertCampaign({
@@ -279,6 +327,7 @@ saveLocalMemory({
 
 console.log(`\n${c.bold("VRASHOWS — Expansion Lead Enrichment")}`);
 console.log(c.dim(`Source: ${SOURCE} · Companies: ${companies.length} · Model: ${MODEL}`));
+console.log(c.dim(`Blocklist: ${BLOCKLIST} · blocked emails: ${blockedEmails.size} · blocked companies: ${blockedCompanies.size}`));
 console.log(hr);
 console.log(`\n${c.bold("Companies to enrich:")}\n`);
 
@@ -305,7 +354,16 @@ let cachedLeadCount = 0;
 for (const company of companies) {
   const cached = localCache.getLeadByCompany(company.company);
   if (cached?.enrichment && Object.keys(cached.enrichment).length > 0) {
-    enrichedLeads.push(cached.enrichment as ReturnType<typeof buildValidatedLead>);
+    const cachedLead = cached.enrichment as ReturnType<typeof buildValidatedLead>;
+    if (!cachedLead.primaryEmail || !cachedLead.contactName) {
+      pendingCompanies.push(company);
+      continue;
+    }
+    if (cachedLead.primaryEmail && blockedEmails.has(String(cachedLead.primaryEmail).toLowerCase())) {
+      failed.push(`${company.company}: blocked cached email`);
+      continue;
+    }
+    enrichedLeads.push(cachedLead);
     cachedLeadCount += 1;
     recordAnalytics({
       provider: "cache",
@@ -340,6 +398,11 @@ for (let i = 0; i < pendingCompanies.length; i += BATCH_SIZE) {
       }
 
       const lead = buildValidatedLead(company, contact, campaignId, targetEvent);
+      if (!lead.primaryEmail || blockedEmails.has(lead.primaryEmail.toLowerCase())) {
+        console.log(`  ${c.yellow("blocked")} ${company.company} — email already in do-not-contact`);
+        failed.push(`${company.company}: blocked email`);
+        continue;
+      }
       enrichedLeads.push(lead);
       localCache.upsertCompany({
         company: company.company,
@@ -387,7 +450,11 @@ if (enrichedLeads.length === 0) {
 
 const outDir = resolve(ROOT, "data/leads/futurecom");
 mkdirSync(outDir, { recursive: true });
-const outPath = resolve(outDir, "validated-expansion-batch-01.json");
+const defaultOutput = SOURCE.includes("data/leads/new/")
+  ? resolve(ROOT, "data/leads/new", `enriched-${SOURCE.split(/[\\/]/).pop()}`)
+  : resolve(outDir, "validated-expansion-batch-01.json");
+const outPath = OUTPUT ? resolve(ROOT, OUTPUT) : defaultOutput;
+mkdirSync(dirname(outPath), { recursive: true });
 
 const hotCount = enrichedLeads.filter((l) => l.status === "HOT").length;
 const warmCount = enrichedLeads.filter((l) => l.status === "WARM").length;
