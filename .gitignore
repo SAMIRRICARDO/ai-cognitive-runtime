@@ -110,6 +110,12 @@ Thumbs.db
 *.txt
 
 # ==========================================
+# LinkedIn session — cookies sensíveis, nunca commitar
+# ==========================================
+vault/imprensa/session/
+.linkedin-profile/
+
+# ==========================================
 # IDE
 # ==========================================
 .vscode/
