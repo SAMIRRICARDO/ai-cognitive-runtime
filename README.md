@@ -1,8 +1,5 @@
 # VRASHOWS AI Runtime · VRAXIA SYSTEM
 
-- Description: Enterprise AI OS — Human RAG framework for organizational knowledge preservation
-- Topics: ai-agents human-rag typescript anthropic llm enterprise-ai multi-agent knowledge-management
-- Website: https://a.co/d/0dTw8I9Y
 
 > AI-native orchestration platform for autonomous outbound operations — built on Claude (strategic layer), multi-agent pipelines, local-first operational memory, and a cost-governed delivery engine.
 
