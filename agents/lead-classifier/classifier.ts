@@ -41,3 +41,42 @@ Classifique essa resposta.
 
   return parseClassification(raw) ?? FALLBACK_CLASSIFICATION;
 }
+
+export async function generateHandoffReport(
+  prospect: {
+    name: string;
+    company: string;
+    role: string;
+    linkedinUrl: string;
+    originalReply: string;
+  },
+  classification: ClassificationResult
+): Promise<string> {
+
+  const report = `
+🔔 LEAD QUALIFICADO — HANDOFF PARA NEGOCIAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 DECISOR
+   Nome:     ${prospect.name}
+   Cargo:    ${prospect.role}
+   Empresa:  ${prospect.company}
+   LinkedIn: ${prospect.linkedinUrl}
+
+💬 RESPOSTA DELE
+   "${prospect.originalReply}"
+
+🧠 ANÁLISE DO AGENTE
+   Perfil operacional: Variante ${classification.variant}
+   Nível de interesse: ${classification.intent.toUpperCase()}
+   Motivo: ${classification.reason}
+
+▶️  PRÓXIMO PASSO SUGERIDO
+   ${classification.suggested_next_action}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Gerado por VRAXIA SDR Agent · ${new Date().toLocaleString('pt-BR')}
+  `.trim();
+
+  return report;
+}
