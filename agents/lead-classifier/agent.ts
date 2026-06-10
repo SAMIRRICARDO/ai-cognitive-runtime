@@ -17,40 +17,24 @@
  *   - Batch: classifica arrays de respostas com intervalo de segurança
  */
 
-import { readFile } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
 import { BaseAgent } from '../_base/agent.js';
 import { logger } from '../../config/logger.js';
 import { Models, ModelConfig, getMaxTokens } from '../../config/models.js';
 
-import {
-  parseClassification,
-  FALLBACK_CLASSIFICATION,
-} from './schemas.js';
-
-import type {
-  ClassificationInput,
-  ClassificationResult,
-  ClassifiedLead,
-} from './types.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const PROMPT_PATH = join(__dirname, '../../prompts/agents/lead-classifier.md');
+import { CLASSIFIER_SYSTEM_PROMPT } from './constants.js';
+import { parseClassification, FALLBACK_CLASSIFICATION } from './schemas.js';
+import type { ClassificationInput, ClassificationResult, ClassifiedLead } from './types.js';
 
 // ─── Agent ────────────────────────────────────────────────────────────────────
 
 export class LeadClassifierAgent extends BaseAgent {
 
-  /** Factory — loads system prompt from markdown, no tools needed */
+  /** Factory — prompt inlined via constants.ts, no async file read needed */
   static async create(): Promise<LeadClassifierAgent> {
-    const systemPrompt = await readFile(PROMPT_PATH, 'utf-8');
-
     return new LeadClassifierAgent({
       name:        'lead-classifier',
       description: 'Qualifica respostas LinkedIn de decisores B2B — variant, intent, handoff',
-      systemPrompt,
+      systemPrompt: CLASSIFIER_SYSTEM_PROMPT,
       model:       Models.fast,            // Haiku — ideal for structured JSON
       maxTokens:   getMaxTokens(300),      // JSON output is small
       temperature: ModelConfig.temperature.deterministic,  // 0 — consistent output
