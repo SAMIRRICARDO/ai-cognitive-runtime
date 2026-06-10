@@ -10,6 +10,7 @@
 
 import { logger } from '../../config/logger.js';
 import { notifyWhatsApp } from '../../tools/whatsapp.js';
+import { notifyTelegram as _notifyTelegram } from '../../tools/telegram.js';
 
 type NotifyChannel = 'slack' | 'email' | 'telegram' | 'whatsapp' | 'console';
 
@@ -59,26 +60,10 @@ async function notifyEmail(report: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-// ─── Telegram ─────────────────────────────────────────────────────────────────
+// ─── Telegram (delegado para tools/telegram.ts) ───────────────────────────────
 
 async function notifyTelegram(report: string): Promise<void> {
-  const token  = process.env['TELEGRAM_BOT_TOKEN'];
-  const chatId = process.env['TELEGRAM_CHAT_ID'];
-  if (!token)  throw new Error('TELEGRAM_BOT_TOKEN não definida');
-  if (!chatId) throw new Error('TELEGRAM_CHAT_ID não definida');
-
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  const res = await fetch(url, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({
-      chat_id:    chatId,
-      text:       `🔔 VRAXIA — Lead qualificado\n\n${report}`,
-      parse_mode: 'HTML',
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Telegram retornou ${res.status}`);
+  await _notifyTelegram(report);
 }
 
 // ─── Console (fallback) ───────────────────────────────────────────────────────
