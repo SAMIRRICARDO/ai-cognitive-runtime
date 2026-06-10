@@ -1,5 +1,18 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import { handleLinkedInWebhook, type LinkedInWebhookPayload } from './linkedinWebhook.js';
+
+// Load .env before anything else
+const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+try {
+  const env = fs.readFileSync(path.join(ROOT, '.env'), 'utf-8');
+  for (const line of env.split(/\r?\n/)) {
+    const m = line.match(/^([^#=\s]+)\s*=\s*(.+)$/);
+    if (m) process.env[m[1].trim()] = m[2].trim().replace(/^["']|["']$/g, '');
+  }
+} catch { /* ignore */ }
 
 const app = Fastify({ logger: true });
 
