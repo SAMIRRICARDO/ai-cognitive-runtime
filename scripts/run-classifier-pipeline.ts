@@ -21,6 +21,9 @@ import {
   type HandoffEntry,
 } from '../agents/lead-classifier/pipeline.js';
 
+// processLinkedInReply disponível para uso direto em integrações externas
+export { processLinkedInReply } from '../agents/lead-classifier/classifier.js';
+
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const DRY_RUN   = process.argv.includes('--dry-run');
 const INPUT_IDX = process.argv.indexOf('--input');

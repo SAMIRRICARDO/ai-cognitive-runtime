@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { CLASSIFIER_SYSTEM_PROMPT } from './constants.js';
 import { parseClassification, FALLBACK_CLASSIFICATION } from './schemas.js';
+import { notifyManager } from './notify.js';
 import type { ClassificationResult } from './types.js';
 
 const client = new Anthropic();
@@ -79,4 +80,42 @@ Gerado por VRAXIA SDR Agent · ${new Date().toLocaleString('pt-BR')}
   `.trim();
 
   return report;
+}
+
+// ─── Orchestrator ─────────────────────────────────────────────────────────────
+
+export type ProcessResult =
+  | { action: 'handoff';           report: string }
+  | { action: 'continue_sequence'; variant: ClassificationResult['variant']; intent: ClassificationResult['intent'] };
+
+export async function processLinkedInReply(
+  reply: string,
+  prospect: {
+    name:        string;
+    company:     string;
+    role:        string;
+    linkedinUrl: string;
+  }
+): Promise<ProcessResult> {
+
+  // 1. Classifica a resposta
+  const classification = await classifyLeadResponse(reply, prospect);
+
+  // 2. Se handoff → gera relatório e notifica
+  if (classification.handoff) {
+    const report = await generateHandoffReport(
+      { ...prospect, originalReply: reply },
+      classification
+    );
+
+    await notifyManager(report);
+    return { action: 'handoff', report };
+  }
+
+  // 3. Se não → retorna variante para Waalaxy/agente disparar próxima sequência
+  return {
+    action:  'continue_sequence',
+    variant: classification.variant,
+    intent:  classification.intent,
+  };
 }
