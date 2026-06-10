@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { chromium, type Page, type BrowserContext } from 'playwright';
 import { execSync } from 'child_process';
 import fs from 'fs';
@@ -151,7 +152,7 @@ async function handleInviteModal(page: Page, note: string): Promise<boolean> {
   try {
     // Click "Adicionar nota" via JS to bypass any overlay
     const clicked = await page.evaluate(() => {
-      for (const btn of document.querySelectorAll<HTMLElement>('button')) {
+      for (const btn of Array.from(document.querySelectorAll<HTMLElement>('button'))) {
         if (/^Adicionar nota$/i.test(btn.innerText?.trim() ?? '')) {
           btn.click(); return true;
         }
@@ -169,7 +170,7 @@ async function handleInviteModal(page: Page, note: string): Promise<boolean> {
 
     // Click send — "Enviar" (with note) or "Enviar sem nota" (fallback)
     const sent = await page.evaluate(() => {
-      for (const btn of document.querySelectorAll<HTMLElement>('button')) {
+      for (const btn of Array.from(document.querySelectorAll<HTMLElement>('button'))) {
         const text = btn.innerText?.trim() ?? '';
         if (/^Enviar$/i.test(text) || /^Enviar sem nota$/i.test(text)) {
           btn.click(); return true;

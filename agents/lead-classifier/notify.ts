@@ -9,8 +9,9 @@
  */
 
 import { logger } from '../../config/logger.js';
+import { notifyWhatsApp } from '../../tools/whatsapp.js';
 
-type NotifyChannel = 'slack' | 'email' | 'telegram' | 'console';
+type NotifyChannel = 'slack' | 'email' | 'telegram' | 'whatsapp' | 'console';
 
 const CHANNEL = (process.env['NOTIFY_CHANNEL'] ?? 'console') as NotifyChannel;
 
@@ -95,10 +96,11 @@ function notifyConsole(report: string): void {
 export async function notifyManager(report: string): Promise<void> {
   try {
     switch (CHANNEL) {
-      case 'slack':    await notifySlack(report);    break;
-      case 'email':    await notifyEmail(report);    break;
-      case 'telegram': await notifyTelegram(report); break;
-      default:         notifyConsole(report);
+      case 'slack':     await notifySlack(report);      break;
+      case 'email':     await notifyEmail(report);      break;
+      case 'telegram':  await notifyTelegram(report);   break;
+      case 'whatsapp':  await notifyWhatsApp(report);   break;
+      default:          notifyConsole(report);
     }
 
     logger.info('[notify] handoff enviado', { channel: CHANNEL });

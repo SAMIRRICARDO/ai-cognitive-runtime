@@ -68,8 +68,8 @@ async function main() {
     if (entry.resend_id) {
       try {
         const { data } = await resend.emails.get(entry.resend_id);
-        const last = (data as any)?.last_event ?? 'unknown';
-        delivery = {
+        const last: string = (data as any)?.last_event ?? 'unknown';
+        const statusMap: Record<string, string> = {
           sent:        '📤 enviado',
           delivered:   '✅ entregue',
           opened:      '👁️  aberto',
@@ -77,7 +77,8 @@ async function main() {
           bounced:     '🔴 bounced (email inválido/inexistente)',
           complained:  '⚠️  spam report',
           unsubscribed:'🚫 unsubscribed',
-        }[last] ?? `ℹ️  ${last}`;
+        };
+        delivery = statusMap[last] ?? `ℹ️  ${last}`;
       } catch { delivery = '⚠️  não consultado'; }
       await sleep(200); // rate limit
     }
