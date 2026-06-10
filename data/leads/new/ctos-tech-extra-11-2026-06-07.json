@@ -1,0 +1,437 @@
+{
+  "metadata": {
+    "type": "cto_tech_extra_sourcing",
+    "createdAt": "2026-06-07",
+    "count": 11,
+    "dedupeAgainstCompanies": [
+      "CI&T",
+      "Stefanini",
+      "VTEX",
+      "Dock",
+      "Wildlife Studios",
+      "Olist",
+      "Pismo",
+      "Neon",
+      "Cora",
+      "StoneCo",
+      "QuintoAndar"
+    ],
+    "notes": "Emails pessoais nao foram inferidos. Registros precisam de enriquecimento e validacao antes de outbound.",
+    "enrichedAt": "2026-06-07T19:03:37.710Z",
+    "enrichmentStatus": "completed",
+    "enrichmentMethod": "pattern_candidates_mx_smtp_rcpt"
+  },
+  "leads": [
+    {
+      "lead_id": "cto-extra-001",
+      "full_name": "Eric Young",
+      "job_title": "Chief Technology Officer",
+      "company_name": "Nubank",
+      "company_domain": "nubank.com.br",
+      "company_category": "fintech",
+      "linkedin_url": "https://www.linkedin.com/posts/ericcyoung_after-an-incredible-journey-at-snapi-am-activity-7363186115966619649--5Ct",
+      "email": "eric.young@nubank.com.br",
+      "email_status": "valid",
+      "source_url": "https://www.linkedin.com/posts/ericcyoung_after-an-incredible-journey-at-snapi-am-activity-7363186115966619649--5Ct",
+      "source_note": "Post publico informa que Eric Young assumiu como Chief Technology Officer do Nubank.",
+      "confidence": "high",
+      "status": "validado",
+      "email_candidates": [
+        {
+          "email": "eric.young@nubank.com.br",
+          "pattern": "first.last@domain",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:02:47.791Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "eric.young@nubank.com.br",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "lead_id": "cto-extra-002",
+      "full_name": "Rodrigo Medeiros",
+      "job_title": "Chief Technology Officer",
+      "company_name": "Zup Innovation",
+      "company_domain": "zup.com.br",
+      "company_category": "software engineering / AI services",
+      "linkedin_url": "https://br.linkedin.com/in/rodrigomedeirosf",
+      "email": "rodrigo.medeiros@zup.com.br",
+      "email_status": "valid",
+      "source_url": "https://startups.com.br/danca-das-cadeiras/zup-oficializa-rodrigo-medeiros-como-novo-cto/",
+      "source_note": "Startups.com.br reporta Rodrigo Medeiros como novo CTO da Zup.",
+      "confidence": "high",
+      "status": "validado",
+      "email_candidates": [
+        {
+          "email": "rodrigo.medeiros@zup.com.br",
+          "pattern": "first.last@domain",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:02:50.034Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "rodrigo.medeiros@zup.com.br",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "lead_id": "cto-extra-003",
+      "full_name": "Dgeison De Lucca",
+      "job_title": "Chief Technology Officer",
+      "company_name": "Conta Simples",
+      "company_domain": "contasimples.com",
+      "company_category": "fintech / spend management",
+      "linkedin_url": "",
+      "email": "dgeison.delucca@contasimples.com",
+      "email_status": "valid",
+      "source_url": "https://pt.linkedin.com/posts/tiinside_a-conta-simples-principal-plataforma-de-activity-7300167681578573825-SVoe",
+      "source_note": "Publicacao da TI Inside no LinkedIn informa chegada de Dgeison De Lucca como CTO da Conta Simples.",
+      "confidence": "high",
+      "status": "validado",
+      "email_candidates": [
+        {
+          "email": "dgeison.delucca@contasimples.com",
+          "pattern": "first.compoundLast@domain",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:02:52.015Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "dgeison.delucca@contasimples.com",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "lead_id": "cto-extra-004",
+      "full_name": "Daniele Gemignani",
+      "job_title": "Chief Technology Officer",
+      "company_name": "Pipefy",
+      "company_domain": "pipefy.com",
+      "company_category": "low-code / workflow automation",
+      "linkedin_url": "",
+      "email": "daniele.gemignani@pipefy.com",
+      "email_status": "valid",
+      "source_url": "https://www.pipefy.com/about-us/leadership/",
+      "source_note": "Pagina de leadership da Pipefy lista Daniele Gemignani como CTO.",
+      "confidence": "high",
+      "status": "validado",
+      "email_candidates": [
+        {
+          "email": "daniele.gemignani@pipefy.com",
+          "pattern": "first.last@domain",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:02:53.648Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "daniele.gemignani@pipefy.com",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "lead_id": "cto-extra-005",
+      "full_name": "Carlos Eduardo Matias Rezende",
+      "job_title": "Chief Technology Officer",
+      "company_name": "Projuris",
+      "company_domain": "projuris.com.br",
+      "company_category": "legaltech / SaaS juridico",
+      "linkedin_url": "https://br.linkedin.com/in/carlos-eduardo-matias-rezende-b832051b",
+      "email": "carlos.rezende@projuris.com.br",
+      "email_status": "invalid",
+      "source_url": "https://br.linkedin.com/in/carlos-eduardo-matias-rezende-b832051b",
+      "source_note": "Perfil publico do LinkedIn informa CTO na Projuris.",
+      "confidence": "medium",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "carlos.rezende@projuris.com.br",
+          "pattern": "first.last@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "projuris-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "carlos.eduardo@projuris.com.br",
+          "pattern": "first.middle@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "projuris-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "carlos.eduardo.rezende@projuris.com.br",
+          "pattern": "first.middle.last@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "projuris-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:02:55.028Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "carlos.rezende@projuris.com.br",
+        "selectedReason": "RCPT TO rejected 550"
+      }
+    },
+    {
+      "lead_id": "cto-extra-006",
+      "full_name": "Sergio Passos",
+      "job_title": "Chief Technology Officer",
+      "company_name": "Blip",
+      "company_domain": "blip.ai",
+      "company_category": "conversational AI / messaging platform",
+      "linkedin_url": "",
+      "email": "sergio.passos@blip.ai",
+      "email_status": "valid",
+      "source_url": "https://www.microsoft.com/en/customers/story/21343-blip-azure-open-ai-service",
+      "source_note": "Case publico da Microsoft cita Sergio Passos como CTO da Blip.",
+      "confidence": "high",
+      "status": "validado",
+      "email_candidates": [
+        {
+          "email": "sergio.passos@blip.ai",
+          "pattern": "first.last@domain",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:02:59.092Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "sergio.passos@blip.ai",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "lead_id": "cto-extra-007",
+      "full_name": "Fabio Stein",
+      "job_title": "Chief Technology Officer",
+      "company_name": "EVEO",
+      "company_domain": "eveo.com.br",
+      "company_category": "private cloud / dedicated servers",
+      "linkedin_url": "",
+      "email": "fabio.stein@eveo.com.br",
+      "email_status": "invalid",
+      "source_url": "https://tiinside.com.br/09/02/2026/eveo-anuncia-fabio-stein-como-novo-cto-para-liderar-automacao-e-escalabilidade-da-operacao/",
+      "source_note": "TI Inside informa Fabio Stein como novo CTO da EVEO.",
+      "confidence": "high",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "fabio.stein@eveo.com.br",
+          "pattern": "first.last@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "eveo-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "fabio@eveo.com.br",
+          "pattern": "first@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "eveo-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "fabiostein@eveo.com.br",
+          "pattern": "firstlast@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "eveo-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:03:00.731Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "fabio.stein@eveo.com.br",
+        "selectedReason": "RCPT TO rejected 550"
+      }
+    },
+    {
+      "lead_id": "cto-extra-008",
+      "full_name": "Kalecser Pasquali Kurtz",
+      "job_title": "Chief Technology Officer",
+      "company_name": "EBANX",
+      "company_domain": "ebanx.com",
+      "company_category": "payments / fintech infrastructure",
+      "linkedin_url": "https://br.linkedin.com/in/kalecserp",
+      "email": "kalecser.kurtz@ebanx.com",
+      "email_status": "risky",
+      "source_url": "https://www.linkedin.com/posts/techintelpro_ebanx-strengthens-executive-team-with-cto-activity-7453447827063529472-BTkC",
+      "source_note": "Post publico informa nomeacao de Kalecser Pasquali Kurtz como CTO da EBANX.",
+      "confidence": "medium",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "kalecser.kurtz@ebanx.com",
+          "pattern": "first.last@domain",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mx0a-00853d01.pphosted.com"
+        },
+        {
+          "email": "kalecser.pasquali@ebanx.com",
+          "pattern": "first.middle@domain",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mx0a-00853d01.pphosted.com"
+        },
+        {
+          "email": "kalecser@ebanx.com",
+          "pattern": "first@domain",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mx0a-00853d01.pphosted.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:03:06.721Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "kalecser.kurtz@ebanx.com",
+        "selectedReason": "SMTP connection timeout"
+      }
+    },
+    {
+      "lead_id": "cto-extra-009",
+      "full_name": "Alberto Caeiro",
+      "job_title": "Chief Technology Officer, Credit",
+      "company_name": "Omie",
+      "company_domain": "omie.com.br",
+      "company_category": "ERP SaaS / fintech",
+      "linkedin_url": "",
+      "email": "alberto.caeiro@omie.com.br",
+      "email_status": "valid",
+      "source_url": "https://www.theofficialboard.com/biography/alberto-caeiro-g0219",
+      "source_note": "The Official Board lista Alberto Caeiro como CTO, Credit na Omie.",
+      "confidence": "medium",
+      "status": "validado",
+      "email_candidates": [
+        {
+          "email": "alberto.caeiro@omie.com.br",
+          "pattern": "first.last@domain",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:03:22.263Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "alberto.caeiro@omie.com.br",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "lead_id": "cto-extra-010",
+      "full_name": "Gustavo Figueiredo",
+      "job_title": "Chief Technology Officer",
+      "company_name": "i4pro",
+      "company_domain": "i4pro.com.br",
+      "company_category": "insurtech / software para seguradoras",
+      "linkedin_url": "",
+      "email": "gustavofigueiredo@i4pro.com.br",
+      "email_status": "risky",
+      "source_url": "https://www.baguete.com.br/noticias/i4pro-tem-novo-cto",
+      "source_note": "Baguete informa Gustavo Figueiredo como novo CTO da i4pro.",
+      "confidence": "high",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "gustavo.figueiredo@i4pro.com.br",
+          "pattern": "first.last@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "i4pro-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "gustavo@i4pro.com.br",
+          "pattern": "first@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "i4pro-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "gustavofigueiredo@i4pro.com.br",
+          "pattern": "firstlast@domain",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "i4pro-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:03:23.826Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "gustavofigueiredo@i4pro.com.br",
+        "selectedReason": "SMTP connection timeout"
+      }
+    },
+    {
+      "lead_id": "cto-extra-011",
+      "full_name": "Fabio Wakim Trentini",
+      "job_title": "Chief Technology Officer",
+      "company_name": "ClickBus",
+      "company_domain": "clickbus.com.br",
+      "company_category": "travel tech / marketplace de passagens",
+      "linkedin_url": "",
+      "email": "fabio.trentini@clickbus.com.br",
+      "email_status": "invalid",
+      "source_url": "https://www.baguete.com.br/public/noticias/clickbus-tem-novo-cto",
+      "source_note": "Baguete informa Fabio Wakim Trentini como novo CTO da ClickBus.",
+      "confidence": "high",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "fabio.trentini@clickbus.com.br",
+          "pattern": "first.last@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "aspmx.l.google.com"
+        },
+        {
+          "email": "fabio.wakim@clickbus.com.br",
+          "pattern": "first.middle@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "aspmx.l.google.com"
+        },
+        {
+          "email": "fabio.wakim.trentini@clickbus.com.br",
+          "pattern": "first.middle.last@domain",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "method": "pattern_candidates_mx_smtp_rcpt",
+        "checkedAt": "2026-06-07T19:03:33.159Z",
+        "smtpNoDataSent": true,
+        "selectedEmail": "fabio.trentini@clickbus.com.br",
+        "selectedReason": "RCPT TO rejected 550"
+      }
+    }
+  ]
+}
