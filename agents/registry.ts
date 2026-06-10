@@ -23,6 +23,7 @@ export type AgentCapability =
   | "summarization"
   | "data-analysis"
   | "lead-intelligence"
+  | "lead-classification"
   | "outreach-generation"
   | "contact-enrichment"
   | "email-delivery";
@@ -305,6 +306,28 @@ agentRegistry.register({
     );
 
     return LeadEnrichmentAgent.create();
+  },
+});
+
+agentRegistry.register({
+  name: "lead-classifier",
+
+  description:
+    "Qualifica respostas de decisores no LinkedIn — classifica variante (A-E), intent e handoff para pipeline B2B",
+
+  capabilities: [
+    "lead-classification",
+    "lead-intelligence",
+    "data-analysis",
+  ],
+
+  costTier: "low",
+
+  factory: async () => {
+    const { LeadClassifierAgent } = await import(
+      "./lead-classifier/agent.js"
+    );
+    return LeadClassifierAgent.create();
   },
 });
 
