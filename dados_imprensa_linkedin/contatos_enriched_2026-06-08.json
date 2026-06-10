@@ -1,0 +1,878 @@
+{
+  "metadata": {
+    "source": "dados_imprensa_linkedin\\contatos_validados.json",
+    "generatedAt": "2026-06-08T18:59:11.528Z",
+    "total": 25,
+    "alreadyValidated": 5,
+    "newlyValidated": 8,
+    "stillPending": 12,
+    "smtpNoDataSent": true
+  },
+  "contacts": [
+    {
+      "veiculo": "Exame",
+      "nome_completo": "Andre Lopes",
+      "cargo": "Editor de tecnologia / IA",
+      "editoria": "Tecnologia e IA",
+      "email_validado": "",
+      "linkedin_url": "https://br.linkedin.com/in/andr%C3%A9-lopes-0a6b8381",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "B",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "redacao@exame.com",
+          "source": "public_institutional",
+          "note": "Expediente EXAME",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mxa-0057a602.gslb.pphosted.com"
+        },
+        {
+          "email": "releases@exame.com",
+          "source": "public_institutional",
+          "note": "Expediente EXAME",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mxa-0057a602.gslb.pphosted.com"
+        },
+        {
+          "email": "andre.lopes@exame.com",
+          "source": "pattern",
+          "note": "nome.sobrenome@exame.com",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mxa-0057a602.gslb.pphosted.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:21.980Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "Valor Economico",
+      "nome_completo": "Joao Luiz Rosa",
+      "cargo": "Jornalista",
+      "editoria": "Empresas e Tecnologia",
+      "email_validado": "joao.rosa@valor.com.br",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "A",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "redacao@valor.com.br",
+          "source": "public_institutional",
+          "note": "Fale conosco Valor",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "valor-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "joao.rosa@valor.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@valor.com.br",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "valor-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:24.965Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "joao.rosa@valor.com.br",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "veiculo": "Forbes Brasil",
+      "nome_completo": "Marianna Rosalles",
+      "cargo": "Jornalista",
+      "editoria": "Forbes Tech / Inovacao",
+      "email_validado": "",
+      "linkedin_url": "https://br.linkedin.com/in/mariannarosalles",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "A",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "redacao@forbesbrasil.com.br",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "invalid",
+          "reason": "no MX record"
+        },
+        {
+          "email": "marianna@forbesbrasil.com.br",
+          "source": "pattern",
+          "note": "nome@forbesbrasil.com.br",
+          "status": "invalid",
+          "reason": "no MX record"
+        },
+        {
+          "email": "contato@forbesbrasil.com.br",
+          "source": "generic",
+          "note": "contato generico",
+          "status": "invalid",
+          "reason": "no MX record"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:25.076Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "Pequenas Empresas & Grandes Negocios",
+      "nome_completo": "Equipe PEGN",
+      "cargo": "Redacao",
+      "editoria": "Empreendedorismo e gestao",
+      "email_validado": "redacao@revistapegn.com.br",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "A",
+      "status": "enviado",
+      "sent_at": "2026-06-08T18:03:04.066Z",
+      "email_enrichment": {
+        "skipped": true,
+        "reason": "email_validado already present"
+      }
+    },
+    {
+      "veiculo": "Epoca Negocios",
+      "nome_completo": "Patricia Basilio",
+      "cargo": "Jornalista",
+      "editoria": "Inovacao e Gestao",
+      "email_validado": "",
+      "linkedin_url": "https://pt.linkedin.com/in/patr%C3%ADcia-basilio",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "A",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "redacao@epocanegocios.com.br",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "invalid",
+          "reason": "queryMx ENODATA epocanegocios.com.br"
+        },
+        {
+          "email": "patricia.basilio@epocanegocios.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@epocanegocios.com.br",
+          "status": "invalid",
+          "reason": "queryMx ENODATA epocanegocios.com.br"
+        },
+        {
+          "email": "redacao@edglobo.com.br",
+          "source": "generic",
+          "note": "dominio Editora Globo",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "edglobo-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:26.837Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "MIT Technology Review Brasil",
+      "nome_completo": "Alexandre Roldao",
+      "cargo": "Editor-executivo",
+      "editoria": "Tecnologia, inovacao e IA",
+      "email_validado": "alexandre.roldao@mittechreview.com.br",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "B",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "redacao@mittechreview.com.br",
+          "source": "public_institutional",
+          "note": "Contato MIT Technology Review Brasil",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "mittechreview-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "contato@mittechreview.com.br",
+          "source": "generic",
+          "note": "contato generico",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "mittechreview-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "alexandre.roldao@mittechreview.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@mittechreview.com.br",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "mittechreview-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:31.606Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "alexandre.roldao@mittechreview.com.br",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "veiculo": "Canaltech",
+      "nome_completo": "Fernanda Santos",
+      "cargo": "Reporter / podcast",
+      "editoria": "Tecnologia e IA",
+      "email_validado": "redacao@canaltech.com.br",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "B",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "redacao@canaltech.com.br",
+          "source": "public_institutional",
+          "note": "Pagina Quem Somos Canaltech",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:33.085Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "redacao@canaltech.com.br",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "veiculo": "Tecnoblog",
+      "nome_completo": "Thassius Veloso",
+      "cargo": "Editor",
+      "editoria": "Tecnologia",
+      "email_validado": "imprensa@tecnoblog.net",
+      "linkedin_url": "https://br.linkedin.com/in/thassius",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "B",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "imprensa@tecnoblog.net",
+          "source": "public_institutional",
+          "note": "Fale conosco Tecnoblog",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:34.371Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "imprensa@tecnoblog.net",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "veiculo": "The Hack",
+      "nome_completo": "The Hack",
+      "cargo": "Redacao / curadoria",
+      "editoria": "Tecnologia",
+      "email_validado": "",
+      "linkedin_url": "https://br.linkedin.com/pub/dir/The/Hack/br-0-Brasil",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 2,
+      "template_recomendado": "B",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "contato@thehack.com.br",
+          "source": "generic",
+          "note": "contato generico",
+          "status": "invalid",
+          "reason": "no MX record"
+        },
+        {
+          "email": "redacao@thehack.com.br",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "invalid",
+          "reason": "no MX record"
+        },
+        {
+          "email": "hello@thehack.com.br",
+          "source": "generic",
+          "note": "hello generico",
+          "status": "invalid",
+          "reason": "no MX record"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:34.475Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "Startups.com.br",
+      "nome_completo": "Gustavo Brigatto",
+      "cargo": "Fundador e editor-chefe",
+      "editoria": "Startups, tecnologia e inovacao",
+      "email_validado": "redacao@startups.com.br",
+      "linkedin_url": "https://br.linkedin.com/in/gustavobrigatto",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "A",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "gustavo@startups.com.br",
+          "source": "pattern",
+          "note": "nome@startups.com.br",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "aspmx.l.google.com"
+        },
+        {
+          "email": "redacao@startups.com.br",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:37.156Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "redacao@startups.com.br",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "veiculo": "Voce RH",
+      "nome_completo": "Alexandre Carvalho",
+      "cargo": "Editor-chefe",
+      "editoria": "RH e gestao",
+      "email_validado": "voce-rh@abril.com.br",
+      "linkedin_url": "https://br.linkedin.com/in/alexandre-carvalho-a2039851",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "C",
+      "status": "enviado",
+      "sent_at": "2026-06-08T18:03:34.464Z",
+      "email_enrichment": {
+        "skipped": true,
+        "reason": "email_validado already present"
+      }
+    },
+    {
+      "veiculo": "Voce S/A",
+      "nome_completo": "Alexandre Carvalho",
+      "cargo": "Editor-chefe",
+      "editoria": "Carreira, gestao e trabalho",
+      "email_validado": "vocesa@abril.com.br",
+      "linkedin_url": "https://br.linkedin.com/in/alexandre-carvalho-a2039851",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "C",
+      "status": "enviado",
+      "sent_at": "2026-06-08T18:04:04.801Z",
+      "email_enrichment": {
+        "skipped": true,
+        "reason": "email_validado already present"
+      }
+    },
+    {
+      "veiculo": "Harvard Business Review Brasil",
+      "nome_completo": "Roberto Muller",
+      "cargo": "Profissional associado",
+      "editoria": "Gestao e lideranca",
+      "email_validado": "",
+      "linkedin_url": "https://br.linkedin.com/in/roberto-muller-79421b89",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 3,
+      "template_recomendado": "C",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "contato@hbrbr.com.br",
+          "source": "generic",
+          "note": "contato generico",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mail.hbrbr.com.br"
+        },
+        {
+          "email": "redacao@hbrbr.com.br",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mail.hbrbr.com.br"
+        },
+        {
+          "email": "roberto.muller@hbrbr.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@hbrbr.com.br",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mail.hbrbr.com.br"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:56.462Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "GPTW Brasil",
+      "nome_completo": "Tatiane Tiemi",
+      "cargo": "CEO",
+      "editoria": "Cultura, lideranca e gestao de pessoas",
+      "email_validado": "brasil@greatplacetowork.com",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "C",
+      "status": "enviado",
+      "sent_at": "2026-06-08T18:04:35.094Z",
+      "email_enrichment": {
+        "skipped": true,
+        "reason": "email_validado already present"
+      }
+    },
+    {
+      "veiculo": "Melhor RH",
+      "nome_completo": "Equipe Melhor RH",
+      "cargo": "Redacao",
+      "editoria": "RH, lideranca e inovacao",
+      "email_validado": "melhor@melhor.com.br",
+      "linkedin_url": "https://www.linkedin.com/company/plataforma-melhor-rh/",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "C",
+      "status": "enviado",
+      "sent_at": "2026-06-08T18:05:05.502Z",
+      "email_enrichment": {
+        "skipped": true,
+        "reason": "email_validado already present"
+      }
+    },
+    {
+      "veiculo": "Cafe com ADM",
+      "nome_completo": "Leandro Vieira",
+      "cargo": "Apresentador / fundador Administradores.com",
+      "editoria": "Gestao, negocios e lideranca",
+      "email_validado": "contato@administradores.com.br",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "D",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "contato@administradores.com.br",
+          "source": "generic",
+          "note": "dominio Administradores",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:57:57.826Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "contato@administradores.com.br",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "veiculo": "Pizza de Dados",
+      "nome_completo": "Jessica Temporal",
+      "cargo": "Fundadora / host",
+      "editoria": "Dados e IA",
+      "email_validado": "",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "D",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "contato@pizzadedados.com",
+          "source": "generic",
+          "note": "contato generico",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "eforward1.registrar-servers.com"
+        },
+        {
+          "email": "jessica@pizzadedados.com",
+          "source": "pattern",
+          "note": "nome@pizzadedados.com",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "eforward1.registrar-servers.com"
+        },
+        {
+          "email": "jessica.temporal@pizzadedados.com",
+          "source": "pattern",
+          "note": "nome.sobrenome@pizzadedados.com",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "eforward1.registrar-servers.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:58:17.046Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "Hipsters.tech",
+      "nome_completo": "Paulo Silveira",
+      "cargo": "Host",
+      "editoria": "Tecnologia, startups e IA",
+      "email_validado": "",
+      "linkedin_url": "https://pt.linkedin.com/in/paulosilveira",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "D",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "hipsters@alura.com.br",
+          "source": "generic",
+          "note": "podcast da Alura",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "alura-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "paulo@alura.com.br",
+          "source": "pattern",
+          "note": "nome@alura.com.br",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "alura-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "paulo.silveira@alura.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@alura.com.br",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "alura-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:58:26.074Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "Nerdcast Negocios",
+      "nome_completo": "Equipe Nerdcast",
+      "cargo": "Redacao / podcasts",
+      "editoria": "Negocios e tecnologia",
+      "email_validado": "contato@jovemnerd.com.br",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 3,
+      "template_recomendado": "D",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "nerdcast@jovemnerd.com.br",
+          "source": "generic",
+          "note": "podcast generico",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "aspmx.l.google.com"
+        },
+        {
+          "email": "contato@jovemnerd.com.br",
+          "source": "generic",
+          "note": "contato generico",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:58:35.126Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "contato@jovemnerd.com.br",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    },
+    {
+      "veiculo": "Lex Fridman BR",
+      "nome_completo": "Curador nao validado",
+      "cargo": "Curadoria",
+      "editoria": "IA e tecnologia",
+      "email_validado": "",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 2,
+      "template_recomendado": "D",
+      "status": "pendente",
+      "email_candidates": [],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:58:35.126Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no candidate available"
+      }
+    },
+    {
+      "veiculo": "G1 / Globo",
+      "nome_completo": "Braulio Lorentz",
+      "cargo": "Jornalista",
+      "editoria": "Tecnologia",
+      "email_validado": "",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "E",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "braulio.lorentz@g1.com",
+          "source": "pattern",
+          "note": "nome.sobrenome@g1.com",
+          "status": "invalid",
+          "reason": "queryMx ENODATA g1.com"
+        },
+        {
+          "email": "redacao@g1.com",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "invalid",
+          "reason": "queryMx ENODATA g1.com"
+        },
+        {
+          "email": "tecnologia@g1.com",
+          "source": "generic",
+          "note": "editoria generica",
+          "status": "invalid",
+          "reason": "queryMx ENODATA g1.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:58:35.971Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "UOL Economia",
+      "nome_completo": "Aline Sordili",
+      "cargo": "Colunista",
+      "editoria": "IA, economia e tecnologia",
+      "email_validado": "",
+      "linkedin_url": "",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "E",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "aline.sordili@uol.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@uol.com.br",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mx.uol.com.br"
+        },
+        {
+          "email": "redacao@uol.com.br",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mx.uol.com.br"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:58:48.125Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "Folha de S.Paulo",
+      "nome_completo": "Mauricio Meireles",
+      "cargo": "Reporter especial",
+      "editoria": "Mercado / Inteligencia Artificial",
+      "email_validado": "",
+      "linkedin_url": "https://br.linkedin.com/in/mauricio-meireles-6951471a",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 5,
+      "template_recomendado": "E",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "mauricio.meireles@uol.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@uol.com.br",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "mx.uol.com.br"
+        },
+        {
+          "email": "mauricio.meireles@grupofolha.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@grupofolha.com.br",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "grupofolha-com-br.mail.protection.outlook.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:59:00.433Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "O Globo",
+      "nome_completo": "Rennan Setti",
+      "cargo": "Jornalista",
+      "editoria": "Economia / tecnologia",
+      "email_validado": "",
+      "linkedin_url": "https://br.linkedin.com/in/rennan-setti-58897314",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "E",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "rennan.setti@oglobo.com.br",
+          "source": "pattern",
+          "note": "nome.sobrenome@oglobo.com.br",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "oglobo-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "redacao@oglobo.com.br",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "invalid",
+          "reason": "RCPT TO rejected 550",
+          "mx_host": "oglobo-com-br.mail.protection.outlook.com"
+        },
+        {
+          "email": "rennan.setti@globo.com",
+          "source": "pattern",
+          "note": "nome.sobrenome@globo.com",
+          "status": "risky",
+          "reason": "SMTP connection timeout",
+          "mx_host": "smtp.globo.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:59:09.858Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "",
+        "selectedStatus": "pending",
+        "selectedReason": "no valid candidate"
+      }
+    },
+    {
+      "veiculo": "Estadao",
+      "nome_completo": "Equipe Estadão",
+      "cargo": "Redacao",
+      "editoria": "Negocios e inovacao",
+      "email_validado": "redacao@estadao.com",
+      "linkedin_url": "https://www.linkedin.com/company/estadao",
+      "cobre_ia_gestao": true,
+      "score_relevancia": 4,
+      "template_recomendado": "E",
+      "status": "pendente",
+      "email_candidates": [
+        {
+          "email": "redacao@estadao.com",
+          "source": "generic",
+          "note": "redacao generica",
+          "status": "valid",
+          "reason": "RCPT TO confirmed 250",
+          "mx_host": "aspmx.l.google.com"
+        }
+      ],
+      "email_enrichment": {
+        "checkedAt": "2026-06-08T18:59:11.527Z",
+        "method": "public_institutional_and_pattern_candidates_mx_smtp_rcpt",
+        "smtpNoDataSent": true,
+        "selectedEmail": "redacao@estadao.com",
+        "selectedStatus": "valid",
+        "selectedReason": "RCPT TO confirmed 250"
+      }
+    }
+  ]
+}

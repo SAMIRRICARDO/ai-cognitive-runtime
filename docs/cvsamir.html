@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samir Ricardo Almeida — AI Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --bg-2: #111118;
+  --bg-3: #16161e;
+  --bg-card: #13131a;
+  --border: rgba(255,255,255,0.07);
+  --border-2: rgba(255,255,255,0.12);
+  --text: #f0f0f5;
+  --text-2: #9898a8;
+  --text-3: #5a5a6e;
+  --accent: #6e6bff;
+  --accent-2: #a78bfa;
+  --accent-warm: #f4a84a;
+  --accent-green: #34d399;
+  --phase-1: #60a5fa;
+  --phase-2: #34d399;
+  --phase-3: #a78bfa;
+  --glow: rgba(110,107,255,0.15);
+}
+
+html { font-size: 15px; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* noise overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── HERO ── */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 40px;
+  padding: 64px 64px 52px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-glow {
+  position: absolute;
+  top: -120px; right: -80px;
+  width: 500px; height: 500px;
+  background: radial-gradient(ellipse, rgba(110,107,255,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.hero-glow-2 {
+  position: absolute;
+  bottom: -60px; left: 200px;
+  width: 300px; height: 200px;
+  background: radial-gradient(ellipse, rgba(167,139,250,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 1; }
+
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.eyebrow-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.eyebrow-text {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.hero-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.hero-name span {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-title {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  margin-bottom: 28px;
+}
+
+.hero-summary {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-2);
+  max-width: 500px;
+  font-weight: 300;
+}
+
+.hero-summary strong {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.hero-contact {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.contact-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.contact-chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(110,107,255,0.08);
+}
+
+.contact-chip svg { opacity: 0.6; flex-shrink: 0; }
+
+/* Photo area */
+.hero-photo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.photo-frame {
+  position: relative;
+  width: 130px; height: 130px;
+}
+
+.photo-frame::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  z-index: 0;
+}
+
+.photo-frame::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(110,107,255,0.3) 0%, transparent 60%);
+  z-index: -1;
+  filter: blur(8px);
+}
+
+.hero-photo {
+  position: relative;
+  z-index: 1;
+  width: 100%; height: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-badge {
+  margin-top: 14px;
+  padding: 5px 14px;
+  background: linear-gradient(135deg, rgba(110,107,255,0.15) 0%, rgba(167,139,250,0.15) 100%);
+  border: 1px solid rgba(110,107,255,0.3);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-2);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* ── PHASES BAR ── */
+.phases-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.phase {
+  padding: 18px 28px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.phase:last-child { border-right: none; }
+
+.phase::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.p1::before { background: linear-gradient(90deg, var(--phase-1), transparent); }
+.p2::before { background: linear-gradient(90deg, var(--phase-2), transparent); }
+.p3::before { background: linear-gradient(90deg, var(--phase-3), transparent); }
+
+.phase-num {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.p1 .phase-num { color: var(--phase-1); }
+.p2 .phase-num { color: var(--phase-2); }
+.p3 .phase-num { color: var(--phase-3); }
+
+.phase-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.phase-period {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ── BODY ── */
+.body-grid {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+}
+
+.main-col {
+  padding: 48px 48px 48px 64px;
+  border-right: 1px solid var(--border);
+}
+
+.side-col {
+  padding: 48px 40px 48px 32px;
+  background: var(--bg-2);
+}
+
+/* SECTION HEADERS */
+.section-block { margin-bottom: 48px; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* EXPERIENCE */
+.exp-item {
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.exp-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.phase-tag {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.pt-1 { background: rgba(96,165,250,0.1); color: var(--phase-1); border: 1px solid rgba(96,165,250,0.2); }
+.pt-2 { background: rgba(52,211,153,0.1); color: var(--phase-2); border: 1px solid rgba(52,211,153,0.2); }
+.pt-3 { background: rgba(167,139,250,0.1); color: var(--phase-3); border: 1px solid rgba(167,139,250,0.2); }
+
+.exp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.exp-role {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.exp-period {
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+
+.exp-company {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+.exp-company a { color: inherit; text-decoration: none; }
+.exp-company a:hover { color: var(--accent-2); }
+
+.exp-desc {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.75;
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+
+.exp-bullets { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+.exp-bullets li {
+  font-size: 13px;
+  color: var(--text-2);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.65;
+  font-weight: 300;
+}
+
+.exp-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 9px;
+  width: 5px; height: 1px;
+  background: var(--text-3);
+}
+
+.exp-bullets li strong { font-weight: 500; color: var(--text); }
+
+.exp-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--accent-green);
+  font-weight: 500;
+}
+
+/* PROJECT */
+.project-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  padding: 28px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.project-card::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(110,107,255,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.project-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.project-tag {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-warm);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.project-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+
+.project-subtitle {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 16px;
+  letter-spacing: 0.04em;
+}
+
+.project-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.75;
+  font-weight: 300;
+  margin-bottom: 20px;
+}
+
+.project-modules {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.project-module {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.project-module:hover {
+  border-color: rgba(110,107,255,0.3);
+  background: rgba(110,107,255,0.04);
+}
+
+.project-module-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.project-module-desc {
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+.project-links { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.project-link {
+  font-size: 11.5px;
+  color: var(--accent-2);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(167,139,250,0.25);
+  padding-bottom: 1px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.project-link:hover { border-color: var(--accent-2); color: #c4b5fd; }
+
+/* SIDE */
+.side-section { margin-bottom: 32px; }
+
+.side-title {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.skill-group { margin-bottom: 16px; }
+
+.skill-group-name {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.skill-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.skill-pill {
+  font-size: 11.5px;
+  color: var(--text-2);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.skill-pill:hover {
+  background: rgba(110,107,255,0.1);
+  border-color: rgba(110,107,255,0.3);
+  color: var(--accent-2);
+}
+
+.skill-pill-primary {
+  background: rgba(110,107,255,0.12);
+  color: var(--accent-2);
+  border-color: rgba(110,107,255,0.25);
+}
+
+.edu-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.edu-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.edu-course { font-size: 12.5px; font-weight: 500; color: var(--text); margin-bottom: 3px; line-height: 1.4; }
+.edu-inst { font-size: 11.5px; color: var(--text-2); margin-bottom: 2px; }
+.edu-period { font-size: 10.5px; color: var(--text-3); }
+
+.edu-status {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 6px;
+  background: rgba(244,168,74,0.12);
+  color: var(--accent-warm);
+  border: 1px solid rgba(244,168,74,0.25);
+}
+
+.cert-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cert-item:last-child { border-bottom: none; }
+.cert-name { font-size: 11.5px; color: var(--text-2); line-height: 1.4; }
+.cert-year { font-size: 10.5px; color: var(--text-3); white-space: nowrap; flex-shrink: 0; }
+
+.lang-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.lang-item:last-child { border-bottom: none; }
+.lang-name { font-size: 13px; color: var(--text); }
+.lang-level { font-size: 11px; color: var(--text-3); }
+
+/* FOOTER */
+.cv-footer {
+  padding: 20px 64px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-left { font-size: 11px; color: var(--text-3); }
+.footer-right { font-size: 11px; color: var(--text-3); }
+.footer-brand { font-weight: 500; color: var(--text-2); letter-spacing: 0.08em; }
+
+@media print {
+  body, .page { background: #0a0a0f; }
+  body::before { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <div class="eyebrow-dot"></div>
+        <span class="eyebrow-text">AI Engineer &amp; Automation Architect</span>
+      </div>
+      <h1 class="hero-name">Samir<br><span>Ricardo</span><br>Almeida</h1>
+      <p class="hero-title">AI Engineering &nbsp;·&nbsp; LLMs &amp; RAG &nbsp;·&nbsp; Autonomous Agents &nbsp;·&nbsp; Enterprise Systems</p>
+      <p class="hero-summary">
+        Engenheiro com <strong>15 anos de experiência</strong> em infraestrutura, cloud e desenvolvimento de produto — agora focado em <strong>arquitetura de sistemas AI-native</strong>. Especialista na construção de agentes autônomos, pipelines RAG e automação comercial enterprise.
+      </p>
+      <div class="hero-contact">
+        <a class="contact-chip" href="mailto:eliteasamir@gmail.com">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 4l7 5 7-5"/></svg>
+          eliteasamir@gmail.com
+        </a>
+        <a class="contact-chip" href="tel:11953577804">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h3l1.5 3.5-1.75 1.25c.8 1.6 2 2.8 3.5 3.5L10.5 8.5 14 10v3c0 .55-.45 1-1 1C6.27 14 2 9.73 2 3c0-.55.45-1 1-1z"/></svg>
+          (11) 95357-7804
+        </a>
+        <a class="contact-chip" href="https://github.com/SAMIRRICARDO" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          github.com/SAMIRRICARDO
+        </a>
+        <a class="contact-chip" href="https://vrashows.com.br/cvsamir" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 1.5C6 4 5 6 5 8s1 4 3 6.5M8 1.5c2 2.5 3 4.5 3 6.5s-1 4-3 6.5M1.5 8h13"/></svg>
+          vrashows.com.br/cvsamir
+        </a>
+        <a class="contact-chip" href="https://www.linkedin.com" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+          São Paulo, SP
+        </a>
+      </div>
+    </div>
+    <div class="hero-photo-area">
+      <div class="photo-frame">
+        <img
+          class="hero-photo"
+          src="https://yata-apix-99c4b563-38d6-4212-b8e1-cd6a0d32e5c1.s3-object.locaweb.com.br/c9db926d9654427c8d8d77495faf7595.jpg"
+          alt="Samir Ricardo Almeida"
+        >
+      </div>
+      <div class="hero-badge">AI Engineer</div>
+    </div>
+  </div>
+
+  <!-- PHASES -->
+  <div class="phases-bar">
+    <div class="phase p1">
+      <div class="phase-num">Fase I · Foundation</div>
+      <div class="phase-label">Infra &amp; Cloud</div>
+      <div class="phase-period">2011 – 2022 · 11 anos</div>
+    </div>
+    <div class="phase p2">
+      <div class="phase-num">Fase II · Product</div>
+      <div class="phase-label">Full Stack &amp; Sistemas</div>
+      <div class="phase-period">2022 – 2025 · 3+ anos</div>
+    </div>
+    <div class="phase p3">
+      <div class="phase-num">Fase III · AI</div>
+      <div class="phase-label">AI Engineering</div>
+      <div class="phase-period">2025 – Atual</div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body-grid">
+    <div class="main-col">
+
+      <div class="section-block">
+        <div class="section-header">
+          <span class="section-label">Experiência Profissional</span>
+          <div class="section-line"></div>
+        </div>
+
+        <!-- VRASHOWS AI -->
+        <div class="exp-item">
+          <div class="phase-tag pt-3">Fase III · AI Engineering</div>
+          <div class="exp-header">
+            <h2 class="exp-role">Engenheiro de IA e Automação</h2>
+            <span class="exp-period">Abr 2026 — Atual</span>
+          </div>
+          <div class="exp-company"><a href="https://vrashows.com.br">VRASHOWS</a> · São Paulo, SP</div>
+          <p class="exp-desc">Arquitetura e desenvolvimento da plataforma VRAXIA — sistema operacional de IA com agentes especializados, Human RAG e runtime de automação comercial. Responsável pelas decisões técnicas de infraestrutura AI-native, integração com LLMs e pipelines de outbound B2B.</p>
+          <ul class="exp-bullets">
+            <li>Runtime <strong>multiagente</strong> com TypeScript, Node.js, Ollama, LLaMA 3.1 70B e GPT-4o-mini; arquitetura local-first com PostgreSQL + pgvector, Redis e Docker Compose</li>
+            <li>Sistema <strong>Human RAG</strong>: preservação de conhecimento organizacional, capturando padrões de raciocínio e heurísticas de profissionais de alta performance</li>
+            <li>Pipelines de <strong>outbound automatizado B2B</strong>: lead enrichment, scoring, email automation e follow-up com personalização por perfil</li>
+            <li>Otimização de custos de inferência — cheap-mode com degradação graciosa; custo operacional próximo de zero</li>
+            <li>Ecossistema de agentes especializados: Comercial, RH, Jurídico, Operações, Financeiro, CX e PsychAgent</li>
+          </ul>
+          <div class="exp-metric">↑ 40% eficiência operacional comercial estimada com automação de workflows e agentes IA</div>
+        </div>
+
+        <!-- InfinityCorp -->
+        <div class="exp-item">
+          <div class="phase-tag pt-3">Fase III · Backend Sênior</div>
+          <div class="exp-header">
+            <h2 class="exp-role">Engenheiro de Software Sênior</h2>
+            <span class="exp-period">Jan 2026 — Abr 2026</span>
+          </div>
+          <div class="exp-company">InfinityCorp · São Paulo, SP</div>
+          <ul class="exp-bullets">
+            <li>Debugging em produção, <strong>análise de causa raiz (RCA)</strong> e resolução de incidentes em sistemas críticos de alta frequência</li>
+            <li>Implementação de <strong>null safety</strong>, resiliência arquitetural e evolução com SOLID e Clean Architecture</li>
+            <li><strong>Redução de ~30%</strong> nas falhas críticas em produção; estabilização de fluxos essenciais</li>
+          </ul>
+        </div>
+
+        <!-- Freela -->
+        <div class="exp-item">
+          <div class="phase-tag pt-2">Fase II · Full Stack</div>
+          <div class="exp-header">
+            <h2 class="exp-role">Engenheiro de Software Sênior</h2>
+            <span class="exp-period">Dez 2025 — Jan 2026</span>
+          </div>
+          <div class="exp-company">Freela Criação Independente · São Paulo, SP</div>
+          <ul class="exp-bullets">
+            <li>Desenvolvimento de sistemas críticos de alta disponibilidade com IA para automação de decisões de negócio</li>
+            <li>Integração entre sistemas via APIs e modelagem de fluxos de dados</li>
+          </ul>
+        </div>
+
+        <!-- VRASHOWS FS -->
+        <div class="exp-item">
+          <div class="phase-tag pt-2">Fase II · Full Stack</div>
+          <div class="exp-header">
+            <h2 class="exp-role">Desenvolvedor Full Stack Sênior</h2>
+            <span class="exp-period">Mai 2022 — Dez 2025</span>
+          </div>
+          <div class="exp-company"><a href="https://vrashows.com.br">VRASHOWS</a> · São Paulo, SP</div>
+          <ul class="exp-bullets">
+            <li>Aplicações web com <strong>React.js + TypeScript</strong> e Django; criação e integração de APIs REST/RESTful em ambiente de eventos enterprise</li>
+            <li>Automação de processos corporativos, sistemas financeiros e gestão de estados assíncronos</li>
+            <li>Code reviews, planejamento técnico e evolução contínua de arquitetura</li>
+          </ul>
+        </div>
+
+        <!-- NStech -->
+        <div class="exp-item">
+          <div class="phase-tag pt-1">Fase I · Cloud</div>
+          <div class="exp-header">
+            <h2 class="exp-role">Cloud Infrastructure Analyst</h2>
+            <span class="exp-period">Jun 2020 — Abr 2022</span>
+          </div>
+          <div class="exp-company">NStech Group · São Paulo, SP</div>
+          <ul class="exp-bullets">
+            <li>Administração de ambientes <strong>Microsoft Azure</strong>; monitoramento de performance, disponibilidade e segurança</li>
+            <li>Automação de rotinas operacionais e melhoria de processos de infraestrutura cloud</li>
+          </ul>
+        </div>
+
+        <!-- Elite A -->
+        <div class="exp-item">
+          <div class="phase-tag pt-1">Fase I · Infrastructure</div>
+          <div class="exp-header">
+            <h2 class="exp-role">Enterprise Solutions Consultant</h2>
+            <span class="exp-period">Jan 2011 — Jan 2020</span>
+          </div>
+          <div class="exp-company">Elite A Tecnologia · São Paulo, SP</div>
+          <p class="exp-desc">9 anos liderando projetos de infraestrutura de TI enterprise para clientes de múltiplos segmentos. Responsável por arquitetura, implantação e operação de ambientes seguros e escaláveis.</p>
+          <ul class="exp-bullets">
+            <li>Liderança técnica em projetos de redes, segurança, servidores e ambientes Linux em clientes corporativos</li>
+            <li>Tradução de necessidades de negócio em arquiteturas tecnológicas; relacionamento com decisores C-level</li>
+            <li>Gestão de continuidade operacional e disponibilidade em ambientes críticos</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PROJECT -->
+      <div class="section-block">
+        <div class="section-header">
+          <span class="section-label">Projeto Principal</span>
+          <div class="section-line"></div>
+        </div>
+
+        <div class="project-card">
+          <div class="project-tag">Production Codebase · TypeScript 90% · 27 commits · 2026</div>
+          <h2 class="project-title">AI Cognitive Runtime</h2>
+          <p class="project-subtitle">VRAXIA Core · Autonomous Agents · RAG Memory · Outbound Pipeline</p>
+          <p class="project-desc">Runtime de agentes IA em produção — arquitetura completa com agentes autônomos, memória semântica, pipeline de outbound B2B, cost governance e observabilidade. Cheap-mode nativo, degradação graciosa e custo operacional próximo de zero.</p>
+          <div class="project-modules">
+            <div class="project-module">
+              <div class="project-module-name">Agent Runtime</div>
+              <div class="project-module-desc">Agentes autônomos com memória contextual, router de custo e cheap-mode automático</div>
+            </div>
+            <div class="project-module">
+              <div class="project-module-name">RAG Memory</div>
+              <div class="project-module-desc">Obsidian vault indexado com pgvector — retrieval semântico + context trimming</div>
+            </div>
+            <div class="project-module">
+              <div class="project-module-name">Outbound Pipeline</div>
+              <div class="project-module-desc">Lead acquisition, validação, scheduling e workers de envio B2B</div>
+            </div>
+            <div class="project-module">
+              <div class="project-module-name">Cost Governance</div>
+              <div class="project-module-desc">Budget enforcement, cost-report por agente, token caps e circuit breakers</div>
+            </div>
+          </div>
+          <div class="project-links">
+            <a class="project-link" href="https://github.com/SAMIRRICARDO/ai-cognitive-runtime" target="_blank">github.com/SAMIRRICARDO/ai-cognitive-runtime</a>
+            <a class="project-link" href="https://ialeadsnow.vercel.app/dashboard" target="_blank">Frontend — IALEADSNOW</a>
+            <a class="project-link" href="https://vrashows.com.br/vraxia" target="_blank">VRAXIA Platform</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDE -->
+    <div class="side-col">
+
+      <div class="side-section">
+        <div class="side-title">Stack &amp; Tecnologias</div>
+
+        <div class="skill-group">
+          <div class="skill-group-name">AI &amp; ML</div>
+          <div class="skill-pills">
+            <span class="skill-pill skill-pill-primary">LLMs</span>
+            <span class="skill-pill skill-pill-primary">RAG</span>
+            <span class="skill-pill skill-pill-primary">AI Agents</span>
+            <span class="skill-pill">Ollama</span>
+            <span class="skill-pill">LLaMA 3.1</span>
+            <span class="skill-pill">GPT-4o</span>
+            <span class="skill-pill">Claude API</span>
+            <span class="skill-pill">pgvector</span>
+            <span class="skill-pill">Prompt Eng.</span>
+            <span class="skill-pill">Human RAG</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-name">Backend</div>
+          <div class="skill-pills">
+            <span class="skill-pill skill-pill-primary">TypeScript</span>
+            <span class="skill-pill skill-pill-primary">Node.js</span>
+            <span class="skill-pill">Python</span>
+            <span class="skill-pill">FastAPI</span>
+            <span class="skill-pill">Django</span>
+            <span class="skill-pill">Fastify</span>
+            <span class="skill-pill">REST APIs</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-name">Frontend</div>
+          <div class="skill-pills">
+            <span class="skill-pill">React.js</span>
+            <span class="skill-pill">TypeScript</span>
+            <span class="skill-pill">Tailwind CSS</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-name">Cloud &amp; DevOps</div>
+          <div class="skill-pills">
+            <span class="skill-pill">AWS</span>
+            <span class="skill-pill">Azure</span>
+            <span class="skill-pill">Oracle Cloud</span>
+            <span class="skill-pill">Docker</span>
+            <span class="skill-pill">CI/CD</span>
+            <span class="skill-pill">Linux</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-name">Data &amp; Storage</div>
+          <div class="skill-pills">
+            <span class="skill-pill">PostgreSQL</span>
+            <span class="skill-pill">Redis</span>
+            <span class="skill-pill">pgvector</span>
+            <span class="skill-pill">SQL</span>
+            <span class="skill-pill">Power BI</span>
+          </div>
+        </div>
+
+        <div class="skill-group">
+          <div class="skill-group-name">Arquitetura</div>
+          <div class="skill-pills">
+            <span class="skill-pill">SOLID</span>
+            <span class="skill-pill">Clean Arch.</span>
+            <span class="skill-pill">Microservices</span>
+            <span class="skill-pill">AI-Native</span>
+            <span class="skill-pill">SaaS</span>
+            <span class="skill-pill">Observability</span>
+            <span class="skill-pill">RCA</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-title">Formação</div>
+        <div class="edu-item">
+          <div class="edu-course">Pós-grad. Eng. de Software com IA <span class="edu-status">Em curso</span></div>
+          <div class="edu-inst">UNIPDS</div>
+          <div class="edu-period">Mar 2026 — presente · LLMs, agentes, sistemas inteligentes</div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-course">Bacharelado em Tecnologia da Informação</div>
+          <div class="edu-inst">UNIVESP / USP</div>
+          <div class="edu-period">Mai 2022 — Jul 2025</div>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-title">Certificações</div>
+        <div class="cert-item"><span class="cert-name">Eng. Software com IA — FullCycle</span><span class="cert-year">2025</span></div>
+        <div class="cert-item"><span class="cert-name">Multicloud DevOps e IA</span><span class="cert-year">2025</span></div>
+        <div class="cert-item"><span class="cert-name">AWS Cloud Foundation</span><span class="cert-year">2025</span></div>
+        <div class="cert-item"><span class="cert-name">Business Intelligence — FGV</span><span class="cert-year">2025</span></div>
+        <div class="cert-item"><span class="cert-name">Azure Fundamentals — Microsoft</span><span class="cert-year">2024</span></div>
+        <div class="cert-item"><span class="cert-name">SQL e Power BI — EmpowerData</span><span class="cert-year">2024</span></div>
+        <div class="cert-item"><span class="cert-name">ITIL® 4 Foundation</span><span class="cert-year">2024</span></div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-title">Idiomas</div>
+        <div class="lang-item"><span class="lang-name">Português</span><span class="lang-level">Nativo</span></div>
+        <div class="lang-item"><span class="lang-name">English</span><span class="lang-level">Intermediário</span></div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-title">Diferencial</div>
+        <p style="font-size: 12.5px; color: var(--text-2); line-height: 1.75; font-weight: 300;">
+          Único perfil que combina <strong style="font-weight:500;color:var(--text)">11 anos de infra enterprise</strong>, produto full stack em produção e <strong style="font-weight:500;color:var(--text)">arquitetura AI-native</strong>. Entende sistemas de baixo nível, produto e negócio — e aplica IA onde gera impacto real.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="cv-footer">
+    <div class="footer-left">Samir Ricardo Almeida · eliteasamir@gmail.com · São Paulo, SP</div>
+    <div class="footer-right"><span class="footer-brand">VRASHOWS</span> · vrashows.com.br/cvsamir · 2026</div>
+  </div>
+
+</div>
+</body>
+</html>
