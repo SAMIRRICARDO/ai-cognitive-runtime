@@ -29,7 +29,7 @@ Classifique essa resposta.
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001', // cheap mode
-    max_tokens: 256,                     // resposta curta, economiza token
+    max_tokens: 300,                     // inclui decision_power + score
     system: CLASSIFIER_SYSTEM_PROMPT,
     messages: [
       { role: 'user', content: userPrompt }
@@ -70,6 +70,7 @@ export async function generateHandoffReport(
 🧠 ANÁLISE DO AGENTE
    Perfil operacional: Variante ${classification.variant}
    Nível de interesse: ${classification.intent.toUpperCase()}
+   Poder de decisão:   ${classification.decision_power.toUpperCase()} (score ${classification.score}/10)
    Motivo: ${classification.reason}
 
 ▶️  PRÓXIMO PASSO SUGERIDO

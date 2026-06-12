@@ -1,9 +1,12 @@
-export type Variant = 'A' | 'B' | 'C' | 'D' | 'E';
-export type Intent  = 'high' | 'medium' | 'low' | 'none';
+export type Variant       = 'A' | 'B' | 'C' | 'D' | 'E';
+export type Intent        = 'high' | 'medium' | 'low' | 'none';
+export type DecisionPower = 'high' | 'mid' | 'low';
 
 export interface ClassificationResult {
   variant:                Variant;
   intent:                 Intent;
+  decision_power:         DecisionPower;
+  score:                  number;
   handoff:                boolean;
   reason:                 string;
   suggested_next_action:  string;

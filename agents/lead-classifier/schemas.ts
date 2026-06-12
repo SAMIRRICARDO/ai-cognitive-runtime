@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
 export const ClassificationResultSchema = z.object({
-  variant: z.enum(['A', 'B', 'C', 'D', 'E']),
-  intent:  z.enum(['high', 'medium', 'low', 'none']),
-  handoff: z.boolean(),
-  reason:  z.string().max(200),
+  variant:        z.enum(['A', 'B', 'C', 'D', 'E']),
+  intent:         z.enum(['high', 'medium', 'low', 'none']),
+  decision_power: z.enum(['high', 'mid', 'low']),
+  score:          z.number().int().min(1).max(10),
+  handoff:        z.boolean(),
+  reason:         z.string().max(200),
   suggested_next_action: z.string(),
 });
 
@@ -25,9 +27,11 @@ export function parseClassification(raw: string): ClassificationResultParsed | n
 
 /** Fallback when LLM returns unparseable output */
 export const FALLBACK_CLASSIFICATION: ClassificationResultParsed = {
-  variant: 'B',
-  intent:  'medium',
-  handoff: false,
-  reason:  'Resposta ambígua — fallback aplicado',
+  variant:        'B',
+  intent:         'medium',
+  decision_power: 'mid',
+  score:          5,
+  handoff:        false,
+  reason:         'Resposta ambígua — fallback aplicado',
   suggested_next_action: 'Revisar manualmente e reenviar se necessário',
 };
