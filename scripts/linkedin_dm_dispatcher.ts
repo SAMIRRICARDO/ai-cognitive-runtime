@@ -7,22 +7,24 @@ import { fileURLToPath } from 'url';
 
 const ROOT          = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PROFILE_DIR   = path.join(ROOT, '.linkedin-profile');
-const TEMPLATE_FILE = path.join(ROOT, 'vault', 'imprensa', 'templates', 'template_cto_dm.md');
-const LEADS_FILE    = path.join(ROOT, 'leads_validados_2026-06-03.json');
+const TEMPLATE_FILE = path.join(ROOT, 'vault', 'imprensa', 'templates', 'template_futurecom_dm.md');
+const LEADS_FILE    = path.join(ROOT, 'data', 'leads', 'futurecom', 'futurecom-event-decision-makers-linkedin-2026-06-12.json');
 const today         = new Date().toISOString().split('T')[0];
 const LOG_FILE      = path.join(ROOT, 'vault', 'imprensa', 'logs', `linkedin_dm_${today}.json`);
 
 const NOTE_CHAR_LIMIT = 300;
-
-const CTO_TARGETS = new Set([
-  'Fabio Caversan', 'Fernanda Weiden', 'Thiago Teixeira', 'Felipe Cavalcanti',
-  'Rogerio Tessari', 'Daniela Binatti', 'Fabiola Marchiori', 'Gustavo Livrare',
-  'Marcus Fontoura', 'Andre Penha',
-]);
+const DAILY_CAP       = 15;   // máximo de ações por dia (DM + conexão somadas)
+const DELAY_MIN_MS    = 75_000;
+const DELAY_MAX_MS    = 180_000;
+const STATE_FILE      = path.join(ROOT, 'vault', 'imprensa', 'logs', 'daily_state.json');
 
 interface Lead {
-  full_name: string; first_name: string; company_name: string;
-  linkedin_url: string; [key: string]: unknown;
+  name: string; company: string; role: string;
+  linkedin_url: string; futurecom_fit?: string; [key: string]: unknown;
+}
+interface LeadsFile {
+  metadata?: Record<string, unknown>;
+  contacts:  Lead[];
 }
 interface DmLog {
   name: string; company: string; linkedin_url: string;
@@ -39,30 +41,80 @@ function removeFrontmatter(content: string): string {
   return content;
 }
 
-function buildMessage(template: string, firstName: string, company: string): string {
-  return template.replace(/\{\{nome\}\}/g, firstName).replace(/\{\{empresa\}\}/g, company).trim();
+function firstNameOf(fullName: string): string {
+  return fullName.split(' ')[0];
+}
+
+function buildMessage(template: string, fullName: string, company: string): string {
+  return template
+    .replace(/\{\{nome\}\}/g, firstNameOf(fullName))
+    .replace(/\{\{empresa\}\}/g, company)
+    .trim();
 }
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
+// Delay aleatório entre DELAY_MIN e DELAY_MAX (evita timing regular detectável)
+function sleepRandom(): Promise<void> {
+  const ms = DELAY_MIN_MS + Math.random() * (DELAY_MAX_MS - DELAY_MIN_MS);
+  const sec = Math.round(ms / 1000);
+  console.log(`  Aguardando ${sec}s antes do próximo...\n`);
+  return sleep(ms);
+}
+
+// Cap diário — persiste contagem em disco entre execuções do script
+interface DailyState { date: string; count: number; }
+function loadDailyState(): DailyState {
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    const s: DailyState = JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
+    return s.date === today ? s : { date: today, count: 0 };
+  } catch { return { date: today, count: 0 }; }
+}
+function saveDailyState(s: DailyState): void {
+  fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
+  fs.writeFileSync(STATE_FILE, JSON.stringify(s, null, 2), 'utf-8');
+}
+
+// Janela comercial — São Paulo (UTC-3), seg-sex, 08h-18h
+function isBusinessHours(): boolean {
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const day = now.getDay();   // 0=dom, 6=sab
+  const h   = now.getHours();
+  return day >= 1 && day <= 5 && h >= 8 && h < 18;
+}
+
+// Scroll humano — percorre o perfil antes de clicar (comportamento orgânico)
+async function humanScroll(page: Page): Promise<void> {
+  const steps = 2 + Math.floor(Math.random() * 3); // 2-4 scrolls
+  for (let i = 0; i < steps; i++) {
+    const delta = 200 + Math.floor(Math.random() * 300);
+    await page.evaluate((d) => window.scrollBy(0, d), delta);
+    await sleep(400 + Math.random() * 600);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await sleep(500);
+}
 
 // ─── dry-run ──────────────────────────────────────────────────────────────────
 
 function runDryRun(targets: Lead[], rawTemplate: string): void {
   console.log('\n[DRY-RUN] Nenhuma DM será enviada. Browser não será aberto.\n');
-  console.log(`[LINKEDIN DM] ${targets.length} CTOs encontrados\n`);
+  console.log(`[LINKEDIN DM] ${targets.length} leads encontrados\n`);
   for (let i = 0; i < targets.length; i++) {
     const lead    = targets[i];
-    const message = buildMessage(rawTemplate, lead.first_name, lead.company_name);
+    const message = buildMessage(rawTemplate, lead.name, lead.company);
     const fits    = message.length <= NOTE_CHAR_LIMIT;
-    console.log(`[${i + 1}/${targets.length}] ${lead.full_name} — ${lead.company_name}`);
+    console.log(`[${i + 1}/${targets.length}] ${lead.name} — ${lead.company} (${lead.role})`);
+    console.log(`  Fit    : ${lead.futurecom_fit ?? 'n/a'}`);
     console.log(`  URL    : ${lead.linkedin_url}`);
     console.log(`  CHARS  : ${message.length} / ${NOTE_CHAR_LIMIT} ${fits ? '✓ cabe em nota' : '⚠️  excede'}`);
     console.log(`  DM     :\n${message.split('\n').map(l => `    ${l}`).join('\n')}`);
     console.log('  ' + '─'.repeat(60));
   }
   console.log('\n[RESUMO DRY-RUN]');
-  console.log(`  Modo : DRY-RUN (browser não aberto, nenhuma DM enviada)`);
-  console.log(`  CTOs : ${targets.length}\n`);
+  console.log(`  Modo   : DRY-RUN (browser não aberto, nenhuma DM enviada)`);
+  console.log(`  Leads  : ${targets.length}\n`);
 }
 
 // ─── login guard ─────────────────────────────────────────────────────────────
@@ -305,8 +357,8 @@ async function main() {
   const DRY_RUN = process.argv.includes('--dry-run');
 
   const rawTemplate = removeFrontmatter(fs.readFileSync(TEMPLATE_FILE, 'utf-8'));
-  const leads: Lead[] = JSON.parse(fs.readFileSync(LEADS_FILE, 'utf-8'));
-  const targets = leads.filter(l => CTO_TARGETS.has(l.full_name) && l.linkedin_url?.trim());
+  const leadsFile: LeadsFile = JSON.parse(fs.readFileSync(LEADS_FILE, 'utf-8'));
+  const targets = leadsFile.contacts.filter(l => l.linkedin_url?.trim());
 
   if (targets.length === 0) { console.error('[ERRO] Nenhum CTO-alvo encontrado.'); process.exit(1); }
   if (DRY_RUN) { runDryRun(targets, rawTemplate); return; }
@@ -325,40 +377,69 @@ async function main() {
     ignoreDefaultArgs: ['--enable-automation'],
   });
 
+  // ── Proteção 1: janela comercial ────────────────────────────────────────────
+  if (!isBusinessHours()) {
+    console.error('[BLOQUEIO] Fora da janela comercial (seg-sex 08h-18h Brasília). Abortando.');
+    await context.close();
+    process.exit(0);
+  }
+
+  // ── Proteção 2: cap diário ───────────────────────────────────────────────────
+  const dailyState = loadDailyState();
+  if (dailyState.count >= DAILY_CAP) {
+    console.error(`[BLOQUEIO] Cap diário atingido (${DAILY_CAP} ações). Retome amanhã.`);
+    await context.close();
+    process.exit(0);
+  }
+  const remaining = DAILY_CAP - dailyState.count;
+  console.log(`[PROTEÇÃO] Cap diário: ${dailyState.count}/${DAILY_CAP} usados — ${remaining} disponíveis hoje`);
+
   const page = await ensureLoggedIn(context);
-  console.log(`[LINKEDIN DM] ${targets.length} CTOs — iniciando\n`);
+  const capped = targets.slice(0, remaining);
+  console.log(`[LINKEDIN DM] ${capped.length} leads nesta sessão (de ${targets.length} totais)\n`);
 
   const logs: DmLog[] = [];
   let sent = 0, errors = 0;
 
-  for (let i = 0; i < targets.length; i++) {
-    const lead    = targets[i];
-    const message = buildMessage(rawTemplate, lead.first_name, lead.company_name);
+  for (let i = 0; i < capped.length; i++) {
+    // ── Proteção 3: re-verificar janela comercial a cada lead ─────────────────
+    if (!isBusinessHours()) {
+      console.log('[PROTEÇÃO] Saiu da janela comercial. Pausando sessão.');
+      break;
+    }
 
-    console.log(`[${i + 1}/${targets.length}] ${lead.full_name} — ${lead.company_name}`);
+    const lead    = capped[i];
+    const message = buildMessage(rawTemplate, lead.name, lead.company);
+
+    console.log(`[${i + 1}/${capped.length}] ${lead.name} — ${lead.company} (${lead.role})`);
 
     try {
       const reached = await navigateToProfile(page, lead.linkedin_url);
       if (!reached) throw new Error('Perfil não encontrado nos resultados de busca');
 
+      // ── Proteção 4: scroll humano antes de agir ───────────────────────────
+      await humanScroll(page);
+
       const method = await sendDm(page, message);
       if (!method) {
         const dbg = path.join(ROOT, 'vault', 'imprensa', 'logs',
-          `debug_${lead.full_name.replace(/\s+/g, '_')}.png`);
+          `debug_${lead.name.replace(/\s+/g, '_')}.png`);
         await page.screenshot({ path: dbg, fullPage: false });
         throw new Error(`Nenhuma ação de envio encontrada no perfil (screenshot: ${path.basename(dbg)})`);
       }
 
       console.log(`  ✓ Enviada (${method})`);
-      logs.push({ name: lead.full_name, company: lead.company_name,
+      logs.push({ name: lead.name, company: lead.company,
         linkedin_url: lead.linkedin_url, method, status: 'sent',
         sent_at: new Date().toISOString() });
       sent++;
+      dailyState.count++;
+      saveDailyState(dailyState);
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.log(`  ✗ Erro: ${msg}`);
-      logs.push({ name: lead.full_name, company: lead.company_name,
+      logs.push({ name: lead.name, company: lead.company,
         linkedin_url: lead.linkedin_url, method: 'error', status: 'error',
         error: msg, sent_at: new Date().toISOString() });
       errors++;
@@ -366,10 +447,8 @@ async function main() {
 
     fs.writeFileSync(LOG_FILE, JSON.stringify(logs, null, 2), 'utf-8');
 
-    if (i < targets.length - 1) {
-      console.log(`  Aguardando 60s...\n`);
-      await sleep(60_000);
-    }
+    // ── Proteção 5: delay aleatório entre envios (75-180s) ────────────────────
+    if (i < capped.length - 1) await sleepRandom();
   }
 
   await context.close();
@@ -377,6 +456,7 @@ async function main() {
   console.log('\n[RESUMO LINKEDIN DM]');
   console.log(`  Enviadas : ${sent}`);
   console.log(`  Erros    : ${errors}`);
+  console.log(`  Cap hoje : ${dailyState.count}/${DAILY_CAP}`);
   console.log(`  Log      : ${LOG_FILE}\n`);
 }
 
