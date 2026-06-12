@@ -1,29 +1,40 @@
 import { processLinkedInReply } from '../agents/lead-classifier/classifier.js';
 import { notifyTelegram as notifyWhatsApp } from '../tools/telegram.js';
 
-// Aceita campos no formato Waalaxy (snake_case) e formato interno (camelCase)
 export interface LinkedInWebhookPayload {
-  // Waalaxy / snake_case
+  // Waalaxy (campos nativos da plataforma)
+  firstName?:       string;
+  lastName?:        string;
+  occupation?:      string;
+  linkedInUrl?:     string;  // Waalaxy usa camelCase com I maiúsculo
+  message?:         string;
+  lastMessage?:     string;
+  // Formato interno snake_case (legado)
   prospect_name?:   string;
   job_title?:       string;
   linkedin_url?:    string;
   message_content?: string;
-  // Interno / camelCase
+  // Formato interno camelCase
   name?:            string;
   role?:            string;
   linkedinUrl?:     string;
   reply?:           string;
   // Compartilhado
-  company:          string;
+  company?:         string;
+  companyName?:     string;
 }
 
 function normalizePayload(p: LinkedInWebhookPayload) {
+  const fullName = p.name ?? p.prospect_name
+    ?? (p.firstName && p.lastName ? `${p.firstName} ${p.lastName}` : p.firstName)
+    ?? 'Desconhecido';
+
   return {
-    name:        p.name        ?? p.prospect_name   ?? 'Desconhecido',
-    company:     p.company,
-    role:        p.role        ?? p.job_title        ?? 'Não informado',
-    linkedinUrl: p.linkedinUrl ?? p.linkedin_url     ?? '',
-    reply:       p.reply       ?? p.message_content  ?? '',
+    name:        fullName,
+    company:     p.company ?? p.companyName ?? 'Não informada',
+    role:        p.role ?? p.job_title ?? p.occupation ?? 'Não informado',
+    linkedinUrl: p.linkedinUrl ?? p.linkedInUrl ?? p.linkedin_url ?? '',
+    reply:       p.reply ?? p.message ?? p.lastMessage ?? p.message_content ?? '',
   };
 }
 

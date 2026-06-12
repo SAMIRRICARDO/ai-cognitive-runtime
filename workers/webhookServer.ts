@@ -16,6 +16,7 @@ try {
 
 const app = Fastify({ logger: true });
 
+// Rota genérica — usada internamente e por integrações snake_case
 app.post('/webhook/linkedin', async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const body = request.body as LinkedInWebhookPayload;
@@ -27,9 +28,29 @@ app.post('/webhook/linkedin', async (request: FastifyRequest, reply: FastifyRepl
   }
 });
 
+// Rota Waalaxy — recebe evento "prospect replied" e dispara classificação + Telegram
+app.post('/webhook/waalaxy', async (request: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const body = request.body as LinkedInWebhookPayload;
+
+    // Waalaxy envia eventos de vários tipos — só processa respostas de prospects
+    const reply_text = body.message ?? body.lastMessage ?? (body as Record<string, unknown>).reply as string;
+    if (!reply_text) {
+      return reply.send({ status: 'ignored', reason: 'no message content' });
+    }
+
+    console.log('[Waalaxy] Resposta recebida de:', body.firstName ?? body.prospect_name ?? body.name);
+    const result = await handleLinkedInWebhook(body);
+    return reply.send({ status: 'ok', result });
+  } catch (err) {
+    console.error('[Waalaxy] Webhook error:', err);
+    return reply.status(500).send({ status: 'error' });
+  }
+});
+
 app.get('/health', async () => ({ status: 'ok', agent: 'VRAXIA SDR' }));
 
-const PORT = Number(process.env.WEBHOOK_PORT) || 3001;
+const PORT = Number(process.env.PORT ?? process.env.WEBHOOK_PORT) || 3001;
 
 app.listen({ port: PORT, host: '0.0.0.0' }, (err: Error | null) => {
   if (err) throw err;

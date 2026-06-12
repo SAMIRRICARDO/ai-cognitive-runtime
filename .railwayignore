@@ -1,0 +1,18 @@
+# Dados locais — não vão para o deploy
+vault/
+.linkedin-profile/
+leads_*.json
+*_leads.json
+outbound-log*.json
+*.sqlite
+*.db
+get-pip.py
+docs/github-profile-readme-updated.md
+
+# Logs e estados locais
+vault/imprensa/logs/
+vault/imprensa/session/
+
+# Dev
+.codegraph/
+node_modules/
