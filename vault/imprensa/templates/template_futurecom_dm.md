@@ -1,14 +1,8 @@
 ---
 tags: [futurecom, linkedin, dm, field-marketing]
-char_limit: 300
-version: 2.1
+char_limit: 200
+version: 3.0
 ---
-Olá, {{nome}}.
-
-Vi que a {{empresa}} estará no Futurecom.
-
-Enquanto sua equipe gera negócios, nós cuidamos de toda a operação, experiência do cliente e ativações do estande.
-
-É assim que ajudamos marcas a extrair mais resultado de feiras e eventos corporativos.
+Olá, {{nome}}! Nós cuidamos de toda a operação e experiência do cliente no stand ou no seu evento. Conheça nossa agência de eventos!
 
 www.vrashows.com.br

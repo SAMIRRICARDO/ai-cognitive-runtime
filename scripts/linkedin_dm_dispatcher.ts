@@ -12,8 +12,8 @@ const LEADS_FILE    = path.join(ROOT, 'data', 'leads', 'futurecom', 'futurecom-e
 const today         = new Date().toISOString().split('T')[0];
 const LOG_FILE      = path.join(ROOT, 'vault', 'imprensa', 'logs', `linkedin_dm_${today}.json`);
 
-const NOTE_CHAR_LIMIT = 300;
-const DAILY_CAP       = 15;   // máximo de ações por dia (DM + conexão somadas)
+const NOTE_CHAR_LIMIT = 200;
+const DAILY_CAP       = 10;   // máximo de ações por dia (DM + conexão somadas)
 const DELAY_MIN_MS    = 75_000;
 const DELAY_MAX_MS    = 180_000;
 const STATE_FILE      = path.join(ROOT, 'vault', 'imprensa', 'logs', 'daily_state.json');
@@ -85,14 +85,15 @@ function isBusinessHours(): boolean {
 }
 
 // Scroll humano — percorre o perfil antes de clicar (comportamento orgânico)
+// Tolerates navigation errors — LinkedIn SPA may do soft-nav while scrolling
 async function humanScroll(page: Page): Promise<void> {
-  const steps = 2 + Math.floor(Math.random() * 3); // 2-4 scrolls
+  const steps = 2 + Math.floor(Math.random() * 3);
   for (let i = 0; i < steps; i++) {
     const delta = 200 + Math.floor(Math.random() * 300);
-    await page.evaluate((d) => window.scrollBy(0, d), delta);
+    try { await page.evaluate((d) => window.scrollBy(0, d), delta); } catch { break; }
     await sleep(400 + Math.random() * 600);
   }
-  await page.evaluate(() => window.scrollTo(0, 0));
+  try { await page.evaluate(() => window.scrollTo(0, 0)); } catch { /* ok */ }
   await sleep(500);
 }
 
@@ -114,7 +115,7 @@ function runDryRun(targets: Lead[], rawTemplate: string): void {
   }
   console.log('\n[RESUMO DRY-RUN]');
   console.log(`  Modo   : DRY-RUN (browser não aberto, nenhuma DM enviada)`);
-  console.log(`  Leads  : ${targets.length}\n`);
+  console.log(`  Leads  : ${targets.length} únicos e não enviados\n`);
 }
 
 // ─── login guard ─────────────────────────────────────────────────────────────
@@ -238,69 +239,86 @@ async function handleInviteModal(page: Page, note: string): Promise<boolean> {
 
 // ─── profile action dispatcher ────────────────────────────────────────────────
 
+// Dismiss LinkedIn upsell/Premium modals that block profile interaction
+// Retorna true se o modal de upsell Premium estiver visível
+async function isPremiumModal(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    const text = document.body.textContent ?? '';
+    return text.includes('Reative Premium') ||
+           text.includes('Envie mensagens a qualquer pessoa com Premium') ||
+           text.includes('Experimente o Premium') ||
+           text.includes('Try Premium');
+  });
+}
+
+async function dismissOverlays(page: Page): Promise<void> {
+  // Fecha modal Premium primeiro — é o mais comum e bloqueia tudo
+  if (await isPremiumModal(page)) {
+    await page.evaluate(() => {
+      // Tenta botão "Fechar" / × dentro do modal Premium
+      for (const btn of Array.from(document.querySelectorAll<HTMLElement>('button'))) {
+        const label = btn.getAttribute('aria-label') ?? '';
+        const text  = btn.innerText?.trim() ?? '';
+        if (/fechar|close|×|✕/i.test(label) || /fechar|close/i.test(text)) {
+          btn.click(); return;
+        }
+      }
+      // Fallback: esconde todos os dialogs
+      document.querySelectorAll<HTMLElement>('[role="dialog"], .artdeco-modal-overlay, .premium-upsell-modal')
+        .forEach(el => { el.style.display = 'none'; });
+      document.body.style.overflow = '';
+    });
+    await sleep(600);
+    return;
+  }
+
+  // Seletores padrão (sem Escape — pode disparar back-navigation no LinkedIn)
+  for (const sel of [
+    'button.artdeco-modal__dismiss',
+    'button[aria-label="Fechar"]',
+    'button[aria-label="Fechar pop-up"]',
+    '[data-test-modal-close-btn]',
+  ]) {
+    try {
+      const btn = page.locator(sel).first();
+      if (await btn.isVisible({ timeout: 600 })) { await btn.click(); await sleep(500); return; }
+    } catch { /* not present */ }
+  }
+
+  // Botão × — primeiro botão pequeno no header do dialog
+  await page.evaluate(() => {
+    const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+    if (dialog) {
+      const dRect = dialog.getBoundingClientRect();
+      const closeBtn = dRect.width > 0
+        ? Array.from(dialog.querySelectorAll<HTMLElement>('button')).find(b => {
+            const r = b.getBoundingClientRect();
+            return r.width > 0 && r.width < 60 && r.top < dRect.top + 120;
+          })
+        : null;
+      if (closeBtn) { closeBtn.click(); return; }
+    }
+    document.querySelectorAll<HTMLElement>('[role="dialog"], .artdeco-modal-overlay, .overlay--fade-in')
+      .forEach(el => { el.style.display = 'none'; });
+    document.body.style.overflow = '';
+  });
+  await sleep(800);
+}
+
 async function sendDm(page: Page, message: string): Promise<'message' | 'connect_note' | null> {
-  // Guard: must be on a real profile page
   if (!/linkedin\.com\/in\//.test(page.url())) return null;
 
-  // Scroll top + dismiss overlays
-  await page.evaluate(() => window.scrollTo(0, 0));
+  try { await page.evaluate(() => window.scrollTo(0, 0)); } catch { /* ok */ }
   await sleep(800);
-  await page.keyboard.press('Escape');
-  await sleep(400);
+  try { await dismissOverlays(page); } catch { /* ok */ }
+  await sleep(1_500);
 
-  // Check if a modal is already open from a previous attempt
   if (await isInviteModalOpen(page)) {
     const ok = await handleInviteModal(page, message);
     return ok ? 'connect_note' : null;
   }
 
-  // LinkedIn renders duplicate buttons (mobile/desktop breakpoints).
-  // Try ALL "Seguir [Name]" buttons — one of them will have "Mais" as a DOM sibling.
-  const action = await page.evaluate(() => {
-    const followBtns = Array.from(
-      document.querySelectorAll('button[aria-label^="Seguir "]')
-    ) as HTMLElement[];
-
-    // For each Seguir copy, walk UP the DOM looking for sibling action buttons
-    for (const fb of followBtns) {
-      let container = fb.parentElement as Element | null;
-      for (let d = 0; d < 12; d++) {
-        if (!container) break;
-        const btns = Array.from(container.querySelectorAll('button')) as HTMLElement[];
-        if (btns.length >= 2) {
-          for (const btn of btns) {
-            if (btn === fb) continue;
-            const t = (btn.innerText ?? '').trim();
-            const a = btn.getAttribute('aria-label') ?? '';
-            if (/^Mensagem$/i.test(t) || /mensagem/i.test(a))   { btn.click(); return 'message'; }
-            if (/^Conectar$/i.test(t) || /^conectar$/i.test(a)) { btn.click(); return 'connect'; }
-            if (/^Mais$/i.test(t)     || /^Mais$/i.test(a))     { btn.click(); return 'mais';    }
-          }
-        }
-        container = container.parentElement;
-      }
-    }
-
-    // Fallback: no Seguir — look for direct Mensagem or Conectar anywhere
-    const allBtns = Array.from(document.querySelectorAll('button')) as HTMLElement[];
-    for (const btn of allBtns) {
-      const t = (btn.innerText ?? '').trim(), a = btn.getAttribute('aria-label') ?? '';
-      if (/^Mensagem$/i.test(t) || /mensagem/i.test(a))   { btn.click(); return 'message'; }
-      if (/^Conectar$/i.test(t) || /^conectar$/i.test(a)) { btn.click(); return 'connect'; }
-    }
-    return null;
-  }) as 'message' | 'connect' | 'mais' | null;
-
-  await sleep(1_200);
-
-  // Modal appeared from Conectar click → handle it
-  if (await isInviteModalOpen(page)) {
-    const ok = await handleInviteModal(page, message);
-    return ok ? 'connect_note' : null;
-  }
-
-  // Message compose box appeared
-  if (action === 'message') {
+  const sendMessage = async (): Promise<boolean> => {
     try {
       const compose = page.locator('[contenteditable="true"]').first();
       await compose.waitFor({ timeout: 8_000 });
@@ -308,43 +326,223 @@ async function sendDm(page: Page, message: string): Promise<'message' | 'connect
       await sleep(800);
       await page.keyboard.press('Control+Enter');
       await sleep(1_500);
-      return 'message';
-    } catch { return null; }
+      return true;
+    } catch { return false; }
+  };
+
+  const waitForModal = async (ms = 4_000): Promise<boolean> => {
+    const deadline = Date.now() + ms;
+    while (Date.now() < deadline) {
+      if (await isInviteModalOpen(page)) return true;
+      await sleep(300);
+    }
+    return false;
+  };
+
+  // ── Detecta se é 1º grau pela AUSÊNCIA do botão "Conectar" na área do perfil ───
+  // Limita à metade esquerda da página para ignorar sidebar de sugestões
+  const hasConectarBtn = await page.evaluate(() => {
+    const win = window.innerWidth;
+    for (const btn of Array.from(document.querySelectorAll<HTMLElement>('button'))) {
+      const rect = btn.getBoundingClientRect();
+      if (rect.width === 0) continue;
+      if (rect.left >= win * 0.6) continue; // ignora sidebar direita
+      const text = (btn.innerText ?? '').trim().split('\n')[0].trim().toLowerCase();
+      const aria = (btn.getAttribute('aria-label') ?? '').toLowerCase();
+      if (text === 'conectar' || aria === 'conectar' || aria.includes('convidar')) return true;
+    }
+    return false;
+  });
+
+  // ── 1º grau: "Enviar mensagem" direto — 3 estratégias + debug dump ───────────
+  if (!hasConectarBtn) {
+    console.log('  [INFO] Sem botão Conectar — tratando como 1º grau');
+    let msgClicked = false;
+
+    // Estratégia A: aria-label via Playwright locator
+    for (const sel of [
+      'button[aria-label*="Enviar mensagem"]',
+      'button[aria-label*="mensagem"]',
+      'button[aria-label*="Message"]',
+    ]) {
+      if (msgClicked) break;
+      try {
+        const btn = page.locator(sel).first();
+        if (await btn.isVisible({ timeout: 1_500 })) {
+          await btn.click(); msgClicked = true;
+          console.log(`  [DEBUG] Mensagem: clicou via aria-label: ${sel}`);
+        }
+      } catch { /* next */ }
+    }
+
+    // Estratégia B: texto visível via Playwright locator
+    if (!msgClicked) {
+      try {
+        const btn = page.locator('button').filter({ hasText: /^Enviar mensagem$|^Mensagem$/i }).first();
+        if (await btn.isVisible({ timeout: 1_500 })) {
+          await btn.click(); msgClicked = true;
+          console.log('  [DEBUG] Mensagem: clicou via text filter');
+        }
+      } catch { /* next */ }
+    }
+
+    // Estratégia C: evaluate — qualquer botão com "mensagem" em label ou texto
+    if (!msgClicked) {
+      msgClicked = await page.evaluate(() => {
+        for (const btn of Array.from(document.querySelectorAll<HTMLElement>('button'))) {
+          if (btn.getBoundingClientRect().width === 0) continue;
+          const label = (btn.getAttribute('aria-label') ?? '').toLowerCase();
+          const text  = (btn.innerText ?? '').trim().split('\n')[0].trim().toLowerCase();
+          if (label.includes('mensagem') || label.includes('message') ||
+              text === 'mensagem' || text === 'enviar mensagem') {
+            btn.click(); return true;
+          }
+        }
+        return false;
+      });
+      if (msgClicked) console.log('  [DEBUG] Mensagem: clicou via evaluate fallback');
+    }
+
+    // Debug dump se nenhuma estratégia funcionou
+    if (!msgClicked) {
+      const btns = await page.evaluate(() =>
+        Array.from(document.querySelectorAll<HTMLElement>('button'))
+          .filter(b => b.getBoundingClientRect().width > 0)
+          .map(b => ({
+            text: (b.innerText ?? '').trim().slice(0, 60).replace(/\n/g, '|'),
+            aria: b.getAttribute('aria-label'),
+          }))
+      );
+      console.log('  [DEBUG] Botões visíveis no perfil:', JSON.stringify(btns));
+      return null;
+    }
+
+    await sleep(1_500);
+    try { await dismissOverlays(page); } catch { /* ok */ }
+    if (await isPremiumModal(page)) { await dismissOverlays(page); return null; }
+    await sleep(500);
+    if (await sendMessage()) return 'message';
+    return null;
   }
 
-  // "Mais" dropdown — find Conectar or Mensagem inside
-  if (action === 'mais') {
-    const dropAction = await page.evaluate(() => {
-      // Use innerText (not textContent) to exclude SVG icon title text
-      // Click the li/div parent — not the inner span — so event handlers fire
-      const allEls = Array.from(document.querySelectorAll('li, div, a')) as HTMLElement[];
-      for (const el of allEls) {
-        const text = (el.innerText ?? '').trim();
-        if (!text) continue;
-        const clickTarget = (el.closest('li') ?? el) as HTMLElement;
-        if (/^Mensagem$/i.test(text)) { clickTarget.click(); return 'message'; }
-        if (/^Conectar$/i.test(text)) { clickTarget.click(); return 'connect'; }
-      }
-      return null;
-    }) as 'connect' | 'message' | null;
+  // ── 2º/3º grau: Conectar → Mais ──────────────────────────────────────────────
 
-    await sleep(1_200);
+  const profileActionBtn = (textRe: RegExp, ariaRe?: RegExp): Promise<boolean> =>
+    page.evaluate(({ ts, tf, as_, af }) => {
+      const tp = new RegExp(ts, tf);
+      const ap = as_ ? new RegExp(as_, af ?? '') : null;
+      const ACTION_RE = /^(conectar|mensagem|seguir|enviar mensagem|mais)$/i;
+      for (const btn of Array.from(document.querySelectorAll<HTMLElement>('button'))) {
+        if (btn.getBoundingClientRect().width === 0) continue;
+        const t = (btn.innerText ?? '').trim().split('\n')[0].trim();
+        const a = btn.getAttribute('aria-label') ?? '';
+        if (!tp.test(t) && !(ap && ap.test(a))) continue;
+        let node: HTMLElement | null = btn.parentElement;
+        for (let i = 0; i < 4 && node; i++, node = node.parentElement) {
+          const siblings = Array.from(node.querySelectorAll<HTMLElement>('button'));
+          const actionCount = siblings.filter(s =>
+            ACTION_RE.test((s.innerText ?? '').trim().split('\n')[0])
+          ).length;
+          if (actionCount >= 2) { btn.click(); return true; }
+        }
+      }
+      const win = window.innerWidth;
+      for (const btn of Array.from(document.querySelectorAll<HTMLElement>('button'))) {
+        const rect = btn.getBoundingClientRect();
+        if (rect.width === 0 || rect.left >= win * 0.75) continue;
+        const t = (btn.innerText ?? '').trim().split('\n')[0].trim();
+        const a = btn.getAttribute('aria-label') ?? '';
+        if (tp.test(t) || (ap && ap.test(a))) { btn.click(); return true; }
+      }
+      return false;
+    }, { ts: textRe.source, tf: textRe.flags, as_: ariaRe?.source, af: ariaRe?.flags });
+
+  const jsDropItem = async (textRe: RegExp): Promise<boolean> => {
+    const result = await page.evaluate(({ ts, tf }) => {
+      const tp = new RegExp(ts, tf);
+      const menuCandidates = Array.from(document.querySelectorAll<HTMLElement>(
+        '[role="menu"], [role="listbox"], .artdeco-dropdown__content, .pvs-overflow-actions-dropdown__content, [data-view-name="overflow-menu"]'
+      ));
+      const debug: string[] = [];
+      for (const menu of menuCandidates) {
+        const rect = menu.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) continue;
+        debug.push(`menu:${menu.tagName}[${menu.getAttribute('role')||''}] h=${rect.height}`);
+        for (const el of Array.from(menu.querySelectorAll<HTMLElement>('*'))) {
+          const t = (el.innerText ?? '').trim().split('\n')[0].trim();
+          if (tp.test(t)) {
+            const target = el.closest<HTMLElement>('li, [role="menuitem"], [role="option"]') ?? el;
+            target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+            target.click();
+            return { clicked: true, debug };
+          }
+        }
+      }
+      return { clicked: false, debug };
+    }, { ts: textRe.source, tf: textRe.flags });
+    console.log(`  [DEBUG] jsDropItem(${textRe}) → ${result.clicked} | menus: ${JSON.stringify(result.debug)}`);
+    return result.clicked;
+  };
+
+  const isProfileActionsDropdown = (): Promise<boolean> =>
+    page.evaluate(() => {
+      for (const menu of Array.from(document.querySelectorAll<HTMLElement>('[role="menu"]'))) {
+        if (menu.getBoundingClientRect().height === 0) continue;
+        for (const el of Array.from(menu.querySelectorAll<HTMLElement>('*'))) {
+          const t = (el.innerText ?? '').trim().toLowerCase();
+          if (t === 'conectar' || t === 'mensagem') return true;
+        }
+      }
+      return false;
+    });
+
+  // Step 1: botão "Conectar" direto
+  const connDirect = await profileActionBtn(/^conectar$/i, /^conectar$/i).catch(() => false);
+  if (connDirect) {
+    await sleep(800);
+    if (await waitForModal(4_000)) {
+      const ok = await handleInviteModal(page, message);
+      if (ok) return 'connect_note';
+    }
+  }
+
+  // Step 2: dropdown "Mais" → Conectar ou Mensagem
+  const maisOpened = await profileActionBtn(/^mais$/i, /^mais$/i).catch(() => false);
+  if (maisOpened) {
+    await sleep(1_000);
 
     if (await isInviteModalOpen(page)) {
       const ok = await handleInviteModal(page, message);
-      return ok ? 'connect_note' : null;
+      if (ok) return 'connect_note';
     }
 
-    if (dropAction === 'message') {
-      try {
-        const compose = page.locator('[contenteditable="true"]').first();
-        await compose.waitFor({ timeout: 8_000 });
-        await compose.fill(message);
+    if (!(await isProfileActionsDropdown())) {
+      console.log('  [DEBUG] Dropdown secundário detectado (sem Conectar/Mensagem) — fechando');
+      try { await page.keyboard.press('Escape'); } catch { /* ok */ }
+      await sleep(500);
+    } else {
+      const connInDrop = await (async () => {
+        try {
+          const item = page.locator('[role="menu"]').locator(':text-matches("^Conectar$", "i")').first();
+          if (await item.isVisible({ timeout: 2_500 })) { await item.click(); return true; }
+        } catch { /* ok */ }
+        return await jsDropItem(/^conectar$/i).catch(() => false);
+      })();
+      if (connInDrop) {
         await sleep(800);
-        await page.keyboard.press('Control+Enter');
-        await sleep(1_500);
-        return 'message';
-      } catch { return null; }
+        if (await waitForModal(4_000)) {
+          const ok = await handleInviteModal(page, message);
+          if (ok) return 'connect_note';
+        }
+      }
+
+      const msgInDrop = await jsDropItem(/^mensagem$/i).catch(() => false);
+      if (msgInDrop) {
+        await sleep(1_200);
+        try { await dismissOverlays(page); } catch { /* ok */ }
+        await sleep(500);
+        if (await sendMessage()) return 'message';
+      }
     }
   }
 
@@ -356,11 +554,42 @@ async function sendDm(page: Page, message: string): Promise<'message' | 'connect
 async function main() {
   const DRY_RUN = process.argv.includes('--dry-run');
 
+  const limitRaw  = process.argv.find(a => a.startsWith('--limit='))?.split('=')[1]
+                 ?? process.argv[process.argv.indexOf('--limit') + 1];
+  const offsetRaw = process.argv.find(a => a.startsWith('--offset='))?.split('=')[1]
+                 ?? process.argv[process.argv.indexOf('--offset') + 1];
+  const LIMIT  = limitRaw  && !isNaN(Number(limitRaw))  ? Number(limitRaw)  : Infinity;
+  const OFFSET = offsetRaw && !isNaN(Number(offsetRaw)) ? Number(offsetRaw) : 0;
+
   const rawTemplate = removeFrontmatter(fs.readFileSync(TEMPLATE_FILE, 'utf-8'));
   const leadsFile: LeadsFile = JSON.parse(fs.readFileSync(LEADS_FILE, 'utf-8'));
-  const targets = leadsFile.contacts.filter(l => l.linkedin_url?.trim());
+
+  // Carrega URLs já enviadas em QUALQUER log do dia para evitar reenvio em re-execuções
+  const alreadySent = new Set<string>();
+  if (fs.existsSync(LOG_FILE)) {
+    try {
+      const existing: DmLog[] = JSON.parse(fs.readFileSync(LOG_FILE, 'utf-8'));
+      existing.filter(l => l.status === 'sent').forEach(l => alreadySent.add(l.linkedin_url));
+    } catch { /* ignora log corrompido */ }
+  }
+
+  // Deduplica por URL e exclui já enviados
+  const seen = new Set<string>();
+  const allTargets = leadsFile.contacts.filter(l => {
+    const url = l.linkedin_url?.trim();
+    if (!url || seen.has(url)) return false;
+    seen.add(url);
+    return !alreadySent.has(url);
+  });
+
+  if (alreadySent.size > 0)
+    console.log(`[SKIP] ${alreadySent.size} leads já enviados hoje — pulados\n`);
+
+  const sliced = OFFSET > 0 ? allTargets.slice(OFFSET) : allTargets;
+  const targets = isFinite(LIMIT) ? sliced.slice(0, LIMIT) : sliced;
 
   if (targets.length === 0) { console.error('[ERRO] Nenhum CTO-alvo encontrado.'); process.exit(1); }
+  if (LIMIT < Infinity || OFFSET > 0) console.log(`[LIMIT] Modo de teste — offset ${OFFSET}, processando ${targets.length} de ${allTargets.length} leads\n`);
   if (DRY_RUN) { runDryRun(targets, rawTemplate); return; }
 
   fs.mkdirSync(PROFILE_DIR, { recursive: true });
@@ -398,7 +627,10 @@ async function main() {
   const capped = targets.slice(0, remaining);
   console.log(`[LINKEDIN DM] ${capped.length} leads nesta sessão (de ${targets.length} totais)\n`);
 
-  const logs: DmLog[] = [];
+  // Carrega entradas anteriores para preservar histórico entre execuções do dia
+  const logs: DmLog[] = fs.existsSync(LOG_FILE) ? (() => {
+    try { return JSON.parse(fs.readFileSync(LOG_FILE, 'utf-8')); } catch { return []; }
+  })() : [];
   let sent = 0, errors = 0;
 
   for (let i = 0; i < capped.length; i++) {
@@ -419,6 +651,14 @@ async function main() {
 
       // ── Proteção 4: scroll humano antes de agir ───────────────────────────
       await humanScroll(page);
+
+      // Re-check URL after scroll — LinkedIn SPA may have soft-navigated
+      try { await page.waitForLoadState('networkidle', { timeout: 5_000 }); } catch { /* ok */ }
+      if (!/linkedin\.com\/in\//.test(page.url())) {
+        console.log(`  Re-navegando para ${lead.linkedin_url} após redirecionamento...`);
+        await page.goto(lead.linkedin_url, { waitUntil: 'load', timeout: 40_000 });
+        await sleep(2_000);
+      }
 
       const method = await sendDm(page, message);
       if (!method) {
