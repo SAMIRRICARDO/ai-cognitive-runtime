@@ -7,39 +7,27 @@ export type VariantKey = 'A' | 'B' | 'C' | 'D' | 'E';
 export interface ClassifierResult {
   variant: VariantKey;
   intent: 'high' | 'medium' | 'low' | 'none';
+  decision_power: 'high' | 'mid' | 'low';
+  score: number;
   handoff: boolean;
   reason: string;
   suggested_next_action: string;
 }
 
-const SYSTEM_PROMPT = `
-Você é um agente de qualificação de leads B2B especializado em eventos corporativos.
-Analise a resposta de um decisor no LinkedIn e classifique o nível de interesse.
-Retorne SEMPRE JSON válido, sem texto adicional, sem markdown.
+const SYSTEM_PROMPT = `Qualificador B2B de respostas LinkedIn. JSON puro, sem markdown.
 
-{
-  "variant": "A"|"B"|"C"|"D"|"E",
-  "intent": "high"|"medium"|"low"|"none",
-  "handoff": true|false,
-  "reason": "string curta max 15 palavras",
-  "suggested_next_action": "string"
-}
+VARIANTES: A=equipe própria B=agência/parceiro C=híbrido D=baixa frequência E=interesse direto
+INTENT: high=pediu info/reunião/dor clara medium=curiosidade leve low=desviou none=fora do ICP
 
-VARIANTES:
-A = opera internamente com equipe própria
-B = trabalha com agência ou fornecedor parceiro
-C = modelo híbrido ou situacional
-D = baixa frequência de eventos
-E = interesse direto, pediu mais info, sugeriu reunião
+CARGO→DECISION_POWER+SCORE (inferir do campo Cargo):
+high 8-10: Diretor, VP, Head, C-Level, CEO, CFO, CTO, Presidente
+mid  5-7:  Gerente, Coordenador Sênior, Supervisor
+low  1-4:  Analista, Assistente, Estagiário, Coordenador Júnior
 
-INTENT:
-high   = pediu info, mencionou dor, sugeriu reunião
-medium = respondeu sem engajamento forte
-low    = respondeu mas desviou
-none   = negativo, fora do ICP
+HANDOFF true: (intent=high E power=high|mid) OU (intent=medium E power=high)
+HANDOFF false: power=low (qualquer intent) OU intent=low|none
 
-HANDOFF = true SOMENTE se intent === "high" ou variant === "E"
-`;
+{"variant":"A"|"B"|"C"|"D"|"E","intent":"high"|"medium"|"low"|"none","decision_power":"high"|"mid"|"low","score":1-10,"handoff":true|false,"reason":"≤15 palavras","suggested_next_action":"string"}`;
 
 export async function classifyLeadResponse(
   reply: string,
@@ -47,11 +35,11 @@ export async function classifyLeadResponse(
 ): Promise<ClassifierResult> {
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 256,
+    max_tokens: 300,
     system: SYSTEM_PROMPT,
     messages: [{
       role: 'user',
-      content: `Decisor: ${prospect.name} | ${prospect.role} | ${prospect.company}\nResposta: "${reply}"`
+      content: `Decisor: ${prospect.name} | Cargo: ${prospect.role} | Empresa: ${prospect.company}\nResposta: "${reply}"`
     }]
   });
 
