@@ -1,0 +1,89 @@
+[
+  {
+    "linkedin_url": "https://www.linkedin.com/in/ilanatrinkenreich",
+    "name": "Ilana Trinkenreich",
+    "company": "Equinix",
+    "state": "MESSAGE_SENT",
+    "transitionAt": "2026-06-17T13:00:56.612Z",
+    "transitionReason": "seeded_from_dm_log",
+    "attemptCount": 1,
+    "messageSentAt": "2026-06-17T13:00:56.612Z"
+  },
+  {
+    "linkedin_url": "https://br.linkedin.com/in/j%C3%A9ssica-braga-mkt",
+    "name": "Jessica Braga",
+    "company": "Ascenty",
+    "state": "MESSAGE_SENT",
+    "transitionAt": "2026-06-17T13:05:27.619Z",
+    "transitionReason": "seeded_from_dm_log",
+    "attemptCount": 1,
+    "messageSentAt": "2026-06-17T13:05:27.619Z"
+  },
+  {
+    "linkedin_url": "https://br.linkedin.com/in/baperezz",
+    "name": "Barbara Perez Oliveira",
+    "company": "IBM",
+    "state": "INVITATION_SENT",
+    "transitionAt": "2026-06-17T15:46:12.166Z",
+    "transitionReason": "confirmed_via_screenshot",
+    "attemptCount": 1,
+    "inviteSentAt": "2026-06-17T15:46:12.166Z"
+  },
+  {
+    "linkedin_url": "https://br.linkedin.com/in/carolinabctorres",
+    "name": "Carolina Torres",
+    "company": "Fortinet",
+    "state": "COLLECTED",
+    "lastError": "Ação falhou — strategy=SEND_DIRECT_MESSAGE (screenshot: debug_Carolina_Torres.png)",
+    "transitionAt": "2026-06-17T16:43:59.445Z",
+    "transitionReason": "execution_error",
+    "attemptCount": 5,
+    "previousState": "PROFILE_ANALYZED"
+  },
+  {
+    "linkedin_url": "https://br.linkedin.com/in/maria-carolina-baptista-pereira-195b9227",
+    "name": "Maria Carolina Baptista Pereira",
+    "company": "Salesforce",
+    "state": "COLLECTED",
+    "transitionAt": "2026-06-17T16:37:42.839Z",
+    "transitionReason": "execution_error",
+    "attemptCount": 3,
+    "previousState": "PROFILE_ANALYZED",
+    "lastError": "Ação falhou — strategy=SEND_DIRECT_MESSAGE (screenshot: debug_Maria_Carolina_Baptista_Pereira.png)"
+  },
+  {
+    "linkedin_url": "https://br.linkedin.com/in/fabioacquesta",
+    "name": "Fabio Acquesta",
+    "company": "Equinix",
+    "state": "INVITATION_SENT",
+    "previousState": "PROFILE_ANALYZED",
+    "transitionAt": "2026-06-17T16:36:20.360Z",
+    "transitionReason": "connection_note_sent",
+    "attemptCount": 18,
+    "lastError": "Ação falhou — strategy=SEND_DIRECT_MESSAGE (screenshot: debug_Fabio_Acquesta.png)",
+    "inviteSentAt": "2026-06-17T16:36:20.360Z"
+  },
+  {
+    "linkedin_url": "https://br.linkedin.com/in/audrey-hoshiba-9382b831",
+    "name": "Audrey Hoshiba",
+    "company": "V.tal",
+    "state": "INVITATION_SENT",
+    "previousState": "PROFILE_ANALYZED",
+    "transitionAt": "2026-06-17T16:38:02.823Z",
+    "transitionReason": "connection_note_sent",
+    "attemptCount": 10,
+    "lastError": "Ação falhou — strategy=SEND_DIRECT_MESSAGE (screenshot: debug_Audrey_Hoshiba.png)",
+    "inviteSentAt": "2026-06-17T16:38:02.823Z"
+  },
+  {
+    "linkedin_url": "https://br.linkedin.com/in/perfeitolucas",
+    "name": "Lucas Perfeito",
+    "company": "V.tal",
+    "state": "COLLECTED",
+    "previousState": "PROFILE_ANALYZED",
+    "transitionAt": "2026-06-17T16:39:34.296Z",
+    "transitionReason": "execution_error",
+    "attemptCount": 10,
+    "lastError": "Ação falhou — strategy=SEND_DIRECT_MESSAGE (screenshot: debug_Lucas_Perfeito.png)"
+  }
+]

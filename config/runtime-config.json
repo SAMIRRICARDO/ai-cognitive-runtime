@@ -2,12 +2,20 @@
   "cheapMode": true,
   "preferredModel": "gpt-4o-mini",
   "maxLeadsPerBatch": 25,
-  "maxDailyRuns": 1,
+  "maxDailyRuns": 3,
   "runTime": "07:30",
   "weekendBlocked": true,
-  "maxOutputTokens": 300,
-  "avoidReasoning": true,
+  "maxOutputTokens": 1000,
+  "avoidReasoning": false,
   "jsonOnly": true,
+  "alwaysEnrichLeads": true,
+  "requireEnrichmentBeforeOutbound": true,
   "humanThrottle": true,
-  "maxOutboundHour": 16
+  "maxOutboundHour": 16,
+  "linkedin": {
+    "senderProfile": "https://www.linkedin.com/in/samir-ricardo-almeida-b23b3825b/",
+    "dailyCap": 15,
+    "delayMinMs": 75000,
+    "delayMaxMs": 180000
+  }
 }

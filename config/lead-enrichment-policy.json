@@ -1,0 +1,21 @@
+{
+  "policy": "always_enrich_leads",
+  "active": true,
+  "createdAt": "2026-06-12",
+  "rules": [
+    "Todo novo lead deve ser enriquecido antes de qualquer outbound.",
+    "Enrichment minimo obrigatorio: decisor humano, cargo, empresa, LinkedIn quando disponivel, area, senioridade e fit com evento/campanha.",
+    "Email pode ser inferido apenas como candidato; so marcar como validado apos MX/SMTP ou fonte publica confiavel.",
+    "Nao inventar contato, LinkedIn ou email confirmado.",
+    "Se nao houver contato confiavel, marcar coverageStatus como gap ou partial_contact.",
+    "Manter batch maximo de 25 leads e cheap mode por padrao."
+  ],
+  "defaultOutputPattern": "data/leads/<campaign>/enriched-<source-file>.json",
+  "appliesTo": [
+    "Futurecom leads",
+    "new sourcing leads",
+    "press contacts",
+    "CTO/contact batches",
+    "any outbound-ready lead list"
+  ]
+}
