@@ -9,7 +9,7 @@ export interface CachedResponse {
 }
 
 export class ResponseCache {
-  private redis = new RedisMemory();
+  private redis: RedisMemory;
 
   // Cache TTL by tier — deterministic calls cache longer
   static TTL = {
@@ -18,6 +18,10 @@ export class ResponseCache {
     high: 900,      // 15min — complex tasks may need freshness
     default: 3_600,
   } as const;
+
+  constructor(namespace = "") {
+    this.redis = new RedisMemory(namespace);
+  }
 
   key(model: string, systemPrompt: string, userMessage: string): string {
     return (

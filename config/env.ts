@@ -6,6 +6,10 @@ const envSchema = z.object({
   ENABLE_MEMORY:    z.string().optional(),
   MEMORY_PROVIDER:  z.string().optional(),
 
+  // ── SaaS / Multi-tenant ───────────────────────────────────────────────────
+  // Required in production; omit in single-tenant / dev mode.
+  VRAXIA_MASTER_KEY: z.string().min(32).optional(),
+
   // ── API Keys ──────────────────────────────────────────────────────────────
   ANTHROPIC_API_KEY: z.string().min(1),
   OPENAI_API_KEY:    z.string().optional(),

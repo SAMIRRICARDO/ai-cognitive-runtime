@@ -7,13 +7,19 @@ export class RedisMemory implements AgentMemory {
   private client: ReturnType<typeof createClient>;
   private connected = false;
   private unavailable = false;
+  private readonly ns: string;
 
-  constructor() {
+  constructor(namespace = "") {
+    this.ns = namespace ? `${namespace}:` : "";
     this.client = createClient({
       url: env.REDIS_URL,
       socket: { reconnectStrategy: false },
     });
     this.client.on("error", () => {}); // suppress error events — handled in connect()
+  }
+
+  private k(key: string): string {
+    return this.ns + key;
   }
 
   private async connect(): Promise<void> {
@@ -24,7 +30,6 @@ export class RedisMemory implements AgentMemory {
     } catch {
       this.unavailable = true;
       logger.warn("[redis] unavailable — operations will be no-ops");
-      // Stop reconnection loop to prevent repeated error events
       this.client.disconnect().catch(() => {});
     }
   }
@@ -33,7 +38,7 @@ export class RedisMemory implements AgentMemory {
     await this.connect();
     if (!this.connected) return null;
     try {
-      return await this.client.get(key);
+      return await this.client.get(this.k(key));
     } catch {
       return null;
     }
@@ -44,9 +49,9 @@ export class RedisMemory implements AgentMemory {
     if (!this.connected) return;
     try {
       if (ttlSeconds) {
-        await this.client.setEx(key, ttlSeconds, value);
+        await this.client.setEx(this.k(key), ttlSeconds, value);
       } else {
-        await this.client.set(key, value);
+        await this.client.set(this.k(key), value);
       }
     } catch { /* no-op */ }
   }
@@ -55,7 +60,7 @@ export class RedisMemory implements AgentMemory {
     await this.connect();
     if (!this.connected) return;
     try {
-      await this.client.del(key);
+      await this.client.del(this.k(key));
     } catch { /* no-op */ }
   }
 

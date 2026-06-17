@@ -35,6 +35,8 @@ Seti (Visual Studio Code){
     "export-memories": "tsx scripts/export-memories.ts",
     "import-memories": "tsx scripts/import-memories.ts",
     "health": "tsx scripts/system-health.ts",
+    "tenant:provision": "tsx scripts/provision-tenant.ts",
+    "db:migrate": "tsx scripts/run-migration.ts",
     "leads:acquire": "tsx scheduler/lead-acquisition-scheduler.ts",
     "leads:acquire:daemon": "tsx scheduler/lead-acquisition-scheduler.ts"
   },

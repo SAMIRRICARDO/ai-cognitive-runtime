@@ -40,7 +40,7 @@ export interface ConsolidationResult {
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
 const EMBED_CACHE_TTL = 86_400 * 3;   // 3 days for memory embeddings
-const DUPLICATE_THRESHOLD = 0.92;      // cosine score above which memories are considered duplicates
+const DUPLICATE_THRESHOLD = 0.92;
 const PRUNE_MIN_IMPORTANCE = 0.2;
 const PRUNE_MIN_ACCESS = 2;
 const PRUNE_MAX_AGE_DAYS = 60;
@@ -50,9 +50,14 @@ const PRUNE_MAX_AGE_DAYS = 60;
 export class MemoryManager {
   private pool: pg.Pool | null = null;
   private openai: OpenAI | null = null;
-  private redis = new RedisMemory();
+  private redis: RedisMemory;
+  private tenantId: string;
 
-  constructor() {
+  constructor(tenantId = "default") {
+    this.tenantId = tenantId;
+    // Namespace Redis embedding cache per tenant to avoid cross-tenant cache collisions
+    this.redis = new RedisMemory(`t:${tenantId}`);
+
     if (env.ENABLE_MEMORY !== "false") {
       if (!env.DATABASE_URL) throw new Error("DATABASE_URL required for MemoryManager");
       if (!env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY required for MemoryManager");
@@ -71,6 +76,7 @@ export class MemoryManager {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS agent_memories (
         id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id        TEXT NOT NULL DEFAULT 'default',
         type             TEXT NOT NULL CHECK (type IN ('episodic','semantic','procedural')),
         content          TEXT NOT NULL,
         context          TEXT NOT NULL DEFAULT '',
@@ -89,12 +95,15 @@ export class MemoryManager {
         WITH (lists = 50)
     `);
     await pool.query(
+      `CREATE INDEX IF NOT EXISTS agent_memories_tenant_idx ON agent_memories (tenant_id)`
+    );
+    await pool.query(
       `CREATE INDEX IF NOT EXISTS agent_memories_agent_idx ON agent_memories (agent_name)`
     );
     await pool.query(
       `CREATE INDEX IF NOT EXISTS agent_memories_type_idx ON agent_memories (type)`
     );
-    logger.info("[memory-manager] schema ready");
+    logger.info("[memory-manager] schema ready", { tenantId: this.tenantId });
   }
 
   // ── Embedding ─────────────────────────────────────────────────────────────────
@@ -126,10 +135,11 @@ export class MemoryManager {
 
     const { rows } = await pool.query(
       `INSERT INTO agent_memories
-         (type, content, context, agent_name, importance, tags, embedding)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+         (tenant_id, type, content, context, agent_name, importance, tags, embedding)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
        RETURNING id`,
       [
+        this.tenantId,
         memory.type,
         memory.content,
         memory.context,
@@ -140,7 +150,7 @@ export class MemoryManager {
       ]
     );
 
-    logger.debug("[memory-manager] stored", { id: rows[0].id, type: memory.type, agent: memory.agentName });
+    logger.debug("[memory-manager] stored", { id: rows[0].id, type: memory.type, agent: memory.agentName, tenantId: this.tenantId });
     return rows[0].id as string;
   }
 
@@ -168,10 +178,11 @@ export class MemoryManager {
              access_count, tags, created_at, last_accessed_at,
              1 - (embedding <=> $1::vector) AS score
       FROM agent_memories
-      WHERE 1 - (embedding <=> $1::vector) >= $2
-        AND importance >= $3
+      WHERE tenant_id = $2
+        AND 1 - (embedding <=> $1::vector) >= $3
+        AND importance >= $4
     `;
-    const params: unknown[] = [`[${embedding.join(",")}]`, minScore, minImportance];
+    const params: unknown[] = [`[${embedding.join(",")}]`, this.tenantId, minScore, minImportance];
 
     if (agentName) { sql += ` AND agent_name = $${params.length + 1}`; params.push(agentName); }
     if (type)      { sql += ` AND type = $${params.length + 1}`;        params.push(type);      }
@@ -186,8 +197,8 @@ export class MemoryManager {
       pool.query(
         `UPDATE agent_memories
          SET access_count = access_count + 1, last_accessed_at = NOW()
-         WHERE id = ANY($1::uuid[])`,
-        [ids]
+         WHERE tenant_id = $1 AND id = ANY($2::uuid[])`,
+        [this.tenantId, ids]
       ).catch(() => {});
     }
 
@@ -246,9 +257,9 @@ export class MemoryManager {
     }
 
     if (sets.length === 0) return;
-    params.push(id);
+    params.push(this.tenantId, id);
     await pool.query(
-      `UPDATE agent_memories SET ${sets.join(", ")} WHERE id = $${params.length}`,
+      `UPDATE agent_memories SET ${sets.join(", ")} WHERE tenant_id = $${params.length - 1} AND id = $${params.length}`,
       params
     );
   }
@@ -257,7 +268,7 @@ export class MemoryManager {
     const pool = this.pool;
     if (!pool) return;
 
-    await pool.query(`DELETE FROM agent_memories WHERE id = $1`, [id]);
+    await pool.query(`DELETE FROM agent_memories WHERE tenant_id = $1 AND id = $2`, [this.tenantId, id]);
     logger.debug("[memory-manager] deleted", { id });
   }
 
@@ -273,12 +284,14 @@ export class MemoryManager {
              1 - (a.embedding <=> b.embedding) AS similarity
       FROM agent_memories a
       JOIN agent_memories b ON a.id < b.id
+        AND a.tenant_id = b.tenant_id
         AND 1 - (a.embedding <=> b.embedding) > $1
+      WHERE a.tenant_id = $2
     `;
-    const params: unknown[] = [DUPLICATE_THRESHOLD];
+    const params: unknown[] = [DUPLICATE_THRESHOLD, this.tenantId];
 
     if (agentName) {
-      sql += ` AND a.agent_name = $2 AND b.agent_name = $2`;
+      sql += ` AND a.agent_name = $3 AND b.agent_name = $3`;
       params.push(agentName);
     }
 
@@ -300,9 +313,9 @@ export class MemoryManager {
 
     const { rows: remaining } = await pool.query(
       agentName
-        ? `SELECT COUNT(*) FROM agent_memories WHERE agent_name = $1`
-        : `SELECT COUNT(*) FROM agent_memories`,
-      agentName ? [agentName] : []
+        ? `SELECT COUNT(*) FROM agent_memories WHERE tenant_id = $1 AND agent_name = $2`
+        : `SELECT COUNT(*) FROM agent_memories WHERE tenant_id = $1`,
+      agentName ? [this.tenantId, agentName] : [this.tenantId]
     );
 
     logger.info("[memory-manager] consolidate done", { merged, kept: Number(remaining[0].count) });
@@ -318,19 +331,20 @@ export class MemoryManager {
     const cutoff = new Date(Date.now() - PRUNE_MAX_AGE_DAYS * 86_400_000).toISOString();
     let sql = `
       DELETE FROM agent_memories
-      WHERE importance < $1
-        AND access_count < $2
-        AND created_at < $3
+      WHERE tenant_id = $1
+        AND importance < $2
+        AND access_count < $3
+        AND created_at < $4
     `;
-    const params: unknown[] = [PRUNE_MIN_IMPORTANCE, PRUNE_MIN_ACCESS, cutoff];
+    const params: unknown[] = [this.tenantId, PRUNE_MIN_IMPORTANCE, PRUNE_MIN_ACCESS, cutoff];
 
     if (agentName) {
-      sql += ` AND agent_name = $4`;
+      sql += ` AND agent_name = $5`;
       params.push(agentName);
     }
 
     const { rowCount } = await pool.query(sql, params);
-    logger.info("[memory-manager] pruned", { removed: rowCount, agentName });
+    logger.info("[memory-manager] pruned", { removed: rowCount, agentName, tenantId: this.tenantId });
     return rowCount ?? 0;
   }
 
@@ -343,10 +357,10 @@ export class MemoryManager {
     const { rows } = await pool.query(
       agentName
         ? `SELECT type, COUNT(*) AS count, AVG(importance) AS avg_importance
-           FROM agent_memories WHERE agent_name = $1 GROUP BY type`
+           FROM agent_memories WHERE tenant_id = $1 AND agent_name = $2 GROUP BY type`
         : `SELECT agent_name, type, COUNT(*) AS count, AVG(importance) AS avg_importance
-           FROM agent_memories GROUP BY agent_name, type ORDER BY agent_name, type`,
-      agentName ? [agentName] : []
+           FROM agent_memories WHERE tenant_id = $1 GROUP BY agent_name, type ORDER BY agent_name, type`,
+      agentName ? [this.tenantId, agentName] : [this.tenantId]
     );
     return { byType: rows };
   }
@@ -366,4 +380,5 @@ export class MemoryManager {
   }
 }
 
-export const memoryManager = new MemoryManager();
+// Default singleton for single-tenant / legacy scripts
+export const memoryManager = new MemoryManager("default");

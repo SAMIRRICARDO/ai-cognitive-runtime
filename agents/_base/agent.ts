@@ -3,10 +3,10 @@ import { env } from "../../config/env.js";
 import { Models, ModelConfig, getMaxTokens, getMaxIterations } from "../../config/models.js";
 import { logger } from "../../config/logger.js";
 import { modelRouter } from "./router.js";
-import { responseCache, ResponseCache } from "./cache.js";
+import { ResponseCache } from "./cache.js";
 import { estimateTokens, compressContext } from "./context.js";
 import { calculateCost, recordCost, formatCost } from "../../config/costs.js";
-import { memoryManager } from "../../memory/manager.js";
+import { MemoryManager } from "../../memory/manager.js";
 import { buildLocalContext } from "../../memory/local-rag.js";
 import { recordAnalytics } from "../../memory/analytics.js";
 import { getIALeadsCache } from "../../memory/sqlite-cache.js";
@@ -25,9 +25,14 @@ export abstract class BaseAgent {
   protected client: Anthropic;
   protected config: AgentConfig;
   protected toolHandlers: Map<string, ToolHandler> = new Map();
+  private responseCache: ResponseCache;
+  private agentMemory: MemoryManager;
 
   constructor(config: AgentConfig) {
-    this.client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+    // BYOK: use tenant API key when provided, else fall back to global env
+    const apiKey = config.tenantEnv?.ANTHROPIC_API_KEY ?? env.ANTHROPIC_API_KEY;
+    this.client = new Anthropic({ apiKey });
+
     this.config = {
       model: Models.default,
       maxTokens: getMaxTokens(),
@@ -37,6 +42,11 @@ export abstract class BaseAgent {
       enableResponseCache: false,
       ...config,
     };
+
+    // Scoped Redis cache and memory — isolated per tenant when tenantId is set
+    const ns = config.tenantId ? `t:${config.tenantId}` : "";
+    this.responseCache = new ResponseCache(ns);
+    this.agentMemory = new MemoryManager(config.tenantId ?? "default");
   }
 
   registerTool(handler: ToolHandler): void {
@@ -73,8 +83,8 @@ export abstract class BaseAgent {
 
     // 2. Response cache check (only for single-turn, no tools in flight)
     if (this.config.enableResponseCache) {
-      const cacheKey = responseCache.key(resolvedModel, this.config.systemPrompt, userMessage);
-      const cached = await responseCache.get(cacheKey);
+      const cacheKey = this.responseCache.key(resolvedModel, this.config.systemPrompt, userMessage);
+      const cached = await this.responseCache.get(cacheKey);
       if (cached) {
         logger.info(`[${this.config.name}] cache hit`, { key: cacheKey });
         this.emit(options.onStep, { type: "thinking", content: "[cache] hit — returning cached response" });
@@ -121,10 +131,11 @@ export abstract class BaseAgent {
         };
       }
     }
+
     if (this.config.memoryEnabled) {
       try {
-        await memoryManager.initialize();
-        const memContext = await memoryManager.getContextFor(this.config.name, userMessage);
+        await this.agentMemory.initialize();
+        const memContext = await this.agentMemory.getContextFor(this.config.name, userMessage);
         if (memContext) {
           effectiveSystemPrompt = effectiveSystemPrompt + memContext;
           memoriesLoaded = (memContext.match(/^- /gm) ?? []).length;
@@ -135,11 +146,11 @@ export abstract class BaseAgent {
       }
     }
 
-    logger.info(`[${this.config.name}] starting run`, { model: resolvedModel, sessionId: options.sessionId });
+    logger.info(`[${this.config.name}] starting run`, { model: resolvedModel, sessionId: options.sessionId, tenantId: this.config.tenantId });
 
     let messages: MessageParam[] = [{ role: "user", content: userMessage }];
 
-    // 3. Agentic loop
+    // 4. Agentic loop
     while (iterations < (this.config.maxIterations ?? 10)) {
       iterations++;
 
@@ -219,9 +230,12 @@ export abstract class BaseAgent {
       break;
     }
 
-    // 4. Cost tracking
+    // 5. Cost tracking — scoped per tenant so costs are isolated
+    const costKey = this.config.tenantId
+      ? `${this.config.tenantId}:${this.config.name}`
+      : this.config.name;
     const costBreakdown = calculateCost(resolvedModel, totalUsage);
-    await recordCost(this.config.name, resolvedModel, totalUsage, costBreakdown);
+    await recordCost(costKey, resolvedModel, totalUsage, costBreakdown);
     recordAnalytics({
       provider: "claude",
       source: this.config.name,
@@ -245,14 +259,15 @@ export abstract class BaseAgent {
       durationMs,
       cost: formatCost(costBreakdown.totalCost),
       savings: formatCost(costBreakdown.savings),
+      tenantId: this.config.tenantId,
       ...totalUsage,
     });
 
-    // 5. Store in response cache if enabled and single-turn (no tool use)
+    // 6. Store in response cache if enabled and single-turn (no tool use)
     if (this.config.enableResponseCache && iterations === 1 && finalOutput) {
-      const cacheKey = responseCache.key(resolvedModel, this.config.systemPrompt, userMessage);
+      const cacheKey = this.responseCache.key(resolvedModel, this.config.systemPrompt, userMessage);
       const ttl = this.config.cacheTtl ?? ResponseCache.TTL[routingTier];
-      await responseCache.set(cacheKey, { output: finalOutput, model: resolvedModel, cachedAt: Date.now() }, ttl);
+      await this.responseCache.set(cacheKey, { output: finalOutput, model: resolvedModel, cachedAt: Date.now() }, ttl);
     }
 
     if (canUseSqlitePromptCache && finalOutput) {
@@ -264,10 +279,10 @@ export abstract class BaseAgent {
       });
     }
 
-    // 6. Save memories from this run (opt-in, non-blocking)
+    // 7. Save memories from this run (opt-in, non-blocking)
     let memoriesSaved = 0;
     if (this.config.memorySaveEnabled && finalOutput) {
-      // Import lazily to avoid circular dependency with MemoryManagerAgent
+      const { tenantId, tenantEnv } = this.config;
       import("../memory-manager/agent.js").then(({ MemoryManagerAgent }) =>
         MemoryManagerAgent.create(this.config.name)
           .then((mgr) => mgr.extractFromRun({ agentName: this.config.name, userMessage, agentOutput: finalOutput }))

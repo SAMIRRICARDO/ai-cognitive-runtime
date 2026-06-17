@@ -1,5 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { z } from "zod";
+import type { TenantEnv } from "../../tenant/types.js";
 
 export type MessageParam = Anthropic.MessageParam;
 export type ContentBlock = Anthropic.ContentBlock;
@@ -26,6 +27,12 @@ export interface AgentConfig {
   memoryEnabled?: boolean;
   /** Extract and store memories after each run. Default: false. */
   memorySaveEnabled?: boolean;
+
+  // ── Multi-tenant (SaaS / BYOK) ──────────────────────────────────────────
+  /** Tenant identifier. Omit for single-tenant / dev mode. */
+  tenantId?: string;
+  /** BYOK API keys for this tenant. Overrides global env when provided. */
+  tenantEnv?: TenantEnv;
 }
 
 export interface AgentResult<T = unknown> {
