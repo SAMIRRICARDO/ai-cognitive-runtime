@@ -284,7 +284,12 @@
 
   <!-- CAMPAIGNS TABLE -->
   <section class="pb-10">
-    <h2 class="text-2xl font-bold text-white mb-5">Relatório de Campanhas <span id="campaigns-badge" class="badge text-blue-300 text-xs ml-2 align-middle"></span></h2>
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-2xl font-bold text-white">Relatório de Campanhas <span id="campaigns-badge" class="badge text-blue-300 text-xs ml-2 align-middle"></span></h2>
+      <a id="export-csv-btn" href="#" onclick="downloadCSV(event)" class="flex items-center gap-2 px-4 py-2 glass border border-white/10 rounded-xl text-xs text-gray-300 hover:text-white hover:border-blue-500/40 transition">
+        <i data-lucide="download" style="width:14px;height:14px"></i> Exportar CSV
+      </a>
+    </div>
     <div class="glass rounded-2xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-xs md:text-sm">
@@ -378,7 +383,7 @@ async function sendMsg(){
           if(ev==='start')st.textContent='● '+d.message;
           else if(ev==='tool_call'){const e=document.createElement('div');e.className='sse-event sse-tool_call';e.textContent=`⚡ ${d.name||''}`;agEl.appendChild(e);}
           else if(ev==='tool_result'){const e=document.createElement('div');e.className='sse-event sse-tool_result';e.textContent=`✓ resultado`;agEl.appendChild(e);}
-          else if(ev==='output'&&d.text)ct.innerHTML+=escHtml(d.text).replace(/\n/g,'<br>');
+          else if(ev==='output'&&d.content)ct.innerHTML+=escHtml(d.content).replace(/\n/g,'<br>');
           else if(ev==='done')st.textContent=`✓ ${d.durationMs||0}ms | $${(d.cost?.totalCost||0).toFixed(6)}`;
           else if(ev==='error')ct.textContent='❌ '+d.message;
         }catch{}
@@ -658,6 +663,13 @@ setInterval(() => {
   const el = document.getElementById(pick);
   if (el) flashEl(el, 'card-ping');
 }, 3000);
+
+function downloadCSV(e) {
+  e.preventDefault();
+  const url = (API_URL || 'http://localhost:3000') + '/api/leads/export';
+  const a = document.createElement('a');
+  a.href = url; a.download = 'vraxia-leads.csv'; a.click();
+}
 
 lucide.createIcons();
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});},{threshold:.1});

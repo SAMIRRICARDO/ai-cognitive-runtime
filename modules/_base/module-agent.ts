@@ -68,8 +68,20 @@ export abstract class BaseModuleAgent extends BaseAgent {
     this.registerTool(createSearchSkillsTool(this.registry));
     this.registerTool(createRunSkillTool(this.registry));
 
+    // Module-specific data tools
+    this._registerDataTools();
+
     // RAG + memory tools — async registration after construction
     this._registerContextTools();
+  }
+
+  // Registers module-specific data tools (e.g. query_leads for comercial)
+  private _registerDataTools(): void {
+    if (this.moduleId === "comercial") {
+      import("../../tools/query-leads.js")
+        .then(({ queryLeadsTool }) => this.registerTool(queryLeadsTool))
+        .catch(() => {}); // graceful — file-system may not have leads
+    }
   }
 
   // Registers vault + Redis tools without blocking the constructor

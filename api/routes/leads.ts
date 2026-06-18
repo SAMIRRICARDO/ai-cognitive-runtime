@@ -285,3 +285,27 @@ leadsRouter.get("/linkedin", (_req, res) => {
   const states = loadLinkedInStates();
   res.json({ records: states, total: states.length });
 });
+
+// ── GET /api/leads/export ─────────────────────────────────────────────────────
+// Downloads all leads as CSV. Query: ?status=HOT&campaign=Futurecom
+
+leadsRouter.get("/export", (req, res) => {
+  const { leads } = loadAllLeads();
+  const status = (req.query.status as string) ?? "";
+  const campaign = (req.query.campaign as string) ?? "";
+
+  let filtered = leads;
+  if (status)   filtered = filtered.filter((l) => l.status.toUpperCase() === status.toUpperCase());
+  if (campaign) filtered = filtered.filter((l) => l.campaign.toLowerCase().includes(campaign.toLowerCase()));
+
+  const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const header = ["Nome", "Empresa", "Cargo", "Email", "LinkedIn", "Status", "Score", "Campanha"];
+  const rows = filtered.map((l) =>
+    [l.name, l.company, l.role, l.email, l.linkedin, l.status, String(l.score), l.campaign].map(esc).join(",")
+  );
+  const csv = [header.join(","), ...rows].join("\r\n");
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="vraxia-leads.csv"`);
+  res.send("﻿" + csv); // BOM for Excel UTF-8 recognition
+});
