@@ -309,3 +309,142 @@ leadsRouter.get("/export", (req, res) => {
   res.setHeader("Content-Disposition", `attachment; filename="vraxia-leads.csv"`);
   res.send("﻿" + csv); // BOM for Excel UTF-8 recognition
 });
+
+// ── GET /api/leads/export/pdf ─────────────────────────────────────────────────
+// Generates a PDF report of all leads using headless Chromium (Playwright).
+// Query: ?status=HOT&campaign=Futurecom&title=My+Report
+
+leadsRouter.get("/export/pdf", async (req, res) => {
+  const { leads } = loadAllLeads();
+  const statusFilter   = (req.query.status   as string) ?? "";
+  const campaignFilter = (req.query.campaign as string) ?? "";
+  const title          = (req.query.title    as string) ?? "VRAXIA — Relatório de Leads";
+
+  let filtered = leads;
+  if (statusFilter)   filtered = filtered.filter((l) => l.status.toUpperCase() === statusFilter.toUpperCase());
+  if (campaignFilter) filtered = filtered.filter((l) => l.campaign.toLowerCase().includes(campaignFilter.toLowerCase()));
+
+  // Group by campaign for the PDF sections
+  const byCampaign = new Map<string, typeof filtered>();
+  for (const l of filtered) {
+    const list = byCampaign.get(l.campaign) ?? [];
+    list.push(l);
+    byCampaign.set(l.campaign, list);
+  }
+
+  const statusBadge = (s: string) => {
+    const map: Record<string, string> = {
+      HOT: "background:#ef444422;color:#f87171;border:1px solid #f8717140",
+      WARM: "background:#f59e0b22;color:#fbbf24;border:1px solid #fbbf2440",
+      LOW_PRIORITY: "background:#6b728022;color:#9ca3af;border:1px solid #9ca3af40",
+      INVALID: "background:#dc262622;color:#f87171;border:1px solid #f8717140",
+    };
+    return map[s.toUpperCase()] ?? "background:#1e293b;color:#94a3b8;border:1px solid #33415540";
+  };
+
+  const tableRows = (list: typeof filtered) =>
+    list.map((l, i) => `
+      <tr style="background:${i % 2 === 0 ? "#0f172a" : "#111827"}">
+        <td>${esc(l.name)}</td>
+        <td>${esc(l.company)}</td>
+        <td style="color:#94a3b8">${esc(l.role)}</td>
+        <td style="font-family:monospace;font-size:11px;color:#60a5fa">${esc(l.email || "—")}</td>
+        <td style="text-align:center">
+          <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;${statusBadge(l.status)}">${esc(l.status)}</span>
+        </td>
+        <td style="text-align:center;font-weight:700;color:${l.score >= 75 ? "#4ade80" : l.score >= 50 ? "#fbbf24" : "#94a3b8"}">${l.score || "—"}</td>
+      </tr>`).join("");
+
+  const sections = Array.from(byCampaign.entries()).map(([campaign, list]) => `
+    <div class="campaign-section">
+      <div class="campaign-header">
+        <span class="campaign-name">${esc(campaign)}</span>
+        <span class="campaign-count">${list.length} leads</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th><th>Empresa</th><th>Cargo</th>
+            <th>Email</th><th>Status</th><th>Score</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows(list)}</tbody>
+      </table>
+    </div>`).join("");
+
+  const now = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+  const html = `<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #020817; color: #e2e8f0; font-size: 12px; }
+  .cover { padding: 48px 40px 32px; border-bottom: 1px solid #1e293b; }
+  .logo { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(135deg,#60a5fa,#a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 24px; }
+  .report-title { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+  .report-meta { color: #475569; font-size: 11px; }
+  .kpi-row { display: flex; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+  .kpi { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 12px 20px; min-width: 120px; }
+  .kpi-val { font-size: 22px; font-weight: 800; color: #f1f5f9; }
+  .kpi-lbl { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .content { padding: 32px 40px; }
+  .campaign-section { margin-bottom: 40px; page-break-inside: avoid; }
+  .campaign-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #1e293b; }
+  .campaign-name { font-size: 13px; font-weight: 700; color: #60a5fa; }
+  .campaign-count { font-size: 11px; color: #475569; background: #1e293b; padding: 2px 10px; border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  th { background: #0a0e18; color: #64748b; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 8px 10px; text-align: left; border-bottom: 1px solid #1e293b; }
+  td { padding: 7px 10px; color: #cbd5e1; border-bottom: 1px solid #0f172a; vertical-align: middle; }
+  .footer { position: fixed; bottom: 20px; left: 40px; right: 40px; display: flex; justify-content: space-between; font-size: 10px; color: #334155; border-top: 1px solid #1e293b; padding-top: 8px; }
+  @page { size: A4; margin: 0; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="logo">VRAXIA</div>
+  <div class="subtitle">Enterprise AI OS — Comercial</div>
+  <div class="report-title">${esc(title)}</div>
+  <div class="report-meta">Gerado em ${now} · ${filtered.length} leads · ${byCampaign.size} campanhas</div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val">${filtered.length}</div><div class="kpi-lbl">Total de Leads</div></div>
+    <div class="kpi"><div class="kpi-val">${filtered.filter(l => l.status === "HOT").length}</div><div class="kpi-lbl">HOT</div></div>
+    <div class="kpi"><div class="kpi-val">${filtered.filter(l => l.status === "WARM").length}</div><div class="kpi-lbl">WARM</div></div>
+    <div class="kpi"><div class="kpi-val">${filtered.filter(l => l.email && l.email !== "—").length}</div><div class="kpi-lbl">Com Email</div></div>
+    <div class="kpi"><div class="kpi-val">${byCampaign.size}</div><div class="kpi-lbl">Campanhas</div></div>
+  </div>
+</div>
+<div class="content">${sections}</div>
+<div class="footer">
+  <span>VRAXIA OS — Confidencial</span>
+  <span>${now}</span>
+</div>
+</body>
+</html>`;
+
+  let browser;
+  try {
+    const { chromium } = await import("playwright");
+    browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle" });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "0", right: "0", bottom: "0", left: "0" },
+    });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="vraxia-leads-${Date.now()}.pdf"`);
+    res.send(Buffer.from(pdf));
+  } catch (err) {
+    res.status(500).json({ error: "PDF generation failed", detail: String(err) });
+  } finally {
+    await browser?.close();
+  }
+});
+
+function esc(s: string): string {
+  return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
