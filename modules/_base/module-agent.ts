@@ -83,6 +83,9 @@ export abstract class BaseModuleAgent extends BaseAgent {
 
     if (this.moduleId === "comercial") {
       await Promise.allSettled([
+        import("../../tools/prospect-leads.js").then(({ prospectLeadsTool }) => {
+          this.registerTool(prospectLeadsTool);
+        }),
         import("../../tools/query-leads.js").then(({ queryLeadsTool }) => {
           this.registerTool(queryLeadsTool);
         }),
@@ -145,8 +148,9 @@ export function buildModuleSystemPrompt(cfg: ModuleConfig, skillCount: number): 
     "`classify_linkedin_reply` — **VRAXIA Sense**: classifica uma resposta recebida no LinkedIn. Detecta intent, decision_power, score 1-10 e próximo passo. Se handoff=true, envia alerta automático no Telegram.",
     isComercial ? "`search_leads_rag` — busca livre na base de leads indexados: por nome, empresa, cargo, status, campanha, segmento" : null,
     isComercial ? "`query_leads` — consulta estruturada de leads com filtros por status, campanha, empresa" : null,
-    isComercial ? "`find_new_leads` — **busca NOVOS leads via web search** (Tavily) para um segmento/evento/cargo/região que ainda não estão na base" : null,
-    isComercial ? "`enrich_company` — **enriquece empresas** com decisores B2B: nome, cargo, email inferido, LinkedIn e score de prioridade (30-90s por empresa)" : null,
+    isComercial ? "`prospect_leads` — **PRINCIPAL: busca + enriquece leads completos em UMA chamada**. Retorna nome, cargo, empresa, email, LinkedIn, fonte. Use SEMPRE que o usuário pedir leads novos." : null,
+    isComercial ? "`find_new_leads` — busca NOVOS leads via web search sem enriquecimento (use só se prospect_leads falhar)" : null,
+    isComercial ? "`enrich_company` — **enriquece empresas já conhecidas** com decisores B2B: nome, cargo, email inferido, LinkedIn e score de prioridade (30-90s por empresa)" : null,
     isComercial ? "`validate_leads` — **valida e analisa** a base existente: HOT/WARM/INVALID, cobertura de email, top leads prontos para prospectar" : null,
   ].filter(Boolean);
 
@@ -180,7 +184,8 @@ ${senseInstruction}
 **Quando usar cada ferramenta de leads:**
 - "quantos leads HOT temos?" → \`validate_leads\`
 - "quem são os leads da TOTVS?" → \`search_leads_rag\` ou \`query_leads\`
-- "buscar leads de telecom" / "prospectar empresas de varejo" → \`find_new_leads\`
+- "buscar 1 lead" / "prospectar" / "encontrar decisor" / "lead novo" → \`prospect_leads\` (retorna nome+email+LinkedIn completo)
+- "buscar leads de telecom" sem necessidade de contato completo → \`find_new_leads\`
 - "enriquecer Claro, Vivo, TIM" / "quem é o CMO da AWS Brasil?" → \`enrich_company\`
 - "validar base de leads" / "relatório de qualidade" → \`validate_leads\`
 
