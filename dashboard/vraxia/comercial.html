@@ -111,7 +111,7 @@
     </div>
     <div class="flex items-center gap-3">
       <span class="text-xs text-gray-600 font-mono flex items-center gap-1.5"><span class="live-dot" style="margin-right:0"></span>6 agentes ativos</span>
-      <button onclick="openChat()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition font-medium">Acionar Pipeline →</button>
+      <button onclick="document.getElementById('chat-input').focus()" class="px-4 py-1.5 bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/40 text-blue-300 hover:text-white text-xs rounded-lg transition font-medium">Chat ↓</button>
     </div>
   </div>
 </nav>
@@ -144,23 +144,52 @@
     </div>
   </section>
 
-  <!-- TERMINAL -->
-  <section class="pb-12">
-    <div class="glass-strong rounded-2xl p-6 glow-blue">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
-        <span class="ml-3 text-xs font-mono text-gray-500">vraxia-comercial-runtime v1.0.0</span>
+  <!-- COMERCIAL AI CHAT (inline, always visible) -->
+  <section class="pb-12" id="chat-section">
+    <div class="glass-strong rounded-2xl glow-blue overflow-hidden" style="display:flex;flex-direction:column;height:520px;">
+      <!-- Chat header -->
+      <div class="flex items-center justify-between px-5 py-3 border-b border-white/5" style="flex-shrink:0;">
+        <div class="flex items-center gap-3">
+          <div style="width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="bot" style="width:16px;height:16px;color:white"></i>
+          </div>
+          <div>
+            <div class="text-white font-semibold text-sm">Comercial AI</div>
+            <div class="text-gray-500 text-xs flex items-center gap-1.5"><span class="live-dot" style="width:5px;height:5px;margin-right:0"></span>Online — RAG + 363 leads indexados</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="chat-status-inline" class="text-xs text-gray-600 font-mono hidden"></span>
+          <button onclick="clearChat()" title="Limpar conversa" class="text-gray-600 hover:text-gray-300 transition p-1.5 rounded-lg hover:bg-white/5">
+            <i data-lucide="rotate-ccw" style="width:14px;height:14px"></i>
+          </button>
+        </div>
       </div>
-      <div class="font-mono text-xs md:text-sm space-y-2 text-gray-400">
-        <div class="terminal-line" style="animation-delay:0s"><span class="text-blue-400">[Orchestrator]</span> Inicializando pipeline comercial...</div>
-        <div class="terminal-line" style="animation-delay:1.5s;opacity:0;animation-fill-mode:forwards"><span class="text-green-400">[Enricher]</span> Buscando leads no segmento target...</div>
-        <div class="terminal-line" style="animation-delay:3s;opacity:0;animation-fill-mode:forwards"><span class="text-purple-400">[RAG Agent]</span> Contextualizando via knowledge base + pgvector...</div>
-        <div class="terminal-line" style="animation-delay:4.5s;opacity:0;animation-fill-mode:forwards"><span class="text-yellow-400">[Validator]</span> Validando emails → DMARC check → score IA...</div>
-        <div class="terminal-line" style="animation-delay:6s;opacity:0;animation-fill-mode:forwards"><span class="text-cyan-400">[Outbound]</span> Personalizando copy → anexando PDF → enviando...</div>
-        <div class="terminal-line" style="animation-delay:7.5s;opacity:0;animation-fill-mode:forwards"><span class="text-pink-400">[Analytics]</span> Dashboard atualizado → delivery rate: 97.3%</div>
-        <div class="terminal-line cursor-blink" style="animation-delay:9s;opacity:0;animation-fill-mode:forwards"><span class="text-green-400">[✓ Pipeline]</span> 6 agentes executados em 4.2s</div>
+
+      <!-- Messages -->
+      <div id="chat-msgs" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3" style="min-height:0;">
+        <div class="msg-agent">
+          <span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span>
+          Olá! Sou o agente comercial do VRAXIA. Tenho acesso a <strong>363 leads</strong> indexados com RAG — posso buscar contatos, analisar campanhas, gerar copy de outbound, criar listas por segmento e muito mais.<br><br>O que você quer acionar?
+        </div>
+      </div>
+
+      <!-- Quick suggestions -->
+      <div id="chat-suggestions" class="px-4 pb-2 flex gap-2 flex-wrap" style="flex-shrink:0;">
+        <button onclick="quickSend('Quais são os leads HOT? Me dá o resumo.')" class="text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-blue-500/40 hover:bg-blue-500/10 transition">⚡ Leads HOT</button>
+        <button onclick="quickSend('Qual o status do pipeline? Resumo de todas as campanhas.')" class="text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-blue-500/40 hover:bg-blue-500/10 transition">📊 Status pipeline</button>
+        <button onclick="quickSend('Quais leads da Microsoft ou de grandes empresas de tech temos?')" class="text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-blue-500/40 hover:bg-blue-500/10 transition">🏢 Big Tech leads</button>
+        <button onclick="quickSend('Gere um email de outbound para o lead HOT com maior score.')" class="text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-purple-500/40 hover:bg-purple-500/10 transition">✉️ Gerar email</button>
+      </div>
+
+      <!-- Input area -->
+      <div class="px-4 pb-4 pt-2 border-t border-white/5" style="flex-shrink:0;">
+        <div class="flex gap-2">
+          <textarea id="chat-input" rows="2" placeholder="Pergunte sobre leads, campanhas, outbound, copy... (Enter para enviar)" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white resize-none focus:outline-none focus:border-blue-500/50 transition placeholder-gray-600" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+          <button id="send-btn" onclick="sendMsg()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl self-end transition hover:opacity-90 flex items-center gap-1.5 text-xs font-medium" style="min-width:72px;">
+            <i data-lucide="send" style="width:13px;height:13px"></i> Enviar
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -309,32 +338,6 @@
 
 </div><!-- /max-w -->
 
-<!-- CHAT DRAWER (fixed right) -->
-<div id="chat-drawer" class="fixed top-0 right-0 h-full w-96 glass-strong border-l border-white/8 z-50 flex flex-col" style="transform:translateX(100%);transition:transform .3s ease;">
-  <div class="p-4 border-b border-white/5 flex items-center justify-between">
-    <div>
-      <div class="text-white font-semibold text-sm">Acionar Comercial AI</div>
-      <div class="text-gray-500 text-xs">Pipeline via VRAXIA API</div>
-    </div>
-    <button onclick="closeChat()" class="text-gray-500 hover:text-white transition"><i data-lucide="x" style="width:18px;height:18px"></i></button>
-  </div>
-  <div id="chat-msgs" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-    <div class="msg-agent">
-      <span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span>
-      Pronto. Posso executar o pipeline de prospecção, analisar campanhas, enriquecer leads, gerar copy personalizado e muito mais. O que deseja acionar?
-    </div>
-  </div>
-  <div class="p-4 border-t border-white/5">
-    <div class="flex gap-2 mb-2">
-      <textarea id="chat-in" rows="2" placeholder="Ex: Gerar lista de leads SaaS B2B série A..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white resize-none focus:outline-none focus:border-blue-500/50 transition placeholder-gray-600" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
-      <button id="send-btn" onclick="sendMsg()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl self-end transition hover:opacity-90">
-        <i data-lucide="send" style="width:15px;height:15px"></i>
-      </button>
-    </div>
-    <div id="chat-status" class="text-xs text-gray-600 font-mono hidden"></div>
-  </div>
-</div>
-<div id="chat-overlay" onclick="closeChat()" class="fixed inset-0 bg-black/30 z-40 hidden"></div>
 
 <script>
 // ══ CONFIG (read from parent window or URL params) ════════════════════════════
@@ -344,29 +347,32 @@ let API_KEY  = params.get('key') || '';
 // If opened from main dashboard, can receive postMessage
 window.addEventListener('message', e => { if(e.data?.apiUrl) API_URL = e.data.apiUrl; if(e.data?.apiKey) API_KEY = e.data.apiKey; });
 
-// ══ CHAT DRAWER ═══════════════════════════════════════════════════════════════
-function openChat(){
-  document.getElementById('chat-drawer').style.transform='translateX(0)';
-  document.getElementById('chat-overlay').classList.remove('hidden');
-}
-function closeChat(){
-  document.getElementById('chat-drawer').style.transform='translateX(100%)';
-  document.getElementById('chat-overlay').classList.add('hidden');
-}
+// ══ INLINE CHAT ═══════════════════════════════════════════════════════════════
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function appendMsg(html,cls){
   const el=document.createElement('div');el.className=cls;el.innerHTML=html;
   const c=document.getElementById('chat-msgs');c.appendChild(el);c.scrollTop=99999;return el;
 }
+function clearChat(){
+  const c=document.getElementById('chat-msgs');
+  c.innerHTML='<div class="msg-agent"><span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span>Conversa reiniciada. O que deseja acionar?</div>';
+}
+function quickSend(text){
+  const input=document.getElementById('chat-input');
+  input.value=text;sendMsg();
+}
 async function sendMsg(){
-  const input=document.getElementById('chat-in');
+  const input=document.getElementById('chat-input');
   const msg=input.value.trim();
   if(!msg)return;
+  // Hide suggestions after first message
+  const sugg=document.getElementById('chat-suggestions');
+  if(sugg)sugg.style.display='none';
   input.value='';input.disabled=true;document.getElementById('send-btn').disabled=true;
   appendMsg(`<span class="text-gray-400 text-xs block mb-1">Você</span>${escHtml(msg)}`,'msg-user');
   const agEl=appendMsg(`<span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span><span class="content"></span>`,'msg-agent streaming');
   const ct=agEl.querySelector('.content');
-  const st=document.getElementById('chat-status');st.classList.remove('hidden');st.textContent='● Conectando...';
+  const st=document.getElementById('chat-status-inline');st.classList.remove('hidden');st.textContent='● Conectando...';
   try{
     const resp=await fetch((API_URL||'http://localhost:3000')+'/api/run',{
       method:'POST',
@@ -386,17 +392,17 @@ async function sendMsg(){
         if(!ds)continue;
         try{const d=JSON.parse(ds);
           if(ev==='start')st.textContent='● '+d.message;
-          else if(ev==='tool_call'){const e=document.createElement('div');e.className='sse-event sse-tool_call';e.textContent=`⚡ ${d.name||''}`;agEl.appendChild(e);}
-          else if(ev==='tool_result'){const e=document.createElement('div');e.className='sse-event sse-tool_result';e.textContent=`✓ resultado`;agEl.appendChild(e);}
+          else if(ev==='tool_call'){const e=document.createElement('div');e.className='sse-event sse-tool_call';e.textContent=`⚡ ${d.tool||d.name||'tool'}`;agEl.appendChild(e);}
+          else if(ev==='tool_result'){const e=document.createElement('div');e.className='sse-event sse-tool_result';e.textContent=`✓ dados recuperados`;agEl.appendChild(e);}
           else if(ev==='output'&&d.content)ct.innerHTML+=escHtml(d.content).replace(/\n/g,'<br>');
-          else if(ev==='done')st.textContent=`✓ ${d.durationMs||0}ms | $${(d.cost?.totalCost||0).toFixed(6)}`;
+          else if(ev==='done')st.textContent=`✓ ${d.durationMs||0}ms · $${((d.cost?.totalCostUsd||0)).toFixed(5)}`;
           else if(ev==='error')ct.textContent='❌ '+d.message;
         }catch{}
         document.getElementById('chat-msgs').scrollTop=99999;
       }
     }
   }catch(e){ct.textContent='❌ '+e.message;}
-  finally{agEl.classList.remove('streaming');input.disabled=false;document.getElementById('send-btn').disabled=false;st.classList.add('hidden');input.focus();}
+  finally{agEl.classList.remove('streaming');input.disabled=false;document.getElementById('send-btn').disabled=false;st.classList.remove('hidden');input.focus();}
 }
 
 // ══ OBSIDIAN BG ═══════════════════════════════════════════════════════════════
