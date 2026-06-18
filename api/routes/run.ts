@@ -43,7 +43,7 @@ runRouter.post("/", async (req, res) => {
   sendSSE(res, "start", { moduleId, message: `Starting ${moduleId} agent...` });
 
   try {
-    const agent = createDepartmentAgent(moduleId, {
+    const agent = await createDepartmentAgent(moduleId, {
       tenantId: tenant?.id,
       tenantEnv,
     });

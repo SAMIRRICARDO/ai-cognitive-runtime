@@ -63,28 +63,28 @@ export abstract class BaseModuleAgent extends BaseAgent {
     this.registry = new SkillRegistry(config.skillsDir, config.moduleId);
     this.registry.load();
 
-    // Core skill tools — always registered
+    // Core skill tools — always registered synchronously
     this.registerTool(createListSkillsTool(this.registry));
     this.registerTool(createSearchSkillsTool(this.registry));
     this.registerTool(createRunSkillTool(this.registry));
 
-    // Module-specific data tools
-    this._registerDataTools();
-
-    // RAG + memory tools — async registration after construction
+    // Data tools (query_leads, search_leads_rag) and context tools are
+    // registered asynchronously via initDataTools() + _registerContextTools().
+    // Call await agent.initDataTools() before agent.run() in the factory.
     this._registerContextTools();
   }
 
-  // Registers module-specific data tools (e.g. query_leads for comercial)
-  private _registerDataTools(): void {
+  // Registers module-specific data tools — must be awaited before agent.run()
+  async initDataTools(): Promise<void> {
     if (this.moduleId === "comercial") {
-      import("../../tools/query-leads.js")
-        .then(({ queryLeadsTool }) => this.registerTool(queryLeadsTool))
-        .catch(() => {});
-      // Local RAG search — works without Postgres/Redis
-      import("../../tools/search-leads-rag.js")
-        .then(({ searchLeadsRagTool }) => this.registerTool(searchLeadsRagTool))
-        .catch(() => {});
+      await Promise.allSettled([
+        import("../../tools/query-leads.js").then(({ queryLeadsTool }) => {
+          this.registerTool(queryLeadsTool);
+        }),
+        import("../../tools/search-leads-rag.js").then(({ searchLeadsRagTool }) => {
+          this.registerTool(searchLeadsRagTool);
+        }),
+      ]);
     }
   }
 

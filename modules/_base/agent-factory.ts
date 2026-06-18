@@ -92,14 +92,17 @@ class DepartmentAgent extends BaseModuleAgent {
 
 // ── Public factory function ────────────────────────────────────────────────────
 
-export function createDepartmentAgent(
+export async function createDepartmentAgent(
   moduleId: string,
   opts: ModuleAgentOptions = {}
-): BaseModuleAgent {
+): Promise<BaseModuleAgent> {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const moduleRoot = path.resolve(__dirname, `../${moduleId}`);
   const moduleMeta = require(path.join(moduleRoot, "module.json")) as Record<string, string>;
   const skillsDir = path.join(moduleRoot, "skills");
 
-  return DepartmentAgent.build(moduleId, moduleMeta, skillsDir, opts);
+  const agent = DepartmentAgent.build(moduleId, moduleMeta, skillsDir, opts);
+  // Await async tool registration so all tools are ready before agent.run()
+  await agent.initDataTools();
+  return agent;
 }
