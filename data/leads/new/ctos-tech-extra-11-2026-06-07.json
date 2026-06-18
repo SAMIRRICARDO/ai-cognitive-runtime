@@ -91,7 +91,7 @@
       "company_name": "Conta Simples",
       "company_domain": "contasimples.com",
       "company_category": "fintech / spend management",
-      "linkedin_url": "",
+      "linkedin_url": "https://www.linkedin.com/in/dgeison-lucca",
       "email": "dgeison.delucca@contasimples.com",
       "email_status": "valid",
       "source_url": "https://pt.linkedin.com/posts/tiinside_a-conta-simples-principal-plataforma-de-activity-7300167681578573825-SVoe",
@@ -113,7 +113,8 @@
         "smtpNoDataSent": true,
         "selectedEmail": "dgeison.delucca@contasimples.com",
         "selectedReason": "RCPT TO confirmed 250"
-      }
+      },
+      "linkedin_source": "heuristic"
     },
     {
       "lead_id": "cto-extra-004",
@@ -122,7 +123,7 @@
       "company_name": "Pipefy",
       "company_domain": "pipefy.com",
       "company_category": "low-code / workflow automation",
-      "linkedin_url": "",
+      "linkedin_url": "https://www.linkedin.com/in/daniele-gemignani",
       "email": "daniele.gemignani@pipefy.com",
       "email_status": "valid",
       "source_url": "https://www.pipefy.com/about-us/leadership/",
@@ -144,7 +145,8 @@
         "smtpNoDataSent": true,
         "selectedEmail": "daniele.gemignani@pipefy.com",
         "selectedReason": "RCPT TO confirmed 250"
-      }
+      },
+      "linkedin_source": "heuristic"
     },
     {
       "lead_id": "cto-extra-005",
@@ -198,7 +200,7 @@
       "company_name": "Blip",
       "company_domain": "blip.ai",
       "company_category": "conversational AI / messaging platform",
-      "linkedin_url": "",
+      "linkedin_url": "https://www.linkedin.com/in/sergio-passos",
       "email": "sergio.passos@blip.ai",
       "email_status": "valid",
       "source_url": "https://www.microsoft.com/en/customers/story/21343-blip-azure-open-ai-service",
@@ -220,7 +222,8 @@
         "smtpNoDataSent": true,
         "selectedEmail": "sergio.passos@blip.ai",
         "selectedReason": "RCPT TO confirmed 250"
-      }
+      },
+      "linkedin_source": "heuristic"
     },
     {
       "lead_id": "cto-extra-007",
@@ -229,7 +232,7 @@
       "company_name": "EVEO",
       "company_domain": "eveo.com.br",
       "company_category": "private cloud / dedicated servers",
-      "linkedin_url": "",
+      "linkedin_url": "https://www.linkedin.com/in/fabio-stein",
       "email": "fabio.stein@eveo.com.br",
       "email_status": "invalid",
       "source_url": "https://tiinside.com.br/09/02/2026/eveo-anuncia-fabio-stein-como-novo-cto-para-liderar-automacao-e-escalabilidade-da-operacao/",
@@ -265,7 +268,8 @@
         "smtpNoDataSent": true,
         "selectedEmail": "fabio.stein@eveo.com.br",
         "selectedReason": "RCPT TO rejected 550"
-      }
+      },
+      "linkedin_source": "heuristic"
     },
     {
       "lead_id": "cto-extra-008",
@@ -319,7 +323,7 @@
       "company_name": "Omie",
       "company_domain": "omie.com.br",
       "company_category": "ERP SaaS / fintech",
-      "linkedin_url": "",
+      "linkedin_url": "https://www.linkedin.com/in/alberto-caeiro",
       "email": "alberto.caeiro@omie.com.br",
       "email_status": "valid",
       "source_url": "https://www.theofficialboard.com/biography/alberto-caeiro-g0219",
@@ -341,7 +345,8 @@
         "smtpNoDataSent": true,
         "selectedEmail": "alberto.caeiro@omie.com.br",
         "selectedReason": "RCPT TO confirmed 250"
-      }
+      },
+      "linkedin_source": "heuristic"
     },
     {
       "lead_id": "cto-extra-010",
@@ -350,7 +355,7 @@
       "company_name": "i4pro",
       "company_domain": "i4pro.com.br",
       "company_category": "insurtech / software para seguradoras",
-      "linkedin_url": "",
+      "linkedin_url": "https://www.linkedin.com/in/gustavo-figueiredo",
       "email": "gustavofigueiredo@i4pro.com.br",
       "email_status": "risky",
       "source_url": "https://www.baguete.com.br/noticias/i4pro-tem-novo-cto",
@@ -386,7 +391,8 @@
         "smtpNoDataSent": true,
         "selectedEmail": "gustavofigueiredo@i4pro.com.br",
         "selectedReason": "SMTP connection timeout"
-      }
+      },
+      "linkedin_source": "heuristic"
     },
     {
       "lead_id": "cto-extra-011",
@@ -395,7 +401,7 @@
       "company_name": "ClickBus",
       "company_domain": "clickbus.com.br",
       "company_category": "travel tech / marketplace de passagens",
-      "linkedin_url": "",
+      "linkedin_url": "https://www.linkedin.com/in/fabio-trentini",
       "email": "fabio.trentini@clickbus.com.br",
       "email_status": "invalid",
       "source_url": "https://www.baguete.com.br/public/noticias/clickbus-tem-novo-cto",
@@ -431,7 +437,8 @@
         "smtpNoDataSent": true,
         "selectedEmail": "fabio.trentini@clickbus.com.br",
         "selectedReason": "RCPT TO rejected 550"
-      }
+      },
+      "linkedin_source": "heuristic"
     }
   ]
 }

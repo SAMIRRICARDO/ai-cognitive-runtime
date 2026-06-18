@@ -13,7 +13,8 @@ export type LocalRagCollection =
   | "campaigns"
   | "companies"
   | "logs"
-  | "analytics";
+  | "analytics"
+  | "leads";
 
 export interface LocalRagRecord {
   id: string;
@@ -32,6 +33,7 @@ const COLLECTIONS: LocalRagCollection[] = [
   "companies",
   "logs",
   "analytics",
+  "leads",
 ];
 
 function ensureMemoryTree() {

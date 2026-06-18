@@ -80,7 +80,11 @@ export abstract class BaseModuleAgent extends BaseAgent {
     if (this.moduleId === "comercial") {
       import("../../tools/query-leads.js")
         .then(({ queryLeadsTool }) => this.registerTool(queryLeadsTool))
-        .catch(() => {}); // graceful — file-system may not have leads
+        .catch(() => {});
+      // Local RAG search — works without Postgres/Redis
+      import("../../tools/search-leads-rag.js")
+        .then(({ searchLeadsRagTool }) => this.registerTool(searchLeadsRagTool))
+        .catch(() => {});
     }
   }
 
@@ -118,10 +122,13 @@ export abstract class BaseModuleAgent extends BaseAgent {
 export function buildModuleSystemPrompt(cfg: ModuleConfig, skillCount: number): string {
   const hasVault = memoryInfraAvailable && !isCheapMode;
   const hasMemory = redisAvailable && !isCheapMode;
+  const isComercial = cfg.id === "comercial";
 
   const contextTools = [
     hasVault ? "`vault_search` — busca semântica no Obsidian vault (conhecimento institucional, ADRs, decisões, contexto de negócio)" : null,
     hasMemory ? "`memory_read` / `memory_write` — memória de curto prazo (Redis) para manter contexto entre turnos" : null,
+    isComercial ? "`search_leads_rag` — busca livre na base de leads (363 leads indexados): por nome, empresa, cargo, status, campanha, segmento" : null,
+    isComercial ? "`query_leads` — consulta estruturada de leads com filtros por status, campanha, empresa" : null,
   ].filter(Boolean);
 
   const contextSection = contextTools.length > 0 ? `
@@ -131,7 +138,7 @@ Antes de raciocinar, recupere contexto relevante:
 ${contextTools.map((t) => `- ${t}`).join("\n")}
 
 **Prioridade de execução:**
-1. \`vault_search\` — busque contexto no vault antes de qualquer resposta
+1. ${isComercial ? "`search_leads_rag` ou `query_leads` — sempre busque dados reais de leads antes de responder sobre prospecção" : "`vault_search` — busque contexto no vault antes de qualquer resposta"}
 2. \`search_skills\` — encontre a skill adequada
 3. \`run_skill\` — execute o prompt da skill com os dados do usuário
 4. Raciocínio próprio — somente se nenhuma fonte acima resolver

@@ -912,6 +912,8 @@
     "email_status": "valid",
     "buying_signal": "",
     "confidence": "high",
-    "decisao_maker_score": 9
+    "decisao_maker_score": 9,
+    "linkedin_url": "https://www.linkedin.com/in/marcus-fontoura",
+    "linkedin_source": "heuristic"
   }
 ]

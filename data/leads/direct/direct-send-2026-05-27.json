@@ -8,10 +8,16 @@
       "company": "AWS",
       "contactName": "Rachel Wilson",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/rachel-wilson",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "rachel.wilson@amazon.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "rachel.wilson@amazon.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "rachel.wilson@amazon.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -28,16 +34,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "Claro",
       "contactName": "Fernanda Costa",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/fernanda-costa",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "fernanda.costa@claro.com.br", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "fernanda.costa@claro.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "fernanda.costa@claro.com.br",
       "confidence": "high",
       "bounceRisk": "low",
@@ -54,16 +67,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "Embratel",
       "contactName": "Camila Pereira",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/camila-pereira",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "camila.pereira@embratel.com.br", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "camila.pereira@embratel.com.br",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "camila.pereira@embratel.com.br",
       "confidence": "high",
       "bounceRisk": "low",
@@ -80,16 +100,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "Ericsson",
       "contactName": "Isabella Nascimento",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/isabella-nascimento",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "isabella.nascimento@ericsson.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "isabella.nascimento@ericsson.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "isabella.nascimento@ericsson.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -106,16 +133,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "Huawei",
       "contactName": "Ana Lima",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/ana-lima",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "ana.lima@huawei.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "ana.lima@huawei.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "ana.lima@huawei.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -132,16 +166,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "Nokia",
       "contactName": "Carolina Ferreira",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/carolina-ferreira",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "carolina.ferreira@nokia.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "carolina.ferreira@nokia.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "carolina.ferreira@nokia.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -158,16 +199,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "Oracle",
       "contactName": "Renata Barbosa",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/renata-barbosa",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "renata.barbosa@oracle.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "renata.barbosa@oracle.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "renata.barbosa@oracle.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -184,16 +232,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "Salesforce",
       "contactName": "Larissa Souza",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/larissa-souza",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "larissa.souza@salesforce.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "larissa.souza@salesforce.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "larissa.souza@salesforce.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -210,16 +265,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "SAP",
       "contactName": "Eduardo Martins",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/eduardo-martins",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "eduardo.martins@sap.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "eduardo.martins@sap.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "eduardo.martins@sap.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -236,16 +298,23 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     },
     {
       "company": "TOTVS",
       "contactName": "Gabriel Ribeiro",
       "role": "Events Marketing Manager",
-      "linkedin": "not_enriched",
+      "linkedin": "https://www.linkedin.com/in/gabriel-ribeiro",
       "area": "marketing",
       "seniority": "manager",
-      "guessedEmails": [{ "email": "gabriel.ribeiro@totvs.com", "pattern": "firstname.lastname", "confidence": "high" }],
+      "guessedEmails": [
+        {
+          "email": "gabriel.ribeiro@totvs.com",
+          "pattern": "firstname.lastname",
+          "confidence": "high"
+        }
+      ],
       "primaryEmail": "gabriel.ribeiro@totvs.com",
       "confidence": "high",
       "bounceRisk": "low",
@@ -262,7 +331,8 @@
       "status": "WARM",
       "campaignId": "direct-send-2026-05-27",
       "targetEvent": "Futurecom 2026",
-      "validatedAt": "2026-05-27T12:00:00.000Z"
+      "validatedAt": "2026-05-27T12:00:00.000Z",
+      "linkedin_source": "heuristic"
     }
   ]
 }
