@@ -29,7 +29,7 @@ function getSkillCount(moduleId: string): number {
 
 // GET /api/modules — list all modules (marks which are active for tenant)
 modulesRouter.get("/", (req, res) => {
-  const tenant = (req as AuthenticatedRequest).tenant;
+  const tenant = (req as unknown as AuthenticatedRequest).tenant;
   const activeModules = tenant?.modules ?? AVAILABLE_MODULES;
 
   const modules = AVAILABLE_MODULES.map((id) => {
@@ -63,7 +63,7 @@ modulesRouter.get("/:id", (req, res) => {
   const registry = new SkillRegistry(skillsDir, id);
   registry.load();
 
-  const tenant = (req as AuthenticatedRequest).tenant;
+  const tenant = (req as unknown as AuthenticatedRequest).tenant;
   const active = !tenant || tenant.modules.includes(id);
 
   res.json({
