@@ -41,7 +41,7 @@
     "leads:acquire": "tsx scheduler/lead-acquisition-scheduler.ts",
     "leads:acquire:daemon": "tsx scheduler/lead-acquisition-scheduler.ts",
     "api:start": "tsx api/server.ts",
-    "api:dev": "DEV_MODE=true tsx api/server.ts"
+    "api:dev": "cross-env DEV_MODE=true ENABLE_MEMORY=false tsx api/server.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -69,6 +69,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
+    "cross-env": "^10.1.0",
     "typescript": "^5.7.0"
   }
 }
