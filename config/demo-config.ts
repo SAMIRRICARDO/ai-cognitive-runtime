@@ -7,10 +7,10 @@
 
 export const DEMO_ACTIVE_MODULES = [
   "comercial",   // Comercial Agent + Lead Intelligence (prospect_leads, classify_linkedin_reply)
-  "lideranca",   // Executive Agent
 ] as const;
 
 export const DEMO_PREVIEW_MODULES = [
+  "lideranca",   // Executive Agent
   "financeiro",  // Finance Agent
   "marketing",   // Marketing Agent
   "juridico",    // Legal Agent
