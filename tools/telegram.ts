@@ -1,6 +1,6 @@
 export async function notifyTelegram(message: string): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = '8135843555';
+  const chatId = process.env.TELEGRAM_CHAT_ID ?? '8135843555';
 
   if (!token) {
     console.warn('⚠️  TELEGRAM_BOT_TOKEN não configurada');

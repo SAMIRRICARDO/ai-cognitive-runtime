@@ -4,6 +4,7 @@
   "description": "Professional AI agents workspace",
   "type": "module",
   "scripts": {
+    "start": "tsx api/server.ts",
     "start:webhook": "tsx workers/webhookServer.ts",
     "agent": "tsx scripts/run-agent.ts",
     "eval": "tsx scripts/run-eval.ts",

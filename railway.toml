@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "npx tsx workers/webhookServer.ts"
+startCommand = "npx tsx api/server.ts"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 

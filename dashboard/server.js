@@ -27,7 +27,7 @@ function getContentType(pathname) {
 function getRequestPath(url) {
   const pathname = new URL(url, "http://localhost").pathname;
   if (pathname === "/" || pathname === "/dashboard" || pathname === "/dashboard/") {
-    return "/dashboard/index.html";
+    return "/vraxia/index.html";
   }
   return pathname;
 }

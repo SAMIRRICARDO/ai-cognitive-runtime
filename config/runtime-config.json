@@ -1,6 +1,6 @@
 {
   "cheapMode": true,
-  "preferredModel": "gpt-4o-mini",
+  "preferredModel": "claude-haiku-4-5-20251001",
   "maxLeadsPerBatch": 25,
   "maxDailyRuns": 3,
   "runTime": "07:30",
