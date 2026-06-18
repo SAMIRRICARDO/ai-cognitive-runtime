@@ -719,11 +719,9 @@ function renderModuleGrid() {
     const icon = MODULE_ICONS[m.id] || 'cpu';
     const color = m.preview ? '#f59e0b' : (MODULE_COLORS[m.id] || '#60a5fa');
     const cardClass = m.preview ? 'preview-module' : (m.active ? '' : 'opacity-40');
-    const badge = m.preview
-      ? `<span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.3)">ENTERPRISE</span>`
-      : `<span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:${color}15;color:${color};border:1px solid ${color}30">${m.active ? 'ATIVO' : 'INATIVO'}</span>`;
+    const badge = `<span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:${color}15;color:${color};border:1px solid ${color}30">${m.active ? 'ATIVO' : 'INATIVO'}</span>`;
     return `<div class="glass rounded-xl p-5 card-hover module-card ${cardClass}" onclick="openModule('${m.id}')">
-      ${m.preview ? '<div class="preview-lock-badge">🔒 Enterprise</div>' : ''}
+      ${m.preview ? '<div class="preview-lock-badge">🔒</div>' : ''}
       <div class="flex items-start justify-between mb-4">
         <div style="width:40px;height:40px;background:${color}20;border-radius:12px;display:flex;align-items:center;justify-content:center;">
           <i data-lucide="${icon}" style="width:20px;height:20px;color:${color}"></i>
@@ -749,7 +747,7 @@ function renderSidebarModules() {
     const icon  = MODULE_ICONS[m.id]  || 'cpu';
     const color = MODULE_COLORS[m.id] || '#60a5fa';
     const navId = m.id === 'comercial' ? '' : `id="nav-module-${m.id}"`;
-    const lockBadge = m.preview ? `<span style="font-size:8px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:5px;padding:1px 4px;color:#fbbf24;margin-left:auto;">ENT</span>` : '';
+    const lockBadge = m.preview ? `<span style="font-size:10px;margin-left:auto;">🔒</span>` : '';
     return `<div ${navId} class="nav-item ${m.preview ? 'opacity-60' : (m.active ? '' : 'opacity-40')}" onclick="openModule('${m.id}')">
       <i data-lucide="${icon}" style="width:14px;height:14px;color:${m.preview ? '#f59e0b' : color}"></i>
       <span class="capitalize">${m.name || m.id}</span>
