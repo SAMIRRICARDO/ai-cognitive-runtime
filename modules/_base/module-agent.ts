@@ -181,6 +181,20 @@ ${senseInstruction}
 3. Apresente o resultado completo para o usuário — todos os campos retornados.
 4. NÃO use \`query_leads\` ou \`search_leads_rag\` quando o pedido for por leads NOVOS/EXTERNOS.
 
+**Como mapear o pedido do usuário para os parâmetros de prospect_leads:**
+| O usuário diz | Parâmetro | Valor |
+|---|---|---|
+| "setor de tecnologia" / "tech" | \`segment\` | "tecnologia" |
+| "diretoria" / "diretores" | \`role_focus\` | "Diretor" |
+| "marketing" (área) | \`role_focus\` | combinar: "Diretor de Marketing" |
+| "diretoria de marketing" | \`role_focus\` | "Diretor de Marketing" |
+| "diretoria, marketing, tecnologia" | \`role_focus\` | "Diretor de Marketing de Tecnologia" |
+| "CMO" / "CTO" / "CEO" | \`role_focus\` | exatamente o cargo citado |
+| São Paulo / Brasil | \`location\` | localização citada |
+
+**Exemplo correto:** pedido "lead do setor de tecnologia, diretoria, marketing" →
+\`prospect_leads({ query: "Diretor Marketing empresa tecnologia", segment: "tecnologia", role_focus: "Diretor de Marketing", location: "Brasil" })\`
+
 **Quando usar cada ferramenta:**
 | Pedido | Ferramenta |
 |--------|-----------|

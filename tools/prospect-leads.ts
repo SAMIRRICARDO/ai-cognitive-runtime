@@ -53,6 +53,43 @@ function stripFences(s: string): string {
   return s.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
 }
 
+function normalizeStr(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+// Prevents wrong-area leads: returns false if "Head de Vendas" when user asked for "Marketing".
+function roleMatchesTarget(role: string, roleFocus: string): boolean {
+  if (!roleFocus) return true;
+  const roleN = normalizeStr(role);
+  const focusN = normalizeStr(roleFocus);
+
+  const AREA_MAP: Record<string, string[]> = {
+    marketing: ["marketing", "brand", "comunicacao", "propaganda", "publicidade", "eventos", "content", "conteudo", "social media", "growth", "crm", "cmo"],
+    tecnologia: ["tecnologia", "tech", "ti", "it", "engenharia", "engineering", "produto", "product", "cto", "cio", "devops", "software", "dados", "data", "analytics", "digital", "inovacao", "sistemas"],
+    vendas: ["vendas", "sales", "comercial", "revenue", "business development", "parceria", "account"],
+    financeiro: ["financeiro", "finance", "cfo", "contabilidade", "controladoria", "tesouraria"],
+    operacoes: ["operacoes", "operations", "supply chain", "logistica", "coo"],
+    rh: ["rh", "hr", "recursos humanos", "human resources", "people", "talent", "cultura"],
+  };
+  const SENIORITY_MAP: Record<string, string[]> = {
+    diretoria: ["diretor", "director", "vp", "vice presidente", "vice-presidente", "ceo", "cto", "cmo", "cfo", "coo", "ciso", "presidente", "head of", "head de", "country manager"],
+    gerencia: ["gerente", "manager", "coordenador", "supervisor"],
+    "c-level": ["ceo", "cto", "cmo", "cfo", "coo", "ciso", "presidente"],
+  };
+
+  const targetKws: string[] = [];
+  for (const [key, kws] of Object.entries(AREA_MAP)) {
+    if (focusN.includes(key)) targetKws.push(...kws);
+  }
+  for (const [key, kws] of Object.entries(SENIORITY_MAP)) {
+    if (focusN.includes(key)) targetKws.push(...kws);
+  }
+  if (targetKws.length === 0) {
+    targetKws.push(...focusN.split(/\s+/).filter((w) => w.length > 3));
+  }
+  return targetKws.some((kw) => roleN.includes(kw));
+}
+
 const EMAIL_REGEX = /[\w.+-]+@[\w-]+\.[a-z]{2,}/gi;
 const LINKEDIN_REGEX = /linkedin\.com\/in\/([\w-]+)/i;
 const SKIP_EMAILS = /noreply|no-reply|example|test@|info@|contact@|suporte@|contato@|admin@/i;
@@ -112,6 +149,15 @@ async function extractContactsWithHaiku(
     )
     .join("\n\n");
 
+  const roleFilter = role_focus
+    ? `\nFILTRO OBRIGATÓRIO DE CARGO: Inclua SOMENTE contatos cujo cargo seja compatível com "${role_focus}".` +
+      ` Exemplos de compatível: se alvo é "Marketing" → aceita CMO/Diretor Marketing/Head Marketing/VP Marketing.` +
+      ` Exemplos de EXCLUÍDO: se alvo é "Marketing" → rejeita Vendas/Sales/Comercial/Financeiro/Engenharia.` +
+      ` Se alvo é "Tecnologia" → rejeita Marketing/Comercial/RH.` +
+      ` Se alvo é "diretoria" → aceita qualquer Diretor/VP/Head/CEO/C-Level.` +
+      ` Se não houver nenhum contato compatível com o cargo alvo, retorne [].`
+    : "";
+
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 1024,
@@ -123,7 +169,7 @@ Regras:
 - Se linkedin_url não aparecer explicitamente no conteúdo, coloque null
 - role: use o cargo mais sênior mencionado (Diretor, Gerente, Head, VP, CEO, etc.)
 - Se encontrar múltiplos contatos por empresa, inclua todos
-- Se nenhum contato real for identificável, retorne []`,
+- Se nenhum contato real for identificável, retorne []${roleFilter}`,
     messages: [
       {
         role: "user",
@@ -196,20 +242,25 @@ export const prospectLeadsTool: ToolHandler = {
     }
 
     const maxLeads = Math.min(input.max_leads ?? 3, 8);
+    const roleFocus = input.role_focus ?? "";
 
-    // Build query targeting individual decision makers on LinkedIn
+    // role_focus goes first with quotes to anchor the search on the requested position
+    const roleQuery = roleFocus
+      ? `"${roleFocus}"`
+      : "Diretor decisor";
+
     const queryParts = [
-      input.role_focus || "decisor diretor",
-      input.segment || "",
+      roleQuery,
+      input.segment ? `setor ${input.segment}` : "",
       input.location || "Brasil",
-      input.query,
-      "LinkedIn perfil B2B empresa cargo",
+      input.query || "",
+      "LinkedIn perfil B2B empresa decisor",
     ]
       .filter(Boolean)
       .join(" ");
 
-    // Run Tavily search (fetch more results to compensate for those without names)
-    const results = await tavilySearch(queryParts, maxLeads * 3);
+    // Run Tavily search (fetch more to compensate after role filtering)
+    const results = await tavilySearch(queryParts, maxLeads * 4);
 
     if (results.length === 0) {
       return {
@@ -219,11 +270,11 @@ export const prospectLeadsTool: ToolHandler = {
       };
     }
 
-    // Extract structured contacts with Haiku
+    // Extract structured contacts with Haiku (prompt enforces role_focus filter)
     const rawContacts = await extractContactsWithHaiku(
       results,
       input.segment ?? "",
-      input.role_focus ?? ""
+      roleFocus
     );
 
     if (rawContacts.length === 0) {
@@ -236,8 +287,22 @@ export const prospectLeadsTool: ToolHandler = {
       };
     }
 
+    // Post-filter: discard contacts whose extracted role doesn't match the requested focus
+    const roleFiltered = roleFocus
+      ? rawContacts.filter((c) => !c.role || roleMatchesTarget(c.role, roleFocus))
+      : rawContacts;
+
+    if (roleFiltered.length === 0) {
+      return {
+        found: 0,
+        message: `Nenhum contato com cargo compatível com "${roleFocus}" encontrado. Tente ampliar o cargo alvo ou mudar o segmento.`,
+        query: queryParts,
+        rawContacts: rawContacts.map((c) => ({ name: c.name, role: c.role, company: c.company })),
+      };
+    }
+
     // Enrich each contact: pattern inference + deep web search per lead
-    const candidates = rawContacts.filter((c) => c.name && c.company).slice(0, maxLeads);
+    const candidates = roleFiltered.filter((c) => c.name && c.company).slice(0, maxLeads);
 
     const leads = await Promise.all(
       candidates.map(async (c) => {
