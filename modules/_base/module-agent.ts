@@ -170,26 +170,29 @@ Se \`handoff=true\`, envia alerta automático no Telegram — informe o usuário
   const contextSection = contextTools.length > 0 ? `
 ## Ferramentas de Contexto, Leads e Prospecção
 
-Antes de raciocinar, recupere contexto relevante:
 ${contextTools.map((t) => `- ${t}`).join("\n")}
 ${senseInstruction}
-**Prioridade de execução para pedidos comerciais:**
-1. **Consulta da base existente** → \`search_leads_rag\` ou \`query_leads\` para leads já conhecidos
-2. **Validação da base** → \`validate_leads\` para relatório de qualidade, status HOT/WARM, cobertura de email
-3. **Busca de novos leads** → \`find_new_leads\` para descobrir contatos que ainda NÃO estão na base
-4. **Enriquecimento** → \`enrich_company\` para obter nome/email/LinkedIn de decisores de empresas específicas
-5. **Skills e raciocínio** → \`search_skills\` + \`run_skill\` para demais tarefas comerciais
-6. Raciocínio próprio — somente se nenhuma fonte acima resolver
+## ⚡ REGRA ABSOLUTA — Busca de Leads
 
-**Quando usar cada ferramenta de leads:**
-- "quantos leads HOT temos?" → \`validate_leads\`
-- "quem são os leads da TOTVS?" → \`search_leads_rag\` ou \`query_leads\`
-- "buscar 1 lead" / "prospectar" / "encontrar decisor" / "lead novo" → \`prospect_leads\` (retorna nome+email+LinkedIn completo)
-- "buscar leads de telecom" sem necessidade de contato completo → \`find_new_leads\`
-- "enriquecer Claro, Vivo, TIM" / "quem é o CMO da AWS Brasil?" → \`enrich_company\`
-- "validar base de leads" / "relatório de qualidade" → \`validate_leads\`
+**Quando o usuário pedir "buscar lead", "encontrar decisor", "prospectar", "me traga um lead", "lead novo", "lead de [segmento]":**
 
-**IMPORTANTE:** Para \`enrich_company\`, avise o usuário que pode levar 30-90s e mostre os resultados completos quando retornar.
+1. Execute \`prospect_leads\` IMEDIATAMENTE — sem perguntar, sem consultar base interna, sem etapas intermediárias.
+2. O tool já faz tudo automaticamente: busca na web → extrai contato → infere email por padrão → valida email via busca web → retorna nome + cargo + empresa + email + LinkedIn.
+3. Apresente o resultado completo para o usuário — todos os campos retornados.
+4. NÃO use \`query_leads\` ou \`search_leads_rag\` quando o pedido for por leads NOVOS/EXTERNOS.
+
+**Quando usar cada ferramenta:**
+| Pedido | Ferramenta |
+|--------|-----------|
+| "buscar lead", "prospectar", "encontrar decisor", "lead novo" | \`prospect_leads\` direto |
+| "quantos leads HOT temos?" / "validar nossa base" | \`validate_leads\` |
+| "quem são os leads da TOTVS na nossa base?" | \`search_leads_rag\` ou \`query_leads\` |
+| "enriquecer Claro, Vivo, TIM" / "quem é o CMO da AWS?" | \`enrich_company\` |
+| "classifica essa resposta do LinkedIn: [texto]" | \`classify_linkedin_reply\` |
+
+**NUNCA:** consulte a base interna (\`query_leads\`/\`search_leads_rag\`) quando o usuário pedir lead novo ou externo.
+**SEMPRE:** entregue o resultado completo sem pedir confirmação.
+**IMPORTANTE:** Para \`enrich_company\`, avise que pode levar 30-90s.
 ` : `
 ## Ferramentas disponíveis
 

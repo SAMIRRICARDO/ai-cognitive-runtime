@@ -25,6 +25,13 @@ interface RawContact {
   source: string;
 }
 
+interface WebEnrichResult {
+  realEmail: string | null;
+  emailSource: "web" | "pattern";
+  linkedin: string | null;
+  extraInfo: string | null;
+}
+
 async function tavilySearch(query: string, max: number): Promise<TavilyResult[]> {
   if (!env.TAVILY_API_KEY) return [];
   const r = await fetch("https://api.tavily.com/search", {
@@ -44,6 +51,51 @@ async function tavilySearch(query: string, max: number): Promise<TavilyResult[]>
 
 function stripFences(s: string): string {
   return s.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
+}
+
+const EMAIL_REGEX = /[\w.+-]+@[\w-]+\.[a-z]{2,}/gi;
+const LINKEDIN_REGEX = /linkedin\.com\/in\/([\w-]+)/i;
+const SKIP_EMAILS = /noreply|no-reply|example|test@|info@|contact@|suporte@|contato@|admin@/i;
+
+async function deepEnrichContact(contact: RawContact, domain: string | null): Promise<WebEnrichResult> {
+  const query = `"${contact.name}" "${contact.company}" email contato linkedin`;
+  const results = await tavilySearch(query, 4);
+
+  let realEmail: string | null = null;
+  let linkedin: string | null = contact.linkedin_url;
+  const infoSnippets: string[] = [];
+
+  for (const r of results) {
+    const text = `${r.title} ${r.content} ${r.url}`;
+
+    if (!realEmail) {
+      const emails = text.match(EMAIL_REGEX) ?? [];
+      for (const e of emails) {
+        if (SKIP_EMAILS.test(e)) continue;
+        if (domain && e.toLowerCase().includes(domain.replace(/^www\./, "").split(".")[0]!)) {
+          realEmail = e.toLowerCase();
+          break;
+        }
+        if (!realEmail) realEmail = e.toLowerCase();
+      }
+    }
+
+    if (!linkedin) {
+      const m = text.match(LINKEDIN_REGEX);
+      if (m) linkedin = `https://www.linkedin.com/in/${m[1]}`;
+    }
+
+    if (r.content.length > 60) {
+      infoSnippets.push(r.content.slice(0, 120));
+    }
+  }
+
+  return {
+    realEmail,
+    emailSource: realEmail ? "web" : "pattern",
+    linkedin,
+    extraInfo: infoSnippets.slice(0, 2).join(" | ") || null,
+  };
 }
 
 async function extractContactsWithHaiku(
@@ -184,32 +236,43 @@ export const prospectLeadsTool: ToolHandler = {
       };
     }
 
-    // Enrich each contact with email inference
-    const leads = rawContacts
-      .filter((c) => c.name && c.company)
-      .slice(0, maxLeads)
-      .map((c) => {
+    // Enrich each contact: pattern inference + deep web search per lead
+    const candidates = rawContacts.filter((c) => c.name && c.company).slice(0, maxLeads);
+
+    const leads = await Promise.all(
+      candidates.map(async (c) => {
         const emailResult = emailPatternResolver.resolve({
           name: c.name!,
           company: c.company!,
         });
+        const patternEmail = emailResult.guessedEmails[0];
+        const domain = emailResult.domain ?? null;
 
-        const bestEmail = emailResult.guessedEmails[0];
+        // Deep web search for real email + LinkedIn + extra context
+        const web = await deepEnrichContact(c, domain);
+
+        // Prefer web-found email over pattern; fallback to pattern
+        const finalEmail = web.realEmail ?? patternEmail?.email ?? null;
+        const emailSource = web.realEmail ? "web" : (patternEmail ? "pattern" : null);
 
         return {
           name: c.name,
           role: c.role ?? "—",
           company: c.company,
-          email: bestEmail?.email ?? null,
-          email_confidence: bestEmail?.confidence ?? null,
-          email_pattern: emailResult.patternUsed ?? null,
-          domain: emailResult.domain ?? null,
-          linkedin: c.linkedin_url ?? null,
+          email: finalEmail,
+          email_source: emailSource,
+          email_confidence: web.realEmail ? "high" : (patternEmail?.confidence ?? null),
+          domain,
+          linkedin: web.linkedin ?? c.linkedin_url ?? null,
+          extra_info: web.extraInfo,
           source: c.source,
         };
-      });
+      })
+    );
 
-    if (leads.length === 0) {
+    const validLeads = leads.filter((l) => l.name && l.company);
+
+    if (validLeads.length === 0) {
       return {
         found: 0,
         message: "Contatos detectados mas sem nome+empresa suficientes para enriquecimento.",
@@ -218,10 +281,12 @@ export const prospectLeadsTool: ToolHandler = {
     }
 
     return {
-      found: leads.length,
+      found: validLeads.length,
       query: queryParts,
-      leads,
-      note: "Email inferido por padrão corporativo — valide antes do outreach.",
+      leads: validLeads,
+      note: validLeads.some((l) => l.email_source === "web")
+        ? "Email encontrado via busca web."
+        : "Email inferido por padrão corporativo — valide antes do outreach.",
     };
   },
 };
