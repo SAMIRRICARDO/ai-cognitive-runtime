@@ -21,7 +21,7 @@ export const DEMO_PREVIEW_MODULES = [
 ] as const;
 
 export const DEMO_ENTERPRISE_MESSAGE =
-  "⭐ Disponível na versão Enterprise. Entre em contato: vrashows.com.br";
+  "⭐ Disponível na versão Enterprise. Acesse: www.vrashows.com.br/vraxia";
 
 export type DemoActiveModule  = typeof DEMO_ACTIVE_MODULES[number];
 export type DemoPreviewModule = typeof DEMO_PREVIEW_MODULES[number];
