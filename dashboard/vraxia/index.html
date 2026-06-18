@@ -77,6 +77,11 @@
     .nav-item svg{flex-shrink:0;}
     .module-card{cursor:pointer;transition:all .3s;}
     .module-card.active-module{border-color:rgba(96,165,250,.4)!important;background:rgba(59,130,246,.06)!important;}
+    .module-card.preview-module{cursor:pointer;position:relative;filter:grayscale(.4);}
+    .module-card.preview-module:hover{border-color:rgba(251,191,36,.3)!important;box-shadow:0 0 20px rgba(251,191,36,.08);}
+    .preview-lock-badge{position:absolute;top:10px;right:10px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:6px;padding:2px 7px;font-size:9px;font-family:'JetBrains Mono',monospace;color:#fbbf24;letter-spacing:.05em;}
+    #enterprise-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+    #enterprise-modal.hidden{display:none;}
 
     /* Chat */
     #chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
@@ -153,6 +158,27 @@
     </button>
     <p id="login-error" class="text-red-400 text-xs mt-3 hidden"></p>
     <p class="text-gray-700 text-xs mt-6">Modo DEV: deixe a API Key vazia e use DEV_MODE=true no servidor</p>
+  </div>
+</div>
+
+<!-- ══ ENTERPRISE MODAL ══════════════════════════════════════════════════════ -->
+<div id="enterprise-modal" class="hidden">
+  <div class="glass-strong rounded-3xl p-10 max-w-sm mx-4 text-center glow-purple" style="border-color:rgba(251,191,36,.25)">
+    <div style="width:52px;height:52px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="text-yellow-400 font-mono text-xs tracking-widest mb-2 uppercase">Enterprise</div>
+    <h3 class="text-white font-bold text-lg mb-3">Módulo Exclusivo</h3>
+    <p class="text-gray-400 text-sm mb-6 leading-relaxed">Este módulo está disponível na versão <strong class="text-white">Enterprise</strong> do VRAXIA OS.</p>
+    <div class="glass rounded-xl p-4 mb-6 text-left space-y-2">
+      <div class="flex items-center gap-2 text-xs text-gray-300"><span class="text-green-400">✓</span> Todos os módulos desbloqueados</div>
+      <div class="flex items-center gap-2 text-xs text-gray-300"><span class="text-green-400">✓</span> Multi-tenant BYOK</div>
+      <div class="flex items-center gap-2 text-xs text-gray-300"><span class="text-green-400">✓</span> Memória semântica + RAG</div>
+      <div class="flex items-center gap-2 text-xs text-gray-300"><span class="text-green-400">✓</span> Orquestração multi-agente</div>
+      <div class="flex items-center gap-2 text-xs text-gray-300"><span class="text-green-400">✓</span> SLA + suporte dedicado</div>
+    </div>
+    <a href="https://vrashows.com.br" target="_blank" class="block w-full py-3 bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-semibold rounded-xl hover:opacity-90 transition text-sm mb-3">Conhecer versão Enterprise</a>
+    <button onclick="closeEnterpriseModal()" class="text-xs text-gray-500 hover:text-gray-300 transition">Fechar</button>
   </div>
 </div>
 
@@ -691,19 +717,24 @@ function renderModuleGrid() {
   grid.innerHTML = modules.map(m => {
     if (m.active) { activeCount++; skillSum += m.skillCount || 0; }
     const icon = MODULE_ICONS[m.id] || 'cpu';
-    const color = MODULE_COLORS[m.id] || '#60a5fa';
-    return `<div class="glass rounded-xl p-5 card-hover module-card ${m.active ? '' : 'opacity-40'}" onclick="openModule('${m.id}')">
+    const color = m.preview ? '#f59e0b' : (MODULE_COLORS[m.id] || '#60a5fa');
+    const cardClass = m.preview ? 'preview-module' : (m.active ? '' : 'opacity-40');
+    const badge = m.preview
+      ? `<span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.3)">ENTERPRISE</span>`
+      : `<span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:${color}15;color:${color};border:1px solid ${color}30">${m.active ? 'ATIVO' : 'INATIVO'}</span>`;
+    return `<div class="glass rounded-xl p-5 card-hover module-card ${cardClass}" onclick="openModule('${m.id}')">
+      ${m.preview ? '<div class="preview-lock-badge">🔒 Enterprise</div>' : ''}
       <div class="flex items-start justify-between mb-4">
         <div style="width:40px;height:40px;background:${color}20;border-radius:12px;display:flex;align-items:center;justify-content:center;">
           <i data-lucide="${icon}" style="width:20px;height:20px;color:${color}"></i>
         </div>
-        <span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:${color}15;color:${color};border:1px solid ${color}30">${m.active ? 'ATIVO' : 'INATIVO'}</span>
+        ${badge}
       </div>
       <h3 class="text-white font-semibold text-sm mb-1 capitalize">${m.name || m.id}</h3>
       <p class="text-gray-500 text-xs mb-3 leading-relaxed line-clamp-2">${m.description || ''}</p>
       <div class="flex items-center justify-between text-xs">
         <span class="text-gray-600"><span class="font-mono text-white">${m.skillCount || 0}</span> skills</span>
-        <span class="text-gray-700">${m.plan_min || 'starter'}</span>
+        <span class="text-gray-700">${m.preview ? 'enterprise' : (m.plan_min || 'starter')}</span>
       </div>
     </div>`;
   }).join('');
@@ -718,9 +749,11 @@ function renderSidebarModules() {
     const icon  = MODULE_ICONS[m.id]  || 'cpu';
     const color = MODULE_COLORS[m.id] || '#60a5fa';
     const navId = m.id === 'comercial' ? '' : `id="nav-module-${m.id}"`;
-    return `<div ${navId} class="nav-item ${m.active ? '' : 'opacity-40'}" onclick="openModule('${m.id}')">
-      <i data-lucide="${icon}" style="width:14px;height:14px;color:${color}"></i>
+    const lockBadge = m.preview ? `<span style="font-size:8px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:5px;padding:1px 4px;color:#fbbf24;margin-left:auto;">ENT</span>` : '';
+    return `<div ${navId} class="nav-item ${m.preview ? 'opacity-60' : (m.active ? '' : 'opacity-40')}" onclick="openModule('${m.id}')">
+      <i data-lucide="${icon}" style="width:14px;height:14px;color:${m.preview ? '#f59e0b' : color}"></i>
       <span class="capitalize">${m.name || m.id}</span>
+      ${lockBadge}
     </div>`;
   }).join('');
   const badge = document.getElementById('tenant-badge');
@@ -779,7 +812,16 @@ function showView(name) {
   lucide.createIcons();
 }
 
+function openEnterpriseModal() {
+  document.getElementById('enterprise-modal').classList.remove('hidden');
+}
+function closeEnterpriseModal() {
+  document.getElementById('enterprise-modal').classList.add('hidden');
+}
+
 function openModule(moduleId) {
+  const mod = modules.find(m => m.id === moduleId);
+  if (mod?.preview) { openEnterpriseModal(); return; }
   if (moduleId === 'comercial') {
     const url = `/vraxia/comercial.html?api=${encodeURIComponent(API_URL)}&key=${encodeURIComponent(API_KEY)}`;
     window.open(url, '_blank');
@@ -1469,6 +1511,9 @@ function renderMarkdown(text) {
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
   document.getElementById('login-key').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('enterprise-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('enterprise-modal')) closeEnterpriseModal();
+  });
 });
 </script>
 </body>

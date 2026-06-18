@@ -6,6 +6,8 @@ import fs from "node:fs";
 import { AVAILABLE_MODULES } from "../../modules/index.js";
 import { SkillRegistry } from "../../modules/_base/skill-registry.js";
 import type { AuthenticatedRequest } from "../middleware/auth.js";
+import { isDemoMode } from "../../config/env.js";
+import { isDemoPreview, DEMO_ENTERPRISE_MESSAGE } from "../../config/demo-config.js";
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,6 +37,7 @@ modulesRouter.get("/", (req, res) => {
   const modules = AVAILABLE_MODULES.map((id) => {
     const meta = getModuleMeta(id);
     if (!meta) return null;
+    const preview = isDemoMode && isDemoPreview(id);
     return {
       id,
       name: meta.name,
@@ -42,6 +45,8 @@ modulesRouter.get("/", (req, res) => {
       department: meta.department,
       skillCount: getSkillCount(id),
       active: activeModules.includes(id),
+      preview,
+      demo_message: preview ? DEMO_ENTERPRISE_MESSAGE : undefined,
       plan_min: meta.plan_min ?? "starter",
       tags: meta.tags ?? [],
     };

@@ -47,6 +47,7 @@ const envSchema = z.object({
   // ── Cost / Dev mode ───────────────────────────────────────────────────────
   DEV_MODE:           z.string().optional().default("false"),
   CHEAP_MODE:         z.string().optional().default("false"),
+  DEMO_MODE:          z.string().optional().default("false"),
   MAX_TOOL_ITERATIONS: z.coerce.number().int().positive().optional(),
   MAX_OUTPUT_TOKENS:   z.coerce.number().int().positive().optional(),
 });
@@ -70,3 +71,4 @@ export const env = {
 // Derived helpers — read once at startup
 // DEV_MODE apenas bypassa auth, não implica cheap mode
 export const isCheapMode = env.CHEAP_MODE === "true";
+export const isDemoMode  = env.DEMO_MODE  === "true";
