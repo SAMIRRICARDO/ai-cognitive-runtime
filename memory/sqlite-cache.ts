@@ -136,6 +136,16 @@ export class IALeadsCache {
     return Boolean(row);
   }
 
+  clearAcquiredCompanies(): number {
+    const result = this.db.prepare("DELETE FROM companies WHERE status = 'acquired'").run();
+    return result.changes;
+  }
+
+  countAcquiredCompanies(): number {
+    const row = this.db.prepare("SELECT COUNT(*) as n FROM companies WHERE status = 'acquired'").get() as { n: number };
+    return row?.n ?? 0;
+  }
+
   upsertCompany(input: {
     company: string;
     website?: string;

@@ -857,7 +857,7 @@ function enrichLead(lead: EnterpriseLead): DailyValidatedLead {
   };
 }
 
-function buildDailyLeads() {
+function buildDailyLeads(poolRotated = false) {
   const localCache = getIALeadsCache();
   const state = loadState();
   const knownCompanies = loadKnownCompanies();
@@ -907,6 +907,23 @@ function buildDailyLeads() {
     selectedHashes.push(hash);
     seenToday.add(normalized);
     if (selected.length >= MAX_DAILY_LEADS) break;
+  }
+
+  // Pool exausto: todos os candidatos já foram processados → rotacionar
+  if (selected.length === 0 && duplicatesRemoved >= candidatePool.length && !poolRotated) {
+    const cleared = localCache.clearAcquiredCompanies();
+    saveState({ ...state, processedCompanyHashes: [] });
+    appendLog({
+      timestamp: new Date().toISOString(),
+      date: localDateKey(new Date()),
+      status: "skipped",
+      leads: 0,
+      duplicatesRemoved,
+      errors: [],
+      executionTimeMs: 0,
+      reason: `pool_rotated: cleared ${cleared} entries from cache, restarting cycle`,
+    });
+    return buildDailyLeads(true);
   }
 
   return { leads: selected, selectedHashes, duplicatesRemoved, errors };

@@ -4,7 +4,7 @@ Governanca permanente do runtime IALEADS. Todos os agentes, automacoes, workers 
 
 ## Cheap Mode Global
 
-- Usar `gpt-4o-mini` para sourcing e enrichment simples.
+- Usar `claude-haiku-4-5-20251001` para sourcing e enrichment simples (modelo cheap Claude-nativo).
 - Evitar prompts longos.
 - Evitar chain-of-thought.
 - Evitar reasoning desnecessario.
@@ -74,8 +74,9 @@ Os parametros persistentes obrigatorios ficam em `config/runtime-config.json`:
 - `maxDailyRuns`: 1
 - `runTime`: "07:30"
 - `weekendBlocked`: true
-- `preferredModel`: "gpt-4o-mini"
+- `preferredModel`: "claude-haiku-4-5-20251001"
 - `maxOutputTokens`: 300
+- `poolRotationDays`: 90
 
 ## SaaS Readiness
 
