@@ -8,6 +8,7 @@ import { modulesRouter } from "./routes/modules.js";
 import { runRouter } from "./routes/run.js";
 import { usageRouter } from "./routes/usage.js";
 import { adminRouter } from "./routes/admin.js";
+import { leadsRouter } from "./routes/leads.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -79,6 +80,7 @@ function devPassthrough(
 app.use("/api/modules", devPassthrough, modulesRouter);
 app.use("/api/run",     devPassthrough, runRouter);
 app.use("/api/usage",   devPassthrough, usageRouter);
+app.use("/api/leads",   devPassthrough, leadsRouter);
 
 // ── Admin Routes (always require admin key, no dev passthrough) ───────────────
 app.use("/admin", adminRouter);

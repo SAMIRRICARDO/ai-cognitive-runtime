@@ -255,10 +255,10 @@
       <div class="glass rounded-xl p-5 text-center card-hover" id="card-campaigns"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-campaigns">12</div><div class="text-xs text-gray-500 mt-1">Campanhas Ativas</div><div class="delta-tag delta-up" id="delta-campaigns">3 novas</div></div>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="glass rounded-xl p-5 text-center card-hover" id="card-cache"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-cache">89%</div><div class="text-xs text-gray-500 mt-1">Cache Hits</div><div class="delta-tag delta-up" id="delta-cache">↑ 5%</div></div>
-      <div class="glass rounded-xl p-5 text-center card-hover" id="card-savings"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-savings">R$ 4.2k</div><div class="text-xs text-gray-500 mt-1">Economia IA/mês</div><div class="delta-tag delta-up" id="delta-savings">↑ 31%</div></div>
-      <div class="glass rounded-xl p-5 text-center card-hover" id="card-cost"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-cost">$0.47</div><div class="text-xs text-gray-500 mt-1">Custo OpenAI/Claude</div><div class="delta-tag delta-neutral" id="delta-cost">por lead</div></div>
-      <div class="glass rounded-xl p-5 text-center card-hover" id="card-followups"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-followups">189</div><div class="text-xs text-gray-500 mt-1">Follow-ups Ativos</div><div class="delta-tag delta-up" id="delta-followups">D+3 agendado</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-cache"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-cache">—</div><div class="text-xs text-gray-500 mt-1">Leads HOT</div><div class="delta-tag delta-up" id="delta-cache">Alta prioridade</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-savings"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-savings">—</div><div class="text-xs text-gray-500 mt-1">Leads WARM</div><div class="delta-tag delta-neutral" id="delta-savings">Em nurturing</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-cost"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-cost">—</div><div class="text-xs text-gray-500 mt-1">LinkedIn DMs Ativos</div><div class="delta-tag delta-neutral" id="delta-cost">Aguardando resposta</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-followups"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-followups">—</div><div class="text-xs text-gray-500 mt-1">LinkedIn Pipeline</div><div class="delta-tag delta-up" id="delta-followups">Total rastreados</div></div>
     </div>
   </section>
 
@@ -284,17 +284,13 @@
 
   <!-- CAMPAIGNS TABLE -->
   <section class="pb-10">
-    <h2 class="text-2xl font-bold text-white mb-5">Relatório de Campanhas</h2>
+    <h2 class="text-2xl font-bold text-white mb-5">Relatório de Campanhas <span id="campaigns-badge" class="badge text-blue-300 text-xs ml-2 align-middle"></span></h2>
     <div class="glass rounded-2xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-xs md:text-sm">
           <thead><tr class="border-b border-white/5 text-gray-500"><th class="text-left p-4 font-medium">Campanha</th><th class="text-left p-4 font-medium">Leads</th><th class="text-left p-4 font-medium">Enviados</th><th class="text-left p-4 font-medium">Delivery</th><th class="text-left p-4 font-medium">Status</th></tr></thead>
-          <tbody class="text-gray-300">
-            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">SaaS B2B - Enterprise</td><td class="p-4">412</td><td class="p-4">389</td><td class="p-4 text-green-400">98.1%</td><td class="p-4"><span class="status-hot px-2 py-1 rounded text-xs font-medium">HOT</span></td></tr>
-            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">Fintech - Scale-ups</td><td class="p-4">287</td><td class="p-4">271</td><td class="p-4 text-green-400">96.8%</td><td class="p-4"><span class="status-hot px-2 py-1 rounded text-xs font-medium">HOT</span></td></tr>
-            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">HealthTech - Series A+</td><td class="p-4">156</td><td class="p-4">148</td><td class="p-4 text-green-400">97.4%</td><td class="p-4"><span class="status-warm px-2 py-1 rounded text-xs font-medium">WARM</span></td></tr>
-            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">EdTech - Corporativo</td><td class="p-4">203</td><td class="p-4">194</td><td class="p-4 text-green-400">97.9%</td><td class="p-4"><span class="status-warm px-2 py-1 rounded text-xs font-medium">WARM</span></td></tr>
-            <tr class="hover:bg-white/[0.02]"><td class="p-4 font-medium">RetailTech - Mid-Market</td><td class="p-4">341</td><td class="p-4">327</td><td class="p-4 text-green-400">95.6%</td><td class="p-4"><span class="status-hot px-2 py-1 rounded text-xs font-medium">HOT</span></td></tr>
+          <tbody id="campaigns-tbody" class="text-gray-300">
+            <tr><td colspan="5" class="p-6 text-center text-gray-600 text-xs font-mono">Carregando dados reais...</td></tr>
           </tbody>
         </table>
       </div>
@@ -573,38 +569,95 @@ function netLoop(now){
 requestAnimationFrame(netLoop);
 window.addEventListener('resize',()=>{buildOffWorkers();buildNetAgents();});
 
-// ══ REALTIME STATS ENGINE ════════════════════════════════════════════════════
-const stats={
-  leads:    {val:2847,inc:[4,8],   fmt:v=>Math.round(v).toLocaleString('pt-BR'),el:'stat-leads',   card:'card-leads',   delta:'delta-leads',   dc:'delta-up',  dt:()=>`↑ ${(Math.random()*5+20).toFixed(1)}%`},
-  emails:   {val:1429,inc:[2,5],   fmt:v=>Math.round(v).toLocaleString('pt-BR'),el:'stat-emails',  card:'card-emails',  delta:'delta-emails',  dc:'delta-up',  dt:()=>`↑ ${(Math.random()*4+16).toFixed(1)}%`},
-  delivery: {val:97.3,inc:[-.1,.15],fmt:v=>Math.min(99.9,Math.max(94,v)).toFixed(1)+'%',el:'stat-delivery',card:'card-delivery',delta:'delta-delivery',dc:'delta-neutral',dt:()=>'Estável'},
-  campaigns:{val:12,  inc:[0,0],   fmt:v=>Math.round(v),el:'stat-campaigns',card:'card-campaigns',delta:'delta-campaigns',dc:'delta-up',dt:()=>`${Math.floor(Math.random()*2)+2} novas`},
-  cache:    {val:89,  inc:[-.3,.5],fmt:v=>Math.min(99,Math.max(78,v)).toFixed(0)+'%',el:'stat-cache',card:'card-cache',delta:'delta-cache',dc:'delta-up',dt:()=>`↑ ${(Math.random()*3+4).toFixed(1)}%`},
-  savings:  {val:4200,inc:[15,40], fmt:v=>'R$ '+(v/1000).toFixed(1)+'k',el:'stat-savings',card:'card-savings',delta:'delta-savings',dc:'delta-up',dt:()=>`↑ ${(Math.random()*6+28).toFixed(0)}%`},
-  cost:     {val:.47, inc:[-.005,.005],fmt:v=>'$'+Math.max(.38,Math.min(.58,v)).toFixed(2),el:'stat-cost',card:'card-cost',delta:'delta-cost',dc:'delta-neutral',dt:()=>'por lead'},
-  followups:{val:189, inc:[1,3],   fmt:v=>Math.round(v),el:'stat-followups',card:'card-followups',delta:'delta-followups',dc:'delta-up',dt:()=>`D+${Math.floor(Math.random()*2)+3} agendado`}
-};
-const chartH=[45,62,55,78,85,92,100];
+// ══ REAL STATS ENGINE ════════════════════════════════════════════════════════
+const LEADS_API = (API_URL || 'http://localhost:3000') + '/api/leads/stats';
+let realStats = null;
+
 function flashEl(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),900);}
-function updateStats(){
-  const keys=Object.keys(stats),cnt=2+Math.floor(Math.random()*3);
-  keys.sort(()=>.5-Math.random()).slice(0,cnt).forEach(k=>{
-    const s=stats[k];const[lo,hi]=s.inc;s.val+=lo+Math.random()*(hi-lo);
-    const vEl=document.getElementById(s.el),cEl=document.getElementById(s.card),dEl=document.getElementById(s.delta);
-    if(vEl){vEl.textContent=s.fmt(s.val);flashEl(vEl,'stat-flash');}
-    if(cEl)flashEl(cEl,'card-ping');
-    if(dEl){dEl.textContent=s.dt();dEl.className='delta-tag '+s.dc;}
+
+function setStatEl(id, val, cardId) {
+  const el = document.getElementById(id);
+  const ce = document.getElementById(cardId);
+  if (el) { el.textContent = val; flashEl(el, 'stat-flash'); }
+  if (ce) flashEl(ce, 'card-ping');
+}
+
+function renderCampaigns(campaigns) {
+  const tbody = document.getElementById('campaigns-tbody');
+  const badge = document.getElementById('campaigns-badge');
+  if (!tbody || !campaigns?.length) return;
+  if (badge) badge.textContent = campaigns.length + ' campanhas';
+  tbody.innerHTML = campaigns.map((c, i) => {
+    const statusCls = c.status === 'HOT' ? 'status-hot' : c.status === 'WARM' ? 'status-warm' : 'border border-white/10 text-gray-400';
+    const delivStr = c.delivery > 0 ? `<span class="text-green-400">${c.delivery}%</span>` : `<span class="text-gray-600">—</span>`;
+    const sentStr = c.sent > 0 ? c.sent : '<span class="text-gray-600">—</span>';
+    const border = i < campaigns.length - 1 ? 'border-b border-white/5' : '';
+    return `<tr class="${border} hover:bg-white/[0.02]">
+      <td class="p-4 font-medium">${escHtml(c.name)}</td>
+      <td class="p-4">${c.leads.toLocaleString('pt-BR')}</td>
+      <td class="p-4">${sentStr}</td>
+      <td class="p-4">${delivStr}</td>
+      <td class="p-4"><span class="${statusCls} px-2 py-1 rounded text-xs font-medium">${c.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderChart(dailyVolume) {
+  if (!dailyVolume?.length) return;
+  // Last 7 data points (or pad to 7 if fewer)
+  const padded = [...Array(Math.max(0, 7 - dailyVolume.length)).fill({ date: '', count: 0 }), ...dailyVolume.slice(-7)];
+  const maxCount = Math.max(...padded.map(d => d.count), 1);
+  padded.forEach((d, i) => {
+    const pct = Math.round((d.count / maxCount) * 100);
+    const bar = document.getElementById('cb-' + i);
+    const lbl = document.getElementById('cl-' + i);
+    if (bar) { bar.style.height = (pct || 5) + '%'; bar.classList.add('animating'); setTimeout(() => bar.classList.remove('animating'), 1200); }
+    if (lbl) lbl.textContent = d.count > 0 ? d.count : '—';
   });
-  const uc=1+Math.floor(Math.random()*3);
-  for(let i=0;i<uc;i++){
-    const idx=Math.floor(Math.random()*7);const nH=Math.max(20,Math.min(100,chartH[idx]+(-8+Math.random()*16)));chartH[idx]=nH;
-    const bar=document.getElementById('cb-'+idx),lbl=document.getElementById('cl-'+idx);
-    if(bar){bar.style.height=nH+'%';bar.classList.add('animating');setTimeout(()=>bar.classList.remove('animating'),1200);}
-    if(lbl)lbl.textContent=Math.round(nH)+'%';
+}
+
+async function fetchAndApplyStats() {
+  try {
+    const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
+    const r = await fetch(LEADS_API, { headers });
+    if (!r.ok) return;
+    const d = await r.json();
+    realStats = d;
+
+    setStatEl('stat-leads',     d.totalLeads.toLocaleString('pt-BR'), 'card-leads');
+    setStatEl('stat-emails',    d.emailsSent.toLocaleString('pt-BR'), 'card-emails');
+    setStatEl('stat-delivery',  d.deliveryRate.toFixed(1) + '%',       'card-delivery');
+    setStatEl('stat-campaigns', d.activeCampaigns,                     'card-campaigns');
+    setStatEl('stat-cache',     d.hotLeads.toLocaleString('pt-BR'),    'card-cache');
+    setStatEl('stat-savings',   d.warmLeads.toLocaleString('pt-BR'),   'card-savings');
+    setStatEl('stat-cost',      d.linkedinActive,                      'card-cost');
+    setStatEl('stat-followups', d.linkedinTotal,                       'card-followups');
+
+    // Delta labels
+    const el = (id) => document.getElementById(id);
+    if (el('delta-leads'))     el('delta-leads').textContent     = d.hotLeads + ' HOT';
+    if (el('delta-emails'))    el('delta-emails').textContent    = d.emailsBounced + ' bounce';
+    if (el('delta-delivery'))  el('delta-delivery').textContent  = 'Estável';
+    if (el('delta-campaigns')) el('delta-campaigns').textContent = d.activeCampaigns + ' ativas';
+
+    renderCampaigns(d.campaigns);
+    renderChart(d.dailyVolume);
+  } catch(e) {
+    console.warn('leads/stats fetch failed:', e.message);
   }
 }
-function scheduleNext(){const d=1800+Math.random()*1400;setTimeout(()=>{updateStats();scheduleNext();},d);}
-scheduleNext();setTimeout(updateStats,400);
+
+// Initial load + refresh every 60s
+fetchAndApplyStats();
+setInterval(fetchAndApplyStats, 60000);
+
+// Light visual pulse (no fake increments — just card ping animation every 3s)
+setInterval(() => {
+  const ids = ['card-leads','card-emails','card-delivery','card-campaigns','card-cache','card-savings','card-cost','card-followups'];
+  const pick = ids[Math.floor(Math.random() * ids.length)];
+  const el = document.getElementById(pick);
+  if (el) flashEl(el, 'card-ping');
+}, 3000);
 
 lucide.createIcons();
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});},{threshold:.1});
