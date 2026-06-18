@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import { handleLinkedInWebhook, type LinkedInWebhookPayload } from './linkedinWebhook.js';
+import { runCommercialSense, type SenseResult } from '../agents/sense/senseCore.js';
 
 // Load .env before anything else
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -48,7 +49,23 @@ app.post('/webhook/waalaxy', async (request: FastifyRequest, reply: FastifyReply
   }
 });
 
-app.get('/health', async () => ({ status: 'ok', agent: 'VRAXIA SDR' }));
+// ── VRAXIA SENSE — percepção proativa comercial ────────────────────────────
+// Entrada separada do /webhook/waalaxy existente.
+// Rota: POST /sense/commercial
+// Aceita: { prospect_name, company, job_title, linkedin_url, message_content }
+// Fluxo: Nível 0 (filtro grátis) → Nível 1 (Haiku triagem) → Nível 2 (classify + Telegram)
+app.post('/sense/commercial', async (request: FastifyRequest, reply: FastifyReply) => {
+  try {
+    const event = request.body as Parameters<typeof runCommercialSense>[0];
+    const result: SenseResult = await runCommercialSense(event);
+    return reply.send(result);
+  } catch (err) {
+    console.error('[Sense] Erro no pipeline:', err);
+    return reply.status(500).send({ processed: false, stage: 'error', detail: String(err) });
+  }
+});
+
+app.get('/health', async () => ({ status: 'ok', agent: 'VRAXIA SDR', sense: 'active' }));
 
 const PORT = Number(process.env.PORT ?? process.env.WEBHOOK_PORT) || 3001;
 
