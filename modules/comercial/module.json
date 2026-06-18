@@ -1,10 +1,10 @@
 {
   "id": "comercial",
   "name": "Comercial AI",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "department": "Comercial & Outbound",
-  "description": "Pipeline comercial autônomo: lead sourcing, validação, RAG contextual, outbound personalizado, follow-up e analytics de campanhas",
+  "description": "Pipeline comercial autônomo: prospecção unificada com busca web + enriquecimento real de email/LinkedIn, VRAXIA Sense para classificação de respostas LinkedIn, outbound personalizado, follow-up e analytics de campanhas",
   "plan_min": "starter",
-  "agents": ["orchestrator", "rag", "validator", "outbound", "analytics", "enricher"],
-  "tags": ["outbound", "leads", "prospecção", "email", "follow-up", "pipeline", "SDR", "analytics", "enriquecimento", "validação"]
+  "agents": ["orchestrator", "rag", "validator", "outbound", "analytics", "enricher", "sense", "prospect"],
+  "tags": ["outbound", "leads", "prospecção", "email", "follow-up", "pipeline", "SDR", "analytics", "enriquecimento", "validação", "vraxia-sense", "prospect_leads", "linkedin", "scheduler"]
 }

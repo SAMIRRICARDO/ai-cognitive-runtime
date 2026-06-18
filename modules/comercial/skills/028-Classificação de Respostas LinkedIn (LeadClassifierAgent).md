@@ -1,54 +1,37 @@
 ---
 name: classificacao-de-respostas-linkedin-lead-classifier-agent
-description: Usar o LeadClassifierAgent do VRAXIA para classificar automaticamente cada resposta recebida no LinkedIn — determinando variante (A-E), intenção (high/medium/low/none), decision_power do cargo e se deve escalar para humano (handoff) — usando Haiku para processamento em batch com custo mínimo.
-tags: [classifier, linkedin, resposta, intent, handoff, variant, decision-power, qualificação, haiku]
+description: Classificar respostas recebidas no LinkedIn usando VRAXIA Sense (classify_linkedin_reply) — disponível diretamente no chat do Comercial AI. Detecta variante (A-E), intenção (high/medium/low/none), decision_power do cargo, score 1-10 e se deve escalar para humano (handoff). Envia alerta automático no Telegram quando handoff=true.
+tags: [classifier, vraxia-sense, linkedin, resposta, intent, handoff, variant, decision-power, qualificação, haiku, telegram]
 ---
 
-# Classificação de Respostas LinkedIn (LeadClassifierAgent)
+# Classificação de Respostas LinkedIn (VRAXIA Sense)
 
 ## Objetivo
-Processar automaticamente as respostas recebidas no LinkedIn usando o `LeadClassifierAgent` do VRAXIA — classificando cada resposta com variante de perfil (A-E), nível de intenção de compra (high/medium/low/none), poder de decisão do cargo e flag de handoff para escalada humana. Usa Haiku (modelo leve, temperatura 0) para máxima consistência com custo mínimo.
+Classificar cada resposta recebida no LinkedIn usando o motor **VRAXIA Sense** (`classify_linkedin_reply`) — disponível diretamente no chat do Comercial AI, sem precisar de script separado. Haiku (temperatura 0, 300 tokens) garante consistência máxima com custo mínimo. Se `handoff=true`, envia alerta automático no Telegram.
 
-## Quando usar
-- Quando prospects respondem às DMs do LinkedIn (após dispatcher)
-- Para processar um lote de respostas acumuladas do inbox do LinkedIn
-- Para decidir automaticamente quem escalar para o closer humano
-- Para gerar relatório de qualidade das respostas de uma campanha
+## Como usar no chat
 
-## Como usar
-1. Copie a resposta do prospect do LinkedIn
-2. Passe para o `LeadClassifierAgent.classify()` ou use o script `classifyReply.ts`
-3. O agente retorna JSON estruturado com todos os campos de classificação
-4. Se `handoff: true`, escala para o closer humano imediatamente
-5. Use `classifyBatch()` para processar múltiplas respostas de uma vez
+Basta colar a resposta recebida no LinkedIn:
 
-## O Prompt
 ```
-Você é o qualificador de intenção do VRAXIA. Toda resposta de um prospect precisa ser classificada antes de qualquer ação — uma resposta classificada errada pode fazer o closer perder tempo com um "não" ou perder um "sim" que ficou na fila.
-
-**USANDO VIA SCRIPT (CLI):**
-```bash
-tsx scripts/classifyReply.ts
-```
-→ Interativo: pede lead_name, company e linkedin_response
-
-**USANDO VIA CÓDIGO:**
-```typescript
-import { LeadClassifierAgent } from './agents/lead-classifier/agent.js';
-
-const classifier = await LeadClassifierAgent.create();
-
-const result = await classifier.classify({
-  linkedin_response: "Olá! Sim, temos interesse. Quando podemos agendar uma conversa?",
-  lead_name: "Ana Lima",
-  company: "Claro Brasil"
-});
-
-console.log(result);
-// { variant: "E", intent: "high", decision_power: "mid", score: 9, handoff: true, reason: "...", suggested_next_action: "..." }
+classifica essa resposta:
+"Olá! Interessante a abordagem. Trabalhamos com parceiros mas avaliamos novas opções. Me manda mais detalhes?"
 ```
 
-**VARIANTES (A-E):**
+```
+o que acha dessa resposta do LinkedIn? Ele respondeu:
+"Boa tarde! Sim, temos interesse em conhecer. Pode agendar uma conversa?"
+```
+
+```
+analisa essa mensagem que recebi:
+"Obrigado pela mensagem. No momento não estamos buscando fornecedores."
+```
+
+O agente detecta automaticamente que é uma resposta para classificar e executa `classify_linkedin_reply`.
+
+## Variantes (A-E)
+
 | Variante | Perfil da empresa |
 |---|---|
 | A | Equipe própria de eventos bem estruturada |
@@ -57,7 +40,8 @@ console.log(result);
 | D | Baixa frequência de eventos (1-2/ano) |
 | E | Interesse direto imediato — pediu info ou reunião |
 
-**INTENT (nível de intenção):**
+## Intent (nível de intenção)
+
 | Intent | Significado |
 |---|---|
 | high | Pediu reunião, mais info, ou expressou dor clara |
@@ -65,31 +49,23 @@ console.log(result);
 | low | Desviou do assunto, educadamente sem interesse |
 | none | Completamente fora do ICP ou recusa direta |
 
-**DECISION_POWER (cargo inferido):**
-| Power | Cargos |
-|---|---|
-| high | C-Level, Diretor, VP, Head, Presidente (score 8-10) |
-| mid | Gerente, Coordenador Sênior, Supervisor (score 5-7) |
-| low | Analista, Assistente, Estagiário, Jr (score 1-4) |
+## Decision Power (cargo inferido)
 
-**REGRA DE HANDOFF:**
-- `handoff: true` quando: (intent=high AND power=high|mid) OU (intent=medium AND power=high)
-- `handoff: false` quando: power=low (qualquer intent) OU intent=low|none
+| Power | Cargos | Score |
+|---|---|---|
+| high | C-Level, Diretor, VP, Head, Presidente | 8-10 |
+| mid | Gerente, Coordenador Sênior, Supervisor | 5-7 |
+| low | Analista, Assistente, Estagiário, Jr | 1-4 |
 
-**BATCH PROCESSING:**
-```typescript
-const results = await classifier.classifyBatch(
-  responses.map(r => ({ linkedin_response: r.text, lead_name: r.name, company: r.company })),
-  (idx, total, classified) => {
-    console.log(`[${idx}/${total}] ${classified.input.company} → ${classified.result.intent}`);
-  }
-);
+## Regra de Handoff
 
-const handoffs = classifier.filterHandoff(results);
-const summary = classifier.summarize(results);
-```
+- `handoff: true` → (intent=high AND power=high|mid) OU (intent=medium AND power=high)
+- `handoff: false` → power=low (qualquer intent) OU intent=low|none
 
-**SAÍDA COMPLETA:**
+**Quando handoff=true:** alerta automático enviado ao Telegram configurado em `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`.
+
+## Output do classify_linkedin_reply
+
 ```json
 {
   "variant": "E",
@@ -98,20 +74,20 @@ const summary = classifier.summarize(results);
   "score": 9,
   "handoff": true,
   "reason": "Pediu reunião, cargo decisor, dor explícita",
-  "suggested_next_action": "Agendar call de 30min, enviar proposta personalizada antes da reunião"
+  "suggested_next_action": "Agendar call de 30min, enviar proposta personalizada antes da reunião",
+  "telegram_sent": true
 }
 ```
-```
 
-## Exemplo de uso
+## Exemplo completo
 
-### Input
+**Input no chat:**
 ```
-Resposta LinkedIn de: Ana Lima (Gerente de Eventos, Claro Brasil)
+classifica essa resposta do LinkedIn:
 "Olá Samir! Interessante a abordagem. Trabalhamos com alguns parceiros hoje mas sempre avaliamos novas opções, especialmente para eventos de maior porte. Poderia me mandar mais detalhes sobre como funciona?"
 ```
 
-### Output
+**Output:**
 ```json
 {
   "variant": "B",
@@ -120,14 +96,29 @@ Resposta LinkedIn de: Ana Lima (Gerente de Eventos, Claro Brasil)
   "score": 6,
   "handoff": false,
   "reason": "Usa parceiros externos, interesse moderado, pediu material",
-  "suggested_next_action": "Enviar PDF de apresentação + case similar ao porte da Claro, follow-up em 3 dias"
+  "suggested_next_action": "Enviar PDF de apresentação + case similar ao porte da empresa, follow-up em 3 dias",
+  "telegram_sent": false
 }
 ```
 
-**Ação automática gerada:**
-- handoff: false → não escala para humano
-- Agenda email-sender: enviar `vraxia-apresentacao.pdf` + case para Ana Lima
-- Registra no outbound-log: status = "respondeu_warm"
+**Próximo passo sugerido:** enviar `vrashows_media_kit_optimized.pdf` + case relevante, agendar follow-up D+3.
+
+## Usando via script (batch)
+
+Para processar múltiplas respostas acumuladas:
+
+```bash
+tsx scripts/classifyReply.ts
+```
+
+→ Interativo: pede lead_name, company e linkedin_response
+
+```typescript
+import { LeadClassifierAgent } from './agents/lead-classifier/agent.js';
+const classifier = await LeadClassifierAgent.create();
+const results = await classifier.classifyBatch(responses);
+const handoffs = classifier.filterHandoff(results);
+```
 
 ---
-**Tags:** Técnico | IA | Comercial, Classifier, LinkedIn, Handoff, Intent
+**Tags:** Técnico | IA | Comercial, VRAXIA Sense, Classifier, LinkedIn, Handoff, Intent, Telegram

@@ -1,109 +1,119 @@
 ---
 name: pipeline-de-lead-sourcing-futurecom-researcher-agent
-description: Usar o FuturecomResearcherAgent do VRAXIA para pesquisar automaticamente empresas exibidoras ou patrocinadoras de eventos B2B — via web search — e gerar a lista inicial de prospects ranqueados por score de fit, segmento e potencial de budget, pronta para enriquecimento.
-tags: [lead sourcing, pesquisa, eventos, futurecom, researcher, web search, score, segmento, prospecção]
+description: Prospectar leads B2B enterprise usando prospect_leads (ferramenta unificada — busca web + enriquecimento + email real em uma chamada) ou o pipeline completo via scheduler diário (aquisição automática às 07:30 de segunda a sexta). Retorna nome, cargo, email, LinkedIn e contexto prontos para outreach.
+tags: [lead sourcing, prospecção, prospect_leads, scheduler, aquisição, b2b, enterprise, futurecom, web search, email]
 ---
 
 # Pipeline de Lead Sourcing (FuturecomResearcherAgent)
 
 ## Objetivo
-Usar o `FuturecomResearcherAgent` do VRAXIA para pesquisar automaticamente empresas exibidoras, patrocinadoras ou participantes de eventos B2B — usando web search com prompts estruturados — e gerar a lista inicial de leads ranqueados por score de fit, complexidade de stand e potencial de budget. Saída em JSON pronto para o `LeadEnrichmentAgent`.
+Encontrar e enriquecer leads B2B enterprise com dados reais — usando `prospect_leads` no chat para leads imediatos, ou o scheduler automático para aquisição diária de até 25 leads por rodada.
 
-## Quando usar
-- Antes de um evento B2B para montar a lista de prospects
-- Para construir listas de empresas por segmento (telecom, cloud, fintech, etc.)
-- Quando a lista manual é insuficiente ou está desatualizada
-- Para encontrar empresas ainda não mapeadas no ICP
+## Opção 1 — prospect_leads (chat, imediato)
 
-## Como usar
-1. Execute o script de pipeline com o evento e segmentos alvo
-2. O researcher usa web search para encontrar participantes do evento
-3. Cada empresa recebe um `initialScore` (0-100) baseado em segmento e fit
-4. A saída alimenta automaticamente o `LeadEnrichmentAgent` (próxima etapa)
-5. Arquivos exportados em `data/leads/[evento]/`
+**Quando usar:** para buscar leads agora, durante o trabalho, de forma interativa.
 
-## O Prompt
+**Como usar no chat:**
 ```
-Você é o analista de inteligência de mercado do VRAXIA. Seu trabalho é mapear empresas com alta probabilidade de ser prospects ideais baseado no evento e segmento alvo.
+busque 1 lead de cloud enterprise em São Paulo
+encontre decisores de marketing em eventos B2B telecom
+prospecte 3 leads de cibersegurança enterprise brasil
+```
 
-**COMANDOS DO PIPELINE:**
+**O agente executa automaticamente:**
+1. Tavily busca decisores no segmento + localização
+2. Haiku extrai contatos estruturados dos resultados
+3. `deepEnrichContact()` faz busca web individual por pessoa:
+   - Procura email real: `"Nome" "Empresa" email contato`
+   - Confirma/encontra LinkedIn
+   - Coleta contexto extra
+4. Retorna lead completo com `email_source: "web" | "pattern"`
 
-Execução completa (research → enrich → validate):
+**Output:**
+```json
+{
+  "found": 2,
+  "leads": [
+    {
+      "name": "Ana Lima",
+      "role": "Gerente de Eventos Corporativos",
+      "company": "Claro Brasil",
+      "email": "ana.lima@claro.com.br",
+      "email_source": "web",
+      "email_confidence": "high",
+      "domain": "claro.com.br",
+      "linkedin": "https://www.linkedin.com/in/ana-lima-claro",
+      "extra_info": "Coordena eventos de grande porte para Claro Brasil...",
+      "source": "https://linkedin.com/in/..."
+    }
+  ]
+}
+```
+
+## Opção 2 — Scheduler diário (aquisição automática)
+
+**Quando usar:** aquisição contínua de leads do pool Futurecom/enterprise sem intervenção manual.
+
+**Configuração:**
+- Tarefa Windows: `VRASHOWS Lead Acquisition`
+- Executa: segunda a sexta às 07:30
+- Máximo: 25 leads por rodada
+- Deduplicação: automática contra histórico local + SQLite cache
+- Rotação de pool: automática quando todas as empresas já foram processadas
+
+**Execução manual:**
 ```bash
-tsx scripts/run-futurecom-pipeline.ts
+npm run leads:acquire
+# com força (ignora guard de data):
+npx tsx scheduler/lead-acquisition-scheduler.ts --force
 ```
 
-Com parâmetros:
+**Parâmetros do pipeline completo:**
 ```bash
 tsx scripts/run-futurecom-pipeline.ts \
-  --min-score 60 \
-  --max-leads 20 \
+  --min-score 70 \
+  --max-leads 15 \
   --max-contacts 3 \
   --segments telecom,cloud,ai,fintech
 ```
 
-**SEGMENTOS DISPONÍVEIS:**
+**Segmentos disponíveis:**
 - telecom, cloud, ai, cybersecurity, connectivity, infrastructure
 - enterprise-software, iot, fintech
 
-**FLAGS:**
-- `--min-score N` — mínimo de score para incluir a empresa (padrão: 50)
-- `--max-leads N` — máximo de empresas a pesquisar (padrão: 12, máximo: 25)
-- `--max-contacts N` — máximo de contatos por empresa (padrão: 3)
-- `--segments X,Y,Z` — segmentos a incluir
-- `--json` — saída JSON em stdout (para pipelines)
-- `--full-agent` — força uso do researcher completo (ignora CHEAP_MODE)
-
-**SAÍDA DO RESEARCHER (LeadProfile por empresa):**
+**Saída do scheduler:**
 ```json
 {
-  "company": "TechCorp",
-  "website": "techcorp.com.br",
-  "segment": "cloud",
-  "eventRelevance": "Alto — patrocinador platinum confirmado",
-  "budgetPotential": "enterprise",
-  "boothComplexity": "large",
-  "initialScore": 87,
-  "strategicNotes": "Maior provedor de cloud no Brasil, historicamente investe em stand 360°",
-  "sources": ["linkedin.com/company/techcorp", "techcorp.com.br/eventos"]
+  "status": "success",
+  "leads": 23,
+  "duplicatesRemoved": 13,
+  "outputFile": "data/leads/futurecom/futurecom-expansion-2026-06-18.json"
 }
 ```
 
-**SCORES DO RESEARCHER:**
-- 85-100: Fit excelente — prioridade máxima de enriquecimento
-- 70-84: Bom fit — enriquecer na mesma rodada
-- 50-69: Fit moderado — incluir se slots disponíveis
-- <50: Filtrado pelo `--min-score`
+## Rotação automática de pool
 
-**ARQUIVOS GERADOS:**
-- `data/leads/futurecom/futurecom_leads.json` — leads brutos do researcher
-- `data/leads/futurecom/futurecom_leads.csv` — versão tabular para revisão
-- `data/leads/futurecom/futurecom_validated_leads.json` — após enrich + validate
-```
+Quando todos os candidatos do pool já foram processados (leads=0), o scheduler:
+1. Detecta esgotamento: `leads=0 && duplicatesRemoved >= pool.length`
+2. Limpa cache SQLite de empresas adquiridas
+3. Reseta `processedCompanyHashes` no state
+4. Reinicia o ciclo — todos os candidatos ficam disponíveis novamente
+5. Loga o evento como `pool_rotated`
 
-## Exemplo de uso
+**Governança (AGENTS.md):**
+- `maxDailyRuns`: 1
+- `maxOutputTokens`: 300
+- `preferredModel`: claude-haiku-4-5-20251001
+- `poolRotationDays`: 90
 
-### Input
-```bash
-tsx scripts/run-futurecom-pipeline.ts --min-score 70 --max-leads 15 --segments telecom,cloud,fintech
-```
+## Scores do pool enterprise
 
-### Output
-```
-VRASHOWS Futurecom Pipeline — research → enrich → validate
-
-[research] Buscando empresas telecom exibidoras na Futurecom 2026...
-[lead] Claro Brasil · score=95
-[lead] TOTVS · score=88
-[lead] AWS Brasil · score=85
-[lead] Ericsson · score=83
-[lead] Nokia · score=80
-[lead] Huawei · score=78
-[lead] Google Cloud · score=75
-
-7 empresas encontradas (score ≥ 70)
-Saved: data/leads/futurecom/futurecom_leads.json
-```
+| Score | Classificação |
+|---|---|
+| 85-100 | Fit excelente — prioridade máxima |
+| 70-84 | Bom fit — processar na mesma rodada |
+| 50-69 | Fit moderado — incluir se slots disponíveis |
+| < 50 | Filtrado automaticamente |
 
 ---
-**Tags:** Técnico | Automação | Comercial, Lead Sourcing, Pesquisa, Pipeline
+**Tags:** Técnico | Automação | Comercial, Lead Sourcing, Prospecção, Scheduler, prospect_leads
