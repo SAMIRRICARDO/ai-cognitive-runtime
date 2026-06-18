@@ -68,4 +68,5 @@ export const env = {
 };
 
 // Derived helpers — read once at startup
-export const isCheapMode = env.CHEAP_MODE === "true" || env.DEV_MODE === "true";
+// DEV_MODE apenas bypassa auth, não implica cheap mode
+export const isCheapMode = env.CHEAP_MODE === "true";

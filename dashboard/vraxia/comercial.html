@@ -400,6 +400,39 @@ window.addEventListener('message', e => { if(e.data?.apiUrl) API_URL = e.data.ap
 
 // ══ INLINE CHAT ═══════════════════════════════════════════════════════════════
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderMd(text){
+  let s=String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Tables: collect consecutive pipe lines and render as <table>
+  const lines=s.split('\n');const out=[];let inTable=false;let tableHtml='';
+  for(let i=0;i<lines.length;i++){
+    const l=lines[i];
+    if(l.trim().startsWith('|')&&l.trim().endsWith('|')){
+      if(!inTable){inTable=true;tableHtml='<table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0">';}
+      if(/^\|[\s\-|]+\|$/.test(l.trim()))continue;// separator row
+      const isHeader=!inTable||tableHtml==='<table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0">';
+      const cells=l.trim().slice(1,-1).split('|').map(c=>c.trim());
+      const tag=isHeader?'th':'td';
+      const style=isHeader?'background:rgba(96,165,250,.08);color:#93c5fd;font-weight:600;padding:5px 10px;border:1px solid rgba(255,255,255,.06);text-align:left':'padding:5px 10px;border:1px solid rgba(255,255,255,.06);color:#d1d5db';
+      tableHtml+='<tr>'+cells.map(c=>`<${tag} style="${style}">${c}</${tag}>`).join('')+'</tr>';
+    }else{
+      if(inTable){out.push(tableHtml+'</table>');inTable=false;tableHtml='';}
+      out.push(l);
+    }
+  }
+  if(inTable)out.push(tableHtml+'</table>');
+  s=out.join('\n');
+  s=s.replace(/`([^`]+)`/g,'<code style="background:#1e293b;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace">$1</code>');
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  s=s.replace(/^### (.+)$/gm,'<div style="font-weight:700;font-size:12px;margin:8px 0 3px">$1</div>');
+  s=s.replace(/^## (.+)$/gm,'<div style="font-weight:700;font-size:13px;margin:10px 0 4px">$1</div>');
+  s=s.replace(/^# (.+)$/gm,'<div style="font-weight:700;font-size:14px;margin:10px 0 4px">$1</div>');
+  s=s.replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid #374151;margin:8px 0">');
+  s=s.replace(/^\d+\. (.+)$/gm,'<div style="margin:2px 0;padding-left:14px">$1</div>');
+  s=s.replace(/^[-*] (.+)$/gm,'<div style="margin:2px 0;padding-left:14px">• $1</div>');
+  s=s.replace(/\n\n/g,'<br><br>');s=s.replace(/\n/g,'<br>');
+  return s;
+}
 function appendMsg(html,cls){
   const el=document.createElement('div');el.className=cls;el.innerHTML=html;
   const c=document.getElementById('chat-msgs');c.appendChild(el);c.scrollTop=99999;return el;
@@ -445,7 +478,7 @@ async function sendMsg(){
           if(ev==='start')st.textContent='● '+d.message;
           else if(ev==='tool_call'){const e=document.createElement('div');e.className='sse-event sse-tool_call';e.textContent=`⚡ ${d.tool||d.name||'tool'}`;agEl.appendChild(e);}
           else if(ev==='tool_result'){const e=document.createElement('div');e.className='sse-event sse-tool_result';e.textContent=`✓ dados recuperados`;agEl.appendChild(e);}
-          else if(ev==='output'&&d.content)ct.innerHTML+=escHtml(d.content).replace(/\n/g,'<br>');
+          else if(ev==='output'&&d.content){const rendered=renderMd(d.content);if(agEl.querySelector('.sse-event')){const od=document.createElement('div');od.style.cssText='margin-top:8px;line-height:1.65;font-size:13px';od.innerHTML=rendered;agEl.appendChild(od);}else{ct.innerHTML+=rendered;}}
           else if(ev==='done')st.textContent=`✓ ${d.durationMs||0}ms · $${((d.cost?.totalCostUsd||0)).toFixed(5)}`;
           else if(ev==='error')ct.textContent='❌ '+d.message;
         }catch{}

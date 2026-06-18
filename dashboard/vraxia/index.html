@@ -1432,6 +1432,25 @@ function escapeHtml(s) {
 }
 function renderMarkdown(text) {
   let s = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Tables
+  const lines = s.split('\n'); const out = []; let inTable = false; let tableHtml = '';
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (l.trim().startsWith('|') && l.trim().endsWith('|')) {
+      if (!inTable) { inTable = true; tableHtml = '<table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0">'; }
+      if (/^\|[\s\-|]+\|$/.test(l.trim())) continue;
+      const isHeader = tableHtml === '<table style="border-collapse:collapse;width:100%;font-size:12px;margin:8px 0">';
+      const cells = l.trim().slice(1,-1).split('|').map(c => c.trim());
+      const tag = isHeader ? 'th' : 'td';
+      const style = isHeader ? 'background:rgba(96,165,250,.08);color:#93c5fd;font-weight:600;padding:5px 10px;border:1px solid rgba(255,255,255,.06);text-align:left' : 'padding:5px 10px;border:1px solid rgba(255,255,255,.06);color:#d1d5db';
+      tableHtml += '<tr>' + cells.map(c => `<${tag} style="${style}">${c}</${tag}>`).join('') + '</tr>';
+    } else {
+      if (inTable) { out.push(tableHtml + '</table>'); inTable = false; tableHtml = ''; }
+      out.push(l);
+    }
+  }
+  if (inTable) out.push(tableHtml + '</table>');
+  s = out.join('\n');
   s = s.replace(/`([^`]+)`/g,'<code style="background:#1e293b;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace">$1</code>');
   s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   s = s.replace(/\*(.+?)\*/g,'<em>$1</em>');
