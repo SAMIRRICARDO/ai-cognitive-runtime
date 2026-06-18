@@ -179,7 +179,7 @@
       <div class="nav-item active" onclick="showView('overview')" id="nav-overview">
         <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i> Overview
       </div>
-      <div class="nav-item" onclick="showView('chat')" id="nav-chat">
+      <div class="nav-item" onclick="modCurrentModule ? openModuleView(modCurrentModule) : showView('overview')" id="nav-chat">
         <i data-lucide="message-square" style="width:16px;height:16px"></i> Chat IA
       </div>
       <div class="nav-item" onclick="showView('skills')" id="nav-skills">
@@ -341,7 +341,7 @@
       </div>
     </div>
 
-    <!-- ── CHAT ──────────────────────────────────────────────────────────── -->
+    <!-- ── CHAT (fallback genérico — mantido para uso interno) ───────────── -->
     <div id="view-chat" class="hidden h-full flex flex-col">
       <div class="px-6 py-4 border-b border-white/5 flex items-center gap-4 flex-shrink-0">
         <div>
@@ -355,14 +355,12 @@
           <button onclick="clearChat()" class="glass px-3 py-2 rounded-xl text-xs text-gray-400 hover:text-white transition">Limpar</button>
         </div>
       </div>
-
       <div id="chat-messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
         <div class="msg-agent self-start">
           <span class="text-blue-400 font-semibold text-xs block mb-1">VRAXIA OS</span>
-          Olá! Selecione um módulo no menu acima e faça sua pergunta. Cada módulo tem centenas de skills especializadas prontas para usar.
+          Olá! Selecione um módulo no menu acima e faça sua pergunta.
         </div>
       </div>
-
       <div class="px-6 py-4 border-t border-white/5 flex-shrink-0">
         <div class="flex gap-3">
           <textarea id="chat-input" rows="2" placeholder="Digite sua mensagem..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white resize-none focus:outline-none focus:border-blue-500/50 transition placeholder-gray-600" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
@@ -373,6 +371,9 @@
         <div id="chat-status" class="text-xs text-gray-600 mt-2 font-mono hidden"></div>
       </div>
     </div>
+
+    <!-- ── MODULE VIEW (chat inline por departamento) ────────────────────── -->
+    <div id="view-module" class="hidden overflow-y-auto" style="height:100%;"></div>
 
     <!-- ── SKILLS BROWSER ─────────────────────────────────────────────── -->
     <div id="view-skills" class="hidden">
@@ -626,9 +627,10 @@ function renderModuleGrid() {
 function renderSidebarModules() {
   const el = document.getElementById('sidebar-modules');
   el.innerHTML = modules.map(m => {
-    const icon = MODULE_ICONS[m.id] || 'cpu';
+    const icon  = MODULE_ICONS[m.id]  || 'cpu';
     const color = MODULE_COLORS[m.id] || '#60a5fa';
-    return `<div class="nav-item ${m.active ? '' : 'opacity-40'}" onclick="openModule('${m.id}')">
+    const navId = m.id === 'comercial' ? '' : `id="nav-module-${m.id}"`;
+    return `<div ${navId} class="nav-item ${m.active ? '' : 'opacity-40'}" onclick="openModule('${m.id}')">
       <i data-lucide="${icon}" style="width:14px;height:14px;color:${color}"></i>
       <span class="capitalize">${m.name || m.id}</span>
     </div>`;
@@ -678,7 +680,8 @@ function updateOverviewStats() {
 function showView(name) {
   document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('view-' + name).classList.remove('hidden');
+  const viewEl = document.getElementById('view-' + name);
+  if (viewEl) viewEl.classList.remove('hidden');
   const navEl = document.getElementById('nav-' + name);
   if (navEl) navEl.classList.add('active');
   currentView = name;
@@ -689,14 +692,291 @@ function showView(name) {
 
 function openModule(moduleId) {
   if (moduleId === 'comercial') {
-    // Comercial has a dedicated full-page experience
     const url = `/vraxia/comercial.html?api=${encodeURIComponent(API_URL)}&key=${encodeURIComponent(API_KEY)}`;
     window.open(url, '_blank');
     return;
   }
-  showView('chat');
-  const sel = document.getElementById('chat-module');
-  if (sel) sel.value = moduleId;
+  openModuleView(moduleId);
+}
+
+// ══ MODULE SUGGESTIONS ════════════════════════════════════════════════════════
+const MODULE_SUGGESTIONS = {
+  financeiro: ['Analisar fluxo de caixa', 'Calcular ROI do projeto', 'Criar relatório DRE', 'Projeção de receita'],
+  juridico:   ['Revisar contrato de serviço', 'Redigir NDA', 'Análise de compliance', 'Minutar distrato'],
+  marketing:  ['Criar campanha de email', 'Estratégia de conteúdo', 'Análise de métricas', 'Calendário editorial'],
+  operacoes:  ['Mapear processo atual', 'Criar SOP', 'Identificar gargalos', 'Plano de melhoria'],
+  conteudo:   ['Post para LinkedIn', 'Artigo técnico', 'Roteiro de vídeo', 'Newsletter mensal'],
+  lideranca:  ['Plano de desenvolvimento', 'Feedback estruturado', 'OKRs do trimestre', 'Reunião 1:1 pauta'],
+  produto:    ['Criar roadmap', 'Priorizar backlog', 'User story mapping', 'Especificação técnica'],
+  codigo:     ['Revisar código', 'Criar testes unitários', 'Refatorar função', 'Documentar API'],
+};
+
+const MODULE_DESCRIPTIONS = {
+  financeiro: 'Análise financeira, DRE, fluxo de caixa, projeções e relatórios',
+  juridico:   'Contratos, compliance, análise jurídica e minutas',
+  marketing:  'Campanhas, conteúdo, métricas e estratégia de marca',
+  operacoes:  'Processos, SOPs, mapeamento e otimização operacional',
+  conteudo:   'Textos, posts, roteiros, newsletters e material editorial',
+  lideranca:  'Gestão de pessoas, feedback, OKRs e desenvolvimento',
+  produto:    'Roadmap, backlog, specs e discovery de produto',
+  codigo:     'Code review, testes, refatoração e documentação',
+};
+
+let modActiveEventSource = null;
+let modCurrentModule = null;
+
+function openModuleView(moduleId) {
+  const m = modules.find(x => x.id === moduleId) || { id: moduleId, name: moduleId, skillCount: 0 };
+  modCurrentModule = moduleId;
+
+  // Highlight sidebar item
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-module-' + moduleId);
+  if (navEl) navEl.classList.add('active');
+
+  showView('module');
+
+  const color  = MODULE_COLORS[moduleId] || '#60a5fa';
+  const icon   = MODULE_ICONS[moduleId]  || 'cpu';
+  const label  = m.name || moduleId;
+  const desc   = MODULE_DESCRIPTIONS[moduleId] || `Agente especializado em ${label}`;
+  const suggs  = MODULE_SUGGESTIONS[moduleId] || ['Qual é sua especialidade?', 'Como posso te usar?', 'Liste suas principais skills', 'Me dê um exemplo de tarefa'];
+
+  const view = document.getElementById('view-module');
+  view.innerHTML = `
+    <!-- Header -->
+    <div class="relative overflow-hidden px-8 pt-8 pb-6 border-b border-white/5 flex-shrink-0">
+      <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
+        <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:500px;height:300px;background:radial-gradient(circle,${color}12 0%,transparent 70%);"></div>
+      </div>
+      <div class="relative flex items-center gap-5">
+        <button onclick="showView('overview')" class="glass p-2 rounded-xl text-gray-500 hover:text-white transition flex-shrink-0" title="Voltar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        </button>
+        <div style="width:48px;height:48px;background:${color}20;border-radius:14px;display:flex;align-items:center;justify-content:center;border:1px solid ${color}30;flex-shrink:0;">
+          <i data-lucide="${icon}" style="width:22px;height:22px;color:${color}"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-xl font-bold text-white capitalize">${escapeHtml(label)}</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:${color}15;color:${color};border:1px solid ${color}30">${m.skillCount || 0} skills</span>
+            <span class="flex items-center gap-1.5 text-xs text-gray-500"><span class="live-dot" style="background:${color};box-shadow:0 0 5px ${color}aa;width:6px;height:6px;margin:0"></span>Online</span>
+          </div>
+          <p class="text-gray-500 text-xs mt-0.5">${escapeHtml(desc)}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="px-8 py-6">
+      <div class="glass-strong rounded-2xl overflow-hidden" style="border-color:${color}18;">
+        <!-- Chat header -->
+        <div class="px-5 py-3 border-b flex items-center justify-between" style="border-color:rgba(255,255,255,.05)">
+          <div class="flex items-center gap-2">
+            <div style="width:26px;height:26px;background:${color}20;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="bot" style="width:13px;height:13px;color:${color}"></i>
+            </div>
+            <span class="text-sm font-semibold text-white">${escapeHtml(label)} AI</span>
+          </div>
+          <button onclick="clearModuleChat()" class="text-xs text-gray-600 hover:text-gray-400 transition font-mono flex items-center gap-1.5">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.64"/></svg>
+            Limpar
+          </button>
+        </div>
+
+        <!-- Messages -->
+        <div id="mod-msgs" style="height:380px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;">
+          <div class="msg-agent" style="font-size:13px;">
+            <span style="font-size:10px;font-weight:600;display:block;margin-bottom:4px;color:${color}">${escapeHtml(label).toUpperCase()} AI</span>
+            Olá! Sou o agente especializado em <strong>${escapeHtml(label)}</strong>. Tenho acesso a ${m.skillCount || 0}+ skills do departamento. Como posso ajudar?
+          </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div id="mod-suggs" style="padding:0 16px 10px;display:flex;gap:6px;flex-wrap:wrap;">
+          ${suggs.map(s => `<button onclick="modQuickSend('${escapeHtml(s)}')" class="text-xs px-3 py-1.5 rounded-full transition" style="background:${color}10;border:1px solid ${color}25;color:${color};font-size:11px;">${escapeHtml(s)}</button>`).join('')}
+        </div>
+
+        <!-- Input -->
+        <div class="px-4 pb-4 flex gap-3 border-t" style="border-color:rgba(255,255,255,.05);padding-top:12px;">
+          <textarea id="mod-input" rows="2" placeholder="Pergunte ao agente ${escapeHtml(label)}..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white resize-none focus:outline-none transition placeholder-gray-600" style="focus-border-color:${color}60"></textarea>
+          <button id="mod-send" class="px-5 py-3 text-white rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2 self-end" style="background:linear-gradient(135deg,${color}cc,${color}88);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span>Enviar</span>
+          </button>
+        </div>
+        <div id="mod-status" class="px-4 pb-3 text-xs text-gray-600 font-mono hidden"></div>
+      </div>
+    </div>
+  `;
+
+  lucide.createIcons();
+
+  // Wire up events
+  const inputEl = document.getElementById('mod-input');
+  const sendEl  = document.getElementById('mod-send');
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendModuleMessage(moduleId, color); }
+  });
+  sendEl.addEventListener('click', () => sendModuleMessage(moduleId, color));
+  inputEl.focus();
+}
+
+function clearModuleChat() {
+  const mod  = modCurrentModule;
+  const m    = modules.find(x => x.id === mod) || { id: mod, name: mod, skillCount: 0 };
+  const color = MODULE_COLORS[mod] || '#60a5fa';
+  const label = m.name || mod;
+  const msgs  = document.getElementById('mod-msgs');
+  const suggs = document.getElementById('mod-suggs');
+  if (!msgs) return;
+  msgs.innerHTML = `
+    <div class="msg-agent" style="font-size:13px;">
+      <span style="font-size:10px;font-weight:600;display:block;margin-bottom:4px;color:${color}">${escapeHtml(label).toUpperCase()} AI</span>
+      Conversa limpa. Como posso ajudar com ${escapeHtml(label)}?
+    </div>`;
+  if (suggs) suggs.style.display = 'flex';
+  if (modActiveEventSource) { modActiveEventSource.close(); modActiveEventSource = null; }
+}
+
+function modQuickSend(text) {
+  const input = document.getElementById('mod-input');
+  if (input) { input.value = text; }
+  const suggs = document.getElementById('mod-suggs');
+  if (suggs) suggs.style.display = 'none';
+  sendModuleMessage(modCurrentModule, MODULE_COLORS[modCurrentModule] || '#60a5fa');
+}
+
+function modAppendMsg(html, cls, color) {
+  const msgs = document.getElementById('mod-msgs');
+  if (!msgs) return null;
+  const el = document.createElement('div');
+  el.className = cls;
+  el.style.fontSize = '13px';
+  el.innerHTML = html;
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return el;
+}
+
+async function sendModuleMessage(moduleId, color) {
+  const input  = document.getElementById('mod-input');
+  const sendEl = document.getElementById('mod-send');
+  const status = document.getElementById('mod-status');
+  const suggs  = document.getElementById('mod-suggs');
+  if (!input || !sendEl) return;
+
+  const message = input.value.trim();
+  if (!message) return;
+
+  if (modActiveEventSource) { modActiveEventSource.close(); modActiveEventSource = null; }
+  if (suggs) suggs.style.display = 'none';
+
+  input.value = '';
+  input.disabled = true;
+  sendEl.disabled = true;
+  if (status) { status.classList.remove('hidden'); status.textContent = '● Conectando ao agente...'; }
+
+  const m     = modules.find(x => x.id === moduleId) || { name: moduleId };
+  const label = m.name || moduleId;
+
+  modAppendMsg(`<span class="text-gray-400 text-xs block mb-1">Você</span>${escapeHtml(message)}`, 'msg-user', color);
+
+  const agentEl = modAppendMsg(
+    `<span style="font-size:10px;font-weight:600;display:block;margin-bottom:4px;color:${color}">${escapeHtml(label).toUpperCase()} AI</span><span class="content"></span>`,
+    'msg-agent streaming', color
+  );
+  const contentEl = agentEl ? agentEl.querySelector('.content') : null;
+
+  try {
+    const resp = await fetch(API_URL + '/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(API_KEY ? {'X-Api-Key': API_KEY} : {}) },
+      body: JSON.stringify({ moduleId, message }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      if (contentEl) contentEl.textContent = '❌ ' + (err.error || 'Erro ao executar agente');
+      return;
+    }
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split('\n\n');
+      buffer = parts.pop();
+      for (const part of parts) {
+        if (!part.trim()) continue;
+        const lines = part.split('\n');
+        let event = '', dataStr = '';
+        for (const line of lines) {
+          if (line.startsWith('event:')) event = line.slice(6).trim();
+          if (line.startsWith('data:'))  dataStr = line.slice(5).trim();
+        }
+        if (!dataStr) continue;
+        try {
+          const data = JSON.parse(dataStr);
+          handleModSSEEvent(event, data, contentEl, agentEl, status, color);
+        } catch {}
+      }
+    }
+  } catch(e) {
+    if (contentEl) contentEl.textContent = '❌ Erro de conexão: ' + e.message;
+  } finally {
+    if (agentEl) agentEl.classList.remove('streaming');
+    if (input)   { input.disabled = false; input.focus(); }
+    if (sendEl)  sendEl.disabled = false;
+    if (status)  status.classList.add('hidden');
+    const msgs = document.getElementById('mod-msgs');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+
+function handleModSSEEvent(event, data, contentEl, agentEl, statusEl, color) {
+  switch(event) {
+    case 'start':
+      if (statusEl) statusEl.textContent = '● ' + (data.message || 'Iniciando...');
+      break;
+    case 'thinking':
+      if (statusEl) statusEl.textContent = '● Pensando...';
+      break;
+    case 'tool_call':
+      if (statusEl) statusEl.textContent = `● Ferramenta: ${data.tool || data.name || ''}`;
+      if (agentEl) {
+        const ev = document.createElement('div');
+        ev.className = 'sse-event sse-tool_call';
+        ev.textContent = `tool: ${data.tool || data.name || ''}(${JSON.stringify(data.input || {}).slice(0,60)}…)`;
+        agentEl.appendChild(ev);
+      }
+      break;
+    case 'tool_result':
+      if (agentEl) {
+        const ev = document.createElement('div');
+        ev.className = 'sse-event sse-tool_result';
+        ev.textContent = `result: ${JSON.stringify(data.result || data.content || data).slice(0,80)}…`;
+        agentEl.appendChild(ev);
+      }
+      break;
+    case 'output':
+      if ((data.content || data.text) && contentEl) {
+        contentEl.innerHTML += escapeHtml(data.content || data.text).replace(/\n/g, '<br>');
+      }
+      break;
+    case 'done':
+      if (statusEl) statusEl.textContent = `✓ Concluído — ${data.durationMs || 0}ms | $${(data.cost?.totalCostUsd || data.cost?.totalCost || 0).toFixed(6)}`;
+      break;
+    case 'error':
+      if (contentEl) contentEl.textContent = '❌ ' + (data.message || data.content || 'Erro desconhecido');
+      break;
+  }
+  const msgs = document.getElementById('mod-msgs');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
 }
 
 // ══ CHAT & SSE ════════════════════════════════════════════════════════════════
@@ -801,22 +1081,22 @@ function handleSSEEvent(event, data, contentEl, agentEl, statusEl) {
       statusEl.textContent = '● Pensando...';
       break;
     case 'tool_call':
-      statusEl.textContent = `● Usando ferramenta: ${data.name || ''}`;
-      addSSEEvent(agentEl, `tool: ${data.name || ''}(${JSON.stringify(data.input || {}).slice(0,60)}…)`, 'sse-tool_call');
+      statusEl.textContent = `● Usando ferramenta: ${data.tool || data.name || ''}`;
+      addSSEEvent(agentEl, `tool: ${data.tool || data.name || ''}(${JSON.stringify(data.input || {}).slice(0,60)}…)`, 'sse-tool_call');
       break;
     case 'tool_result':
-      addSSEEvent(agentEl, `result: ${JSON.stringify(data.result || data).slice(0,80)}…`, 'sse-tool_result');
+      addSSEEvent(agentEl, `result: ${JSON.stringify(data.result || data.content || data).slice(0,80)}…`, 'sse-tool_result');
       break;
     case 'output':
-      if (data.text) {
-        contentEl.innerHTML += escapeHtml(data.text).replace(/\n/g, '<br>');
+      if (data.content || data.text) {
+        contentEl.innerHTML += escapeHtml(data.content || data.text).replace(/\n/g, '<br>');
       }
       break;
     case 'done':
-      statusEl.textContent = `✓ Concluído — ${data.durationMs || 0}ms | $${(data.cost?.totalCost || 0).toFixed(6)}`;
+      statusEl.textContent = `✓ Concluído — ${data.durationMs || 0}ms | $${(data.cost?.totalCostUsd || data.cost?.totalCost || 0).toFixed(6)}`;
       break;
     case 'error':
-      contentEl.textContent = '❌ ' + data.message;
+      contentEl.textContent = '❌ ' + (data.message || data.content || 'Erro');
       break;
   }
   document.getElementById('chat-messages').scrollTop = 999999;

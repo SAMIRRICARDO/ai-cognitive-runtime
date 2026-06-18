@@ -44,7 +44,8 @@
     "api:dev": "cross-env DEV_MODE=true ENABLE_MEMORY=false tsx api/server.ts",
     "leads:index-rag": "tsx scripts/index-leads-rag.ts",
     "leads:enrich": "node scripts/enrich-linkedin-urls.mjs",
-    "leads:audit": "node scripts/audit-linkedin.mjs"
+    "leads:audit": "node scripts/audit-linkedin.mjs",
+    "codex:index-rag": "tsx scripts/index-codex-rag.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

@@ -9,6 +9,7 @@ import { runRouter } from "./routes/run.js";
 import { usageRouter } from "./routes/usage.js";
 import { adminRouter } from "./routes/admin.js";
 import { leadsRouter } from "./routes/leads.js";
+import { senseRouter } from "./routes/sense.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -81,6 +82,9 @@ app.use("/api/modules", devPassthrough, modulesRouter);
 app.use("/api/run",     devPassthrough, runRouter);
 app.use("/api/usage",   devPassthrough, usageRouter);
 app.use("/api/leads",   devPassthrough, leadsRouter);
+// Sense: /commercial sem auth (webhook Waalaxy); /stats e /events com devPassthrough
+app.use("/api/sense/commercial", senseRouter);
+app.use("/api/sense",  devPassthrough, senseRouter);
 
 // ── Admin Routes (always require admin key, no dev passthrough) ───────────────
 app.use("/admin", adminRouter);

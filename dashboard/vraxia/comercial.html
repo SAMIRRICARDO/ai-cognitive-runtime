@@ -291,6 +291,57 @@
     </div>
   </section>
 
+  <!-- SENSE ACTIVITY PANEL -->
+  <section class="pb-8" id="sense-section">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div style="width:28px;height:28px;background:linear-gradient(135deg,#7c3aed,#06b6d4);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="radar" style="width:14px;height:14px;color:white"></i>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-white">VRAXIA Sense</h2>
+          <p class="text-xs text-gray-500">Percepção proativa — detecta leads automaticamente</p>
+        </div>
+      </div>
+      <span class="text-xs text-gray-600 font-mono flex items-center gap-1.5"><span class="live-dot" style="background:#a78bfa;box-shadow:0 0 5px rgba(167,139,250,.7)"></span>Pipeline ativo</span>
+    </div>
+
+    <!-- Sense counters -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+      <div class="glass rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-white" id="sense-total">—</div>
+        <div class="text-xs text-gray-500 mt-1">Eventos Total</div>
+      </div>
+      <div class="glass rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-gray-500" id="sense-filtered">—</div>
+        <div class="text-xs text-gray-600 mt-1">Filtrados (grátis)</div>
+      </div>
+      <div class="glass rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-yellow-400" id="sense-triaged">—</div>
+        <div class="text-xs text-gray-500 mt-1">Triados Nível 1</div>
+      </div>
+      <div class="glass rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-blue-400" id="sense-classified">—</div>
+        <div class="text-xs text-gray-500 mt-1">Classificados</div>
+      </div>
+      <div class="glass rounded-xl p-4 text-center" style="border-color:rgba(74,222,128,.2);">
+        <div class="text-2xl font-bold text-green-400" id="sense-handoffs">—</div>
+        <div class="text-xs text-gray-500 mt-1">Handoffs Telegram</div>
+      </div>
+    </div>
+
+    <!-- Recent events -->
+    <div class="glass rounded-2xl overflow-hidden">
+      <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+        <span class="text-xs font-mono text-gray-500">Eventos recentes</span>
+        <span class="text-xs text-gray-600" id="sense-events-count"></span>
+      </div>
+      <div id="sense-events-list" class="divide-y divide-white/5">
+        <div class="px-5 py-4 text-xs text-gray-600 font-mono text-center">Carregando...</div>
+      </div>
+    </div>
+  </section>
+
   <!-- CHART -->
   <section class="pb-8">
     <div class="glass rounded-xl p-6" style="position:relative;overflow:hidden;">
@@ -666,6 +717,77 @@ async function fetchAndApplyStats() {
 // Initial load + refresh every 60s
 fetchAndApplyStats();
 setInterval(fetchAndApplyStats, 60000);
+
+// ══ SENSE STATS ENGINE ════════════════════════════════════════════════════════
+const SENSE_STATS_API  = (API_URL || 'http://localhost:3000') + '/api/sense/stats';
+const SENSE_EVENTS_API = (API_URL || 'http://localhost:3000') + '/api/sense/events?limit=20';
+
+const SENSE_STAGE_BADGES = {
+  filtered_out: '<span style="background:rgba(100,116,139,.2);color:#94a3b8;border:1px solid rgba(100,116,139,.3)" class="px-2 py-0.5 rounded text-xs font-mono">filtrado</span>',
+  triaged_out:  '<span style="background:rgba(234,179,8,.1);color:#fbbf24;border:1px solid rgba(234,179,8,.3)" class="px-2 py-0.5 rounded text-xs font-mono">triado</span>',
+  classified:   '<span style="background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.3)" class="px-2 py-0.5 rounded text-xs font-mono">classificado</span>',
+  handoff:      '<span style="background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3)" class="px-2 py-0.5 rounded text-xs font-mono">handoff ✓</span>',
+  error:        '<span style="background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.3)" class="px-2 py-0.5 rounded text-xs font-mono">erro</span>',
+};
+
+function fmtSenseTime(ts) {
+  try { return new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch { return ts; }
+}
+
+async function fetchSenseStats() {
+  try {
+    const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
+    const r = await fetch(SENSE_STATS_API, { headers });
+    if (!r.ok) return;
+    const s = await r.json();
+    const el = id => document.getElementById(id);
+    if (el('sense-total'))      el('sense-total').textContent      = s.total ?? '—';
+    if (el('sense-filtered'))   el('sense-filtered').textContent   = s.filtered ?? '—';
+    if (el('sense-triaged'))    el('sense-triaged').textContent    = s.triaged ?? '—';
+    if (el('sense-classified')) el('sense-classified').textContent = s.classified ?? '—';
+    if (el('sense-handoffs'))   el('sense-handoffs').textContent   = s.handoffs ?? '—';
+  } catch(e) { console.warn('sense/stats failed:', e.message); }
+}
+
+async function fetchSenseEvents() {
+  try {
+    const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
+    const r = await fetch(SENSE_EVENTS_API, { headers });
+    if (!r.ok) return;
+    const events = await r.json();
+    const list = document.getElementById('sense-events-list');
+    const cnt  = document.getElementById('sense-events-count');
+    if (!list) return;
+    if (!events.length) {
+      list.innerHTML = '<div class="px-5 py-4 text-xs text-gray-600 font-mono text-center">Nenhum evento ainda — aguardando Waalaxy</div>';
+      if (cnt) cnt.textContent = '0 eventos';
+      return;
+    }
+    if (cnt) cnt.textContent = events.length + ' evento' + (events.length !== 1 ? 's' : '');
+    list.innerHTML = events.map(ev => {
+      const badge = SENSE_STAGE_BADGES[ev.stage] || ev.stage;
+      const score = ev.score != null ? `<span class="text-purple-400 font-mono">${ev.score}/10</span>` : '';
+      const intent = ev.intent ? `<span class="text-xs text-gray-500 font-mono ml-1">${ev.intent}</span>` : '';
+      const snippet = ev.message_snippet
+        ? `<div class="text-xs text-gray-600 italic mt-0.5 truncate" style="max-width:380px">"${escHtml(ev.message_snippet)}"</div>`
+        : '';
+      return `<div class="px-5 py-3 hover:bg-white/[0.02] transition-colors">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="text-xs text-gray-600 font-mono w-16 shrink-0">${fmtSenseTime(ev.ts)}</span>
+          <span class="text-sm text-white font-medium">${escHtml(ev.prospect || '—')}</span>
+          <span class="text-xs text-gray-500">${escHtml(ev.company || '')}</span>
+          <span class="ml-auto flex items-center gap-1.5">${score}${intent}${badge}</span>
+        </div>
+        ${snippet}
+      </div>`;
+    }).join('');
+  } catch(e) { console.warn('sense/events failed:', e.message); }
+}
+
+fetchSenseStats();
+fetchSenseEvents();
+setInterval(fetchSenseStats,  30000);
+setInterval(fetchSenseEvents, 30000);
 
 // Light visual pulse (no fake increments — just card ping animation every 3s)
 setInterval(() => {

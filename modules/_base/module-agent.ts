@@ -84,6 +84,15 @@ export abstract class BaseModuleAgent extends BaseAgent {
         import("../../tools/search-leads-rag.js").then(({ searchLeadsRagTool }) => {
           this.registerTool(searchLeadsRagTool);
         }),
+        import("../../tools/find-new-leads.js").then(({ findNewLeadsTool }) => {
+          this.registerTool(findNewLeadsTool);
+        }),
+        import("../../tools/enrich-leads.js").then(({ enrichLeadsTool }) => {
+          this.registerTool(enrichLeadsTool);
+        }),
+        import("../../tools/validate-leads-tool.js").then(({ validateLeadsTool }) => {
+          this.registerTool(validateLeadsTool);
+        }),
       ]);
     }
   }
@@ -127,21 +136,35 @@ export function buildModuleSystemPrompt(cfg: ModuleConfig, skillCount: number): 
   const contextTools = [
     hasVault ? "`vault_search` — busca semântica no Obsidian vault (conhecimento institucional, ADRs, decisões, contexto de negócio)" : null,
     hasMemory ? "`memory_read` / `memory_write` — memória de curto prazo (Redis) para manter contexto entre turnos" : null,
-    isComercial ? "`search_leads_rag` — busca livre na base de leads (363 leads indexados): por nome, empresa, cargo, status, campanha, segmento" : null,
+    isComercial ? "`search_leads_rag` — busca livre na base de leads indexados: por nome, empresa, cargo, status, campanha, segmento" : null,
     isComercial ? "`query_leads` — consulta estruturada de leads com filtros por status, campanha, empresa" : null,
+    isComercial ? "`find_new_leads` — **busca NOVOS leads via web search** (Tavily) para um segmento/evento/cargo/região que ainda não estão na base" : null,
+    isComercial ? "`enrich_company` — **enriquece empresas** com decisores B2B: nome, cargo, email inferido, LinkedIn e score de prioridade (30-90s por empresa)" : null,
+    isComercial ? "`validate_leads` — **valida e analisa** a base existente: HOT/WARM/INVALID, cobertura de email, top leads prontos para prospectar" : null,
   ].filter(Boolean);
 
   const contextSection = contextTools.length > 0 ? `
-## Ferramentas de Contexto e RAG
+## Ferramentas de Contexto, Leads e Prospecção
 
 Antes de raciocinar, recupere contexto relevante:
 ${contextTools.map((t) => `- ${t}`).join("\n")}
 
-**Prioridade de execução:**
-1. ${isComercial ? "`search_leads_rag` ou `query_leads` — sempre busque dados reais de leads antes de responder sobre prospecção" : "`vault_search` — busque contexto no vault antes de qualquer resposta"}
-2. \`search_skills\` — encontre a skill adequada
-3. \`run_skill\` — execute o prompt da skill com os dados do usuário
-4. Raciocínio próprio — somente se nenhuma fonte acima resolver
+**Prioridade de execução para pedidos comerciais:**
+1. **Consulta da base existente** → \`search_leads_rag\` ou \`query_leads\` para leads já conhecidos
+2. **Validação da base** → \`validate_leads\` para relatório de qualidade, status HOT/WARM, cobertura de email
+3. **Busca de novos leads** → \`find_new_leads\` para descobrir contatos que ainda NÃO estão na base
+4. **Enriquecimento** → \`enrich_company\` para obter nome/email/LinkedIn de decisores de empresas específicas
+5. **Skills e raciocínio** → \`search_skills\` + \`run_skill\` para demais tarefas comerciais
+6. Raciocínio próprio — somente se nenhuma fonte acima resolver
+
+**Quando usar cada ferramenta de leads:**
+- "quantos leads HOT temos?" → \`validate_leads\`
+- "quem são os leads da TOTVS?" → \`search_leads_rag\` ou \`query_leads\`
+- "buscar leads de telecom" / "prospectar empresas de varejo" → \`find_new_leads\`
+- "enriquecer Claro, Vivo, TIM" / "quem é o CMO da AWS Brasil?" → \`enrich_company\`
+- "validar base de leads" / "relatório de qualidade" → \`validate_leads\`
+
+**IMPORTANTE:** Para \`enrich_company\`, avise o usuário que pode levar 30-90s e mostre os resultados completos quando retornar.
 ` : `
 ## Ferramentas disponíveis
 

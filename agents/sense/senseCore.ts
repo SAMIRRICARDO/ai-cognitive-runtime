@@ -1,16 +1,15 @@
 // Orquestrador central do VRAXIA Sense.
 // Único ponto de entrada que o webhook deve chamar.
-// Nunca modifica classifierAgent.ts, telegram.ts ou linkedinWebhook.ts — só os importa.
 
 import Anthropic from '@anthropic-ai/sdk';
 import { commercialFilter, type RawEvent } from './filters/commercialFilter.js';
 import { commercialTriage } from './triage/commercialTriage.js';
 import { notifyTelegram } from '../../tools/telegram.js';
 import { stripJsonFences } from './jsonStrip.js';
+import { logSenseEvent } from './senseLogger.js';
+import { searchLocalMemory } from '../../memory/local-rag.js';
 import type { ClassifierResult } from '../classifierAgent.js';
 
-// Inline classifier that strips markdown fences before parsing.
-// Replicates the classifierAgent prompt without duplicating business logic.
 const _client = new Anthropic();
 const _CLASSIFIER_PROMPT = `Qualificador B2B de respostas LinkedIn. JSON puro, sem markdown.
 
@@ -45,23 +44,27 @@ export interface SenseResult {
 }
 
 export async function runCommercialSense(event: RawEvent): Promise<SenseResult> {
+  const snippet = event.message_content.slice(0, 80);
+
   // ── NÍVEL 0 — custo zero ──────────────────────────────────────────────────
   const filterResult = commercialFilter(event);
   if (!filterResult.passed) {
     console.log(`[Sense] Nível 0 descartado: ${filterResult.reason}`);
+    logSenseEvent({ ts: new Date().toISOString(), stage: 'filtered_out', prospect: event.prospect_name, company: event.company, role: event.job_title, message_snippet: snippet, detail: filterResult.reason });
     return { processed: false, stage: 'filtered_out', detail: filterResult.reason };
   }
-  console.log(`[Sense] Nível 0 passou: ${filterResult.reason}`);
+  console.log(`[Sense] Nível 0 passou`);
 
   // ── NÍVEL 1 — Haiku triagem (~80 tokens) ─────────────────────────────────
   const triageResult = await commercialTriage(event);
   if (!triageResult.relevant) {
     console.log(`[Sense] Nível 1 descartado: sinal=${triageResult.quick_signal}`);
+    logSenseEvent({ ts: new Date().toISOString(), stage: 'triaged_out', prospect: event.prospect_name, company: event.company, role: event.job_title, message_snippet: snippet, detail: `sinal: ${triageResult.quick_signal}` });
     return { processed: false, stage: 'triaged_out', detail: `baixa relevância na triagem (sinal: ${triageResult.quick_signal})` };
   }
   console.log(`[Sense] Nível 1 relevante: sinal=${triageResult.quick_signal}`);
 
-  // ── NÍVEL 2 — classifierAgent existente (não duplicar lógica) ─────────────
+  // ── NÍVEL 2 — classificação completa ─────────────────────────────────────
   let classification: ClassifierResult;
   try {
     classification = await classifyForSense(event.message_content, {
@@ -71,13 +74,35 @@ export async function runCommercialSense(event: RawEvent): Promise<SenseResult> 
     });
   } catch (err) {
     console.error(`[Sense] Nível 2 erro: ${err}`);
-    return { processed: false, stage: 'triaged_out', detail: 'erro no classificador — retry recomendado' };
+    logSenseEvent({ ts: new Date().toISOString(), stage: 'error', prospect: event.prospect_name, company: event.company, role: event.job_title, message_snippet: snippet, detail: String(err) });
+    return { processed: false, stage: 'triaged_out', detail: 'erro no classificador' };
   }
 
-  console.log(`[Sense] Nível 2 classificado: variant=${classification.variant} intent=${classification.intent} handoff=${classification.handoff}`);
+  console.log(`[Sense] Nível 2: variant=${classification.variant} intent=${classification.intent} handoff=${classification.handoff}`);
+
+  logSenseEvent({
+    ts: new Date().toISOString(),
+    stage: classification.handoff ? 'handoff' : 'classified',
+    prospect: event.prospect_name,
+    company: event.company,
+    role: event.job_title,
+    message_snippet: snippet,
+    intent: classification.intent,
+    variant: classification.variant,
+    score: classification.score,
+    detail: classification.reason,
+  });
 
   if (classification.handoff) {
-    const report = buildHandoffReport(event, classification);
+    // Enriquece o relatório com contexto da RAG de leads
+    const ragContext = searchLocalMemory({
+      query: `${event.prospect_name} ${event.company}`,
+      collections: ['leads'],
+      limit: 1,
+    });
+    const leadContext = ragContext[0]?.content ?? null;
+
+    const report = buildHandoffReport(event, classification, leadContext);
     await notifyTelegram(report);
     return { processed: true, stage: 'handoff', detail: `notificação enviada — ${classification.variant}/${classification.intent}` };
   }
@@ -85,23 +110,27 @@ export async function runCommercialSense(event: RawEvent): Promise<SenseResult> 
   return { processed: true, stage: 'classified', detail: `processado sem handoff — intent: ${classification.intent}` };
 }
 
-function buildHandoffReport(event: RawEvent, classification: ClassifierResult): string {
+function buildHandoffReport(event: RawEvent, c: ClassifierResult, leadContext: string | null): string {
+  const ragLine = leadContext
+    ? `\n📂 <b>Contexto RAG:</b>\n<code>${leadContext.slice(0, 200)}</code>`
+    : '';
+
   return `🔔 <b>VRAXIA SENSE — LEAD DETECTADO</b>
 
 👤 <b>${event.prospect_name}</b>
 💼 ${event.job_title}
 🏢 ${event.company}
-🔗 ${event.linkedin_url}
+🔗 ${event.linkedin_url || '—'}
 
 💬 <b>Resposta recebida:</b>
 <i>"${event.message_content}"</i>
 
 🧠 <b>Análise IA:</b>
-Perfil: <b>${classification.variant}</b> | Intent: <b>${classification.intent.toUpperCase()}</b> | Score: <b>${classification.score}/10</b>
-${classification.reason}
+Perfil: <b>${c.variant}</b> | Intent: <b>${c.intent.toUpperCase()}</b> | Score: <b>${c.score}/10</b>
+${c.reason}${ragLine}
 
 ▶️ <b>Próximo passo:</b>
-${classification.suggested_next_action}
+${c.suggested_next_action}
 
-<code>Detectado automaticamente · VRAXIA Sense · ${new Date().toLocaleString('pt-BR')}</code>`.trim();
+<code>VRAXIA Sense · ${new Date().toLocaleString('pt-BR')}</code>`.trim();
 }
