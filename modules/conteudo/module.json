@@ -1,0 +1,10 @@
+{
+  "id": "conteudo",
+  "name": "Módulo Conteúdo & Copy",
+  "version": "1.0.0",
+  "department": "Conteúdo & Copywriting",
+  "description": "Criação de conteúdo, copywriting, roteiros, artigos, e-mails, scripts de vendas e comunicação estratégica",
+  "plan_min": "starter",
+  "agents": ["conteudo"],
+  "tags": ["copy", "conteúdo", "roteiro", "artigo", "e-mail", "script", "storytelling", "comunicação"]
+}

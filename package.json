@@ -1,4 +1,4 @@
-Seti (Visual Studio Code){
+{
   "name": "ai-lab",
   "version": "0.1.0",
   "description": "Professional AI agents workspace",
@@ -35,6 +35,7 @@ Seti (Visual Studio Code){
     "export-memories": "tsx scripts/export-memories.ts",
     "import-memories": "tsx scripts/import-memories.ts",
     "health": "tsx scripts/system-health.ts",
+    "skills:sync": "tsx scripts/sync-skills.ts",
     "tenant:provision": "tsx scripts/provision-tenant.ts",
     "db:migrate": "tsx scripts/run-migration.ts",
     "leads:acquire": "tsx scheduler/lead-acquisition-scheduler.ts",

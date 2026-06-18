@@ -1,0 +1,10 @@
+{
+  "id": "financeiro",
+  "name": "Módulo Financeiro",
+  "version": "1.0.0",
+  "department": "Financeiro",
+  "description": "Análise financeira, fluxo de caixa, contratos, precificação, DRE, planejamento orçamentário e conformidade fiscal",
+  "plan_min": "starter",
+  "agents": ["financeiro"],
+  "tags": ["finanças", "contabilidade", "contratos", "fluxo de caixa", "DRE", "precificação", "LGPD"]
+}

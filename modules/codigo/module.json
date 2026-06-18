@@ -1,0 +1,10 @@
+{
+  "id": "codigo",
+  "name": "Módulo Código & TI",
+  "version": "1.0.0",
+  "department": "Tecnologia & Desenvolvimento",
+  "description": "Desenvolvimento de software, revisão de código, arquitetura, debugging, documentação técnica e boas práticas",
+  "plan_min": "professional",
+  "agents": ["codigo"],
+  "tags": ["código", "desenvolvimento", "arquitetura", "debug", "documentação", "TypeScript", "Python", "API"]
+}

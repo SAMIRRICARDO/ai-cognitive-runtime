@@ -1,0 +1,10 @@
+{
+  "id": "lideranca",
+  "name": "Módulo Liderança & RH",
+  "version": "1.0.0",
+  "department": "Liderança & Equipes",
+  "description": "Gestão de pessoas, feedback, desenvolvimento de líderes, cultura organizacional, reuniões e performance de equipes",
+  "plan_min": "professional",
+  "agents": ["lideranca"],
+  "tags": ["liderança", "RH", "feedback", "equipes", "cultura", "performance", "desenvolvimento", "reuniões"]
+}

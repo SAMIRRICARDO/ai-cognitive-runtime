@@ -1,0 +1,10 @@
+{
+  "id": "juridico",
+  "name": "Módulo Jurídico",
+  "version": "1.0.0",
+  "department": "Jurídico & Advocacia",
+  "description": "Contratos, petições, pareceres jurídicos, due diligence, compliance, NDAs e gestão de processos",
+  "plan_min": "professional",
+  "agents": ["juridico"],
+  "tags": ["contratos", "petições", "compliance", "LGPD", "tributário", "trabalhista", "NDA"]
+}

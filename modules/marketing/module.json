@@ -1,0 +1,10 @@
+{
+  "id": "marketing",
+  "name": "Módulo Marketing",
+  "version": "1.0.0",
+  "department": "Marketing & Vendas",
+  "description": "Funis de vendas, campanhas, copy, estratégia de tráfego, e-mail marketing, social media e análise de performance",
+  "plan_min": "starter",
+  "agents": ["marketing"],
+  "tags": ["funil", "copy", "anúncios", "tráfego pago", "social media", "e-mail", "leads", "conversão"]
+}

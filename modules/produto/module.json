@@ -1,0 +1,10 @@
+{
+  "id": "produto",
+  "name": "Módulo Produto",
+  "version": "1.0.0",
+  "department": "Produto & Tecnologia",
+  "description": "Gestão de produto, roadmap, PRDs, user stories, priorização, discovery e métricas de produto",
+  "plan_min": "professional",
+  "agents": ["produto"],
+  "tags": ["produto", "roadmap", "PRD", "user story", "priorização", "discovery", "MVP", "OKR"]
+}

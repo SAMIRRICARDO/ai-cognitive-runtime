@@ -1,0 +1,10 @@
+{
+  "id": "operacoes",
+  "name": "Módulo Operações",
+  "version": "1.0.0",
+  "department": "Operações & Gestão",
+  "description": "Processos, SOPs, onboarding de clientes, métricas operacionais, gestão de equipe e eficiência empresarial",
+  "plan_min": "professional",
+  "agents": ["operacoes"],
+  "tags": ["processos", "SOP", "onboarding", "KPIs", "gestão", "eficiência", "Kanban", "delegação"]
+}
