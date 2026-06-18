@@ -76,6 +76,11 @@ export abstract class BaseModuleAgent extends BaseAgent {
 
   // Registers module-specific data tools — must be awaited before agent.run()
   async initDataTools(): Promise<void> {
+    // VRAXIA Sense: classify_linkedin_reply disponível em todos os módulos
+    await import("../../tools/classify-linkedin-reply.js")
+      .then(({ classifyLinkedInReplyTool }) => this.registerTool(classifyLinkedInReplyTool))
+      .catch(() => {});
+
     if (this.moduleId === "comercial") {
       await Promise.allSettled([
         import("../../tools/query-leads.js").then(({ queryLeadsTool }) => {
@@ -136,6 +141,8 @@ export function buildModuleSystemPrompt(cfg: ModuleConfig, skillCount: number): 
   const contextTools = [
     hasVault ? "`vault_search` — busca semântica no Obsidian vault (conhecimento institucional, ADRs, decisões, contexto de negócio)" : null,
     hasMemory ? "`memory_read` / `memory_write` — memória de curto prazo (Redis) para manter contexto entre turnos" : null,
+    // VRAXIA Sense — disponível em TODOS os módulos
+    "`classify_linkedin_reply` — **VRAXIA Sense**: classifica uma resposta recebida no LinkedIn. Detecta intent, decision_power, score 1-10 e próximo passo. Se handoff=true, envia alerta automático no Telegram.",
     isComercial ? "`search_leads_rag` — busca livre na base de leads indexados: por nome, empresa, cargo, status, campanha, segmento" : null,
     isComercial ? "`query_leads` — consulta estruturada de leads com filtros por status, campanha, empresa" : null,
     isComercial ? "`find_new_leads` — **busca NOVOS leads via web search** (Tavily) para um segmento/evento/cargo/região que ainda não estão na base" : null,
@@ -143,12 +150,25 @@ export function buildModuleSystemPrompt(cfg: ModuleConfig, skillCount: number): 
     isComercial ? "`validate_leads` — **valida e analisa** a base existente: HOT/WARM/INVALID, cobertura de email, top leads prontos para prospectar" : null,
   ].filter(Boolean);
 
+  const senseInstruction = `
+## VRAXIA Sense — Classificador de Respostas LinkedIn
+
+Use \`classify_linkedin_reply\` quando o usuário colar uma mensagem/resposta recebida no LinkedIn:
+- "classifica essa resposta: [texto]"
+- "o que acha dessa resposta do LinkedIn?"
+- "esse lead vale a pena? ele respondeu: [texto]"
+- "analisa essa mensagem que recebi: [texto]"
+
+O tool retorna: variant (A-E), intent (high/medium/low/none), decision_power, score 1-10, próximo passo.
+Se \`handoff=true\`, envia alerta automático no Telegram — informe o usuário.
+`;
+
   const contextSection = contextTools.length > 0 ? `
 ## Ferramentas de Contexto, Leads e Prospecção
 
 Antes de raciocinar, recupere contexto relevante:
 ${contextTools.map((t) => `- ${t}`).join("\n")}
-
+${senseInstruction}
 **Prioridade de execução para pedidos comerciais:**
 1. **Consulta da base existente** → \`search_leads_rag\` ou \`query_leads\` para leads já conhecidos
 2. **Validação da base** → \`validate_leads\` para relatório de qualidade, status HOT/WARM, cobertura de email
@@ -171,6 +191,7 @@ ${contextTools.map((t) => `- ${t}`).join("\n")}
 1. \`search_skills\` — encontre a skill adequada para o pedido
 2. \`run_skill\` — execute o prompt da skill com os dados do usuário
 3. \`list_skills\` — explore o catálogo quando não souber por onde começar
+${senseInstruction}
 `;
 
   return `Você é o agente de **${cfg.department}** do sistema VRAXIA OS.
