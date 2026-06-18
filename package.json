@@ -42,7 +42,7 @@
     "leads:acquire": "tsx scheduler/lead-acquisition-scheduler.ts",
     "leads:acquire:daemon": "tsx scheduler/lead-acquisition-scheduler.ts",
     "api:start": "tsx api/server.ts",
-    "api:dev": "cross-env DEV_MODE=true ENABLE_MEMORY=false tsx api/server.ts",
+    "api:dev": "cross-env DEV_MODE=true ENABLE_MEMORY=false tsx watch api/server.ts",
     "leads:index-rag": "tsx scripts/index-leads-rag.ts",
     "leads:enrich": "node scripts/enrich-linkedin-urls.mjs",
     "leads:audit": "node scripts/audit-linkedin.mjs",

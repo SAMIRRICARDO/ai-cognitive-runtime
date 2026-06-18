@@ -1,6 +1,7 @@
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
 import { tenantAuthMiddleware } from "./middleware/auth.js";
@@ -85,6 +86,30 @@ app.use("/api/leads",   devPassthrough, leadsRouter);
 // Sense: /commercial sem auth (webhook Waalaxy); /stats e /events com devPassthrough
 app.use("/api/sense/commercial", senseRouter);
 app.use("/api/sense",  devPassthrough, senseRouter);
+
+// ── Billing stats (reads local metrics.json, no auth) ────────────────────────
+app.get("/api/billing", async (_req, res) => {
+  try {
+    const metricsPath = path.resolve(__dirname, "../logs/metrics.json");
+    const raw = await readFile(metricsPath, "utf8");
+    const m = JSON.parse(raw);
+    const costs = m.aiCosts ?? {};
+    const claude = costs.claude ?? 0;
+    const openai = costs.openai ?? 0;
+    res.setHeader("Cache-Control", "no-cache");
+    res.json({
+      claude,
+      openai,
+      total: claude + openai,
+      tokensUsed: m.tokensUsed ?? 0,
+      cheapModeSavings: m.cheapModeSavings ?? 0,
+      metricsUpdatedAt: m.generatedAt ?? null,
+      fetchedAt: new Date().toISOString(),
+    });
+  } catch {
+    res.json({ claude: 0, openai: 0, total: 0, tokensUsed: 0, cheapModeSavings: 0, fetchedAt: new Date().toISOString() });
+  }
+});
 
 // ── Admin Routes (always require admin key, no dev passthrough) ───────────────
 app.use("/admin", adminRouter);

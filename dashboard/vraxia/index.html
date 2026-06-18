@@ -407,7 +407,64 @@
         <h2 class="text-xl font-bold text-white mb-1">Uso & Custo por Módulo</h2>
         <p class="text-gray-500 text-sm">Rastreamento de tokens e custo por tenant</p>
       </div>
-      <div class="px-8 py-6">
+
+      <!-- BILLING REAL-TIME SECTION -->
+      <div class="px-8 pt-6 pb-2">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="live-dot"></span>
+            <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Billing em Tempo Real</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-gray-600 font-mono" id="billing-last-refresh">—</span>
+            <button onclick="loadBillingData()" class="text-xs text-blue-400 hover:text-blue-300 font-mono transition">↻ Atualizar</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <!-- Anthropic -->
+          <div class="glass rounded-xl p-5 card-hover glow-blue" style="border-color:rgba(99,102,241,.2)">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div style="width:28px;height:28px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;">A</div>
+                <span class="text-xs font-semibold text-gray-300">Anthropic</span>
+              </div>
+              <a href="https://platform.claude.com/settings/billing" target="_blank" class="text-xs text-indigo-400 hover:text-indigo-300 transition font-mono" title="Ver billing Anthropic">↗ Console</a>
+            </div>
+            <div class="text-2xl font-bold text-white font-mono mb-1" id="billing-claude">$0.00</div>
+            <div class="text-xs text-gray-500">Claude — custo acumulado</div>
+          </div>
+          <!-- OpenAI -->
+          <div class="glass rounded-xl p-5 card-hover" style="border-color:rgba(16,185,129,.2)">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div style="width:28px;height:28px;background:linear-gradient(135deg,#10b981,#059669);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;">O</div>
+                <span class="text-xs font-semibold text-gray-300">OpenAI</span>
+              </div>
+              <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" class="text-xs text-emerald-400 hover:text-emerald-300 transition font-mono" title="Ver billing OpenAI">↗ Console</a>
+            </div>
+            <div class="text-2xl font-bold text-white font-mono mb-1" id="billing-openai">$0.00</div>
+            <div class="text-xs text-gray-500">OpenAI — custo acumulado</div>
+          </div>
+          <!-- Total + métricas -->
+          <div class="glass rounded-xl p-5" style="border-color:rgba(251,191,36,.15)">
+            <div class="flex items-center gap-2 mb-3">
+              <div style="width:28px;height:28px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;">💰</div>
+              <span class="text-xs font-semibold text-gray-300">Total Gasto</span>
+            </div>
+            <div class="text-2xl font-bold text-yellow-400 font-mono mb-1" id="billing-total">$0.00</div>
+            <div class="flex items-center gap-3 mt-2">
+              <div class="text-xs text-gray-500"><span class="text-blue-400 font-mono" id="billing-tokens">0</span> tokens</div>
+              <div class="text-xs text-gray-500">•</div>
+              <div class="text-xs text-gray-500">economia: <span class="text-green-400 font-mono" id="billing-savings">$0</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="text-xs text-gray-700 font-mono mb-4 text-center" id="billing-note">Os valores refletem o rastreamento local de custos. Atualizado a cada 30s.</div>
+      </div>
+
+      <div class="px-8 py-3">
+        <div class="border-t border-white/5 mb-4"></div>
+        <div class="text-xs text-gray-600 uppercase tracking-widest font-mono mb-4">Uso por Módulo (API)</div>
         <div class="grid grid-cols-3 gap-4 mb-6">
           <div class="glass rounded-xl p-5 text-center">
             <div class="text-2xl font-bold text-white" id="u-total-cost">$0.000000</div>
@@ -554,6 +611,37 @@ async function loadModules() {
   }
 }
 
+let billingPollId = null;
+
+async function loadBillingData() {
+  try {
+    const r = await fetch('/api/billing');
+    const d = await r.json();
+    const fmt = v => '$' + Number(v).toFixed(2);
+    const el = id => document.getElementById(id);
+    if (el('billing-claude')) el('billing-claude').textContent = fmt(d.claude);
+    if (el('billing-openai')) el('billing-openai').textContent = fmt(d.openai);
+    if (el('billing-total'))  el('billing-total').textContent  = fmt(d.total);
+    if (el('billing-tokens')) el('billing-tokens').textContent = Number(d.tokensUsed || 0).toLocaleString('pt-BR');
+    if (el('billing-savings')) el('billing-savings').textContent = fmt(d.cheapModeSavings || 0);
+    const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    if (el('billing-last-refresh')) el('billing-last-refresh').textContent = 'Atualizado: ' + now;
+  } catch(e) {
+    const el = document.getElementById('billing-note');
+    if (el) el.textContent = 'Dashboard server offline — inicie com: npm run dashboard';
+  }
+}
+
+function startBillingPoll() {
+  loadBillingData();
+  if (billingPollId) clearInterval(billingPollId);
+  billingPollId = setInterval(loadBillingData, 30000);
+}
+
+function stopBillingPoll() {
+  if (billingPollId) { clearInterval(billingPollId); billingPollId = null; }
+}
+
 async function loadUsage() {
   try {
     const r = await apiFetch('/api/usage');
@@ -685,7 +773,8 @@ function showView(name) {
   const navEl = document.getElementById('nav-' + name);
   if (navEl) navEl.classList.add('active');
   currentView = name;
-  if (name === 'usage') loadUsage();
+  if (name !== 'usage') stopBillingPoll();
+  if (name === 'usage') { loadUsage(); startBillingPoll(); }
   if (name === 'skills' && !currentSkillModule && modules.length) loadSkillsFor(modules.find(m => m.active)?.id || modules[0]?.id);
   lucide.createIcons();
 }
@@ -964,8 +1053,16 @@ function handleModSSEEvent(event, data, contentEl, agentEl, statusEl, color) {
       }
       break;
     case 'output':
-      if ((data.content || data.text) && contentEl) {
-        contentEl.innerHTML += escapeHtml(data.content || data.text).replace(/\n/g, '<br>');
+      if ((data.content || data.text) && agentEl) {
+        const rendered = renderMarkdown(data.content || data.text);
+        if (agentEl.querySelector('.sse-event')) {
+          const outDiv = document.createElement('div');
+          outDiv.style.cssText = 'margin-top:8px;line-height:1.65;font-size:13px';
+          outDiv.innerHTML = rendered;
+          agentEl.appendChild(outDiv);
+        } else if (contentEl) {
+          contentEl.innerHTML += rendered;
+        }
       }
       break;
     case 'done':
@@ -1088,8 +1185,16 @@ function handleSSEEvent(event, data, contentEl, agentEl, statusEl) {
       addSSEEvent(agentEl, `result: ${JSON.stringify(data.result || data.content || data).slice(0,80)}…`, 'sse-tool_result');
       break;
     case 'output':
-      if (data.content || data.text) {
-        contentEl.innerHTML += escapeHtml(data.content || data.text).replace(/\n/g, '<br>');
+      if ((data.content || data.text) && agentEl) {
+        const rendered = renderMarkdown(data.content || data.text);
+        if (agentEl.querySelector('.sse-event')) {
+          const outDiv = document.createElement('div');
+          outDiv.style.cssText = 'margin-top:8px;line-height:1.65;font-size:13px';
+          outDiv.innerHTML = rendered;
+          agentEl.appendChild(outDiv);
+        } else {
+          contentEl.innerHTML += rendered;
+        }
       }
       break;
     case 'done':
@@ -1324,6 +1429,21 @@ function initNetCanvas() {
 // ══ UTILS ═════════════════════════════════════════════════════════════════════
 function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function renderMarkdown(text) {
+  let s = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  s = s.replace(/`([^`]+)`/g,'<code style="background:#1e293b;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace">$1</code>');
+  s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s = s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  s = s.replace(/^### (.+)$/gm,'<div style="font-weight:700;font-size:12px;margin:8px 0 3px">$1</div>');
+  s = s.replace(/^## (.+)$/gm,'<div style="font-weight:700;font-size:13px;margin:10px 0 4px">$1</div>');
+  s = s.replace(/^# (.+)$/gm,'<div style="font-weight:700;font-size:14px;margin:10px 0 4px">$1</div>');
+  s = s.replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid #374151;margin:8px 0">');
+  s = s.replace(/^\d+\. (.+)$/gm,'<div style="margin:2px 0;padding-left:14px">$1</div>');
+  s = s.replace(/^[-*] (.+)$/gm,'<div style="margin:2px 0;padding-left:14px">• $1</div>');
+  s = s.replace(/\n\n/g,'<br><br>');
+  s = s.replace(/\n/g,'<br>');
+  return s;
 }
 
 // ══ BOOT ══════════════════════════════════════════════════════════════════════

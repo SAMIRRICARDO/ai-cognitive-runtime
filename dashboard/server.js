@@ -107,12 +107,32 @@ async function loadLiveData() {
 
 const server = http.createServer(async (req, res) => {
   const pathname = getRequestPath(req.url ?? "");
+
   if (pathname === "/api/live-dashboard") {
     const data = await loadLiveData();
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(JSON.stringify(data));
     return;
   }
+
+  if (pathname === "/api/billing") {
+    const metrics = (await safeReadJson(resolve(PUBLIC_ROOT, "logs", "metrics.json"))) ?? {};
+    const aiCosts = metrics.aiCosts ?? {};
+    const claudeCost = aiCosts.claude ?? 0;
+    const openaiCost = aiCosts.openai ?? 0;
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache" });
+    res.end(JSON.stringify({
+      claude: claudeCost,
+      openai: openaiCost,
+      total: claudeCost + openaiCost,
+      tokensUsed: metrics.tokensUsed ?? 0,
+      cheapModeSavings: metrics.cheapModeSavings ?? 0,
+      metricsUpdatedAt: metrics.generatedAt ?? null,
+      fetchedAt: new Date().toISOString(),
+    }));
+    return;
+  }
+
   await serveFile(pathname, res);
 });
 
