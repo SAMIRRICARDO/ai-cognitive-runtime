@@ -89,13 +89,6 @@
     .sse-tool_result{color:#4ade80;background:rgba(74,222,128,.06);}
     .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.1);border-top-color:#60a5fa;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
     ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
-    .download-leads-bar{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;}
-    .btn-dl{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .2s;border:none;letter-spacing:.3px;}
-    .btn-dl-csv{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25);}
-    .btn-dl-csv:hover{background:rgba(74,222,128,.22);box-shadow:0 0 10px rgba(74,222,128,.2);}
-    .btn-dl-json{background:rgba(96,165,250,.1);color:#60a5fa;border:1px solid rgba(96,165,250,.2);}
-    .btn-dl-json:hover{background:rgba(96,165,250,.2);box-shadow:0 0 10px rgba(96,165,250,.15);}
-    .leads-count-badge{font-size:10px;color:#94a3b8;font-family:'JetBrains Mono',monospace;}
   </style>
 </head>
 <body class="overflow-auto">
@@ -452,74 +445,11 @@ function quickSend(text){
   const input=document.getElementById('chat-input');
   input.value=text;sendMsg();
 }
-// ── Lead extraction helpers ───────────────────────────────────────────────────
-function extractLeadsFromResult(d) {
-  try {
-    const raw = typeof d.result === 'string' ? JSON.parse(d.result) : (d.result ?? d.output ?? d);
-    // prospect_leads → raw.leads[]
-    if (Array.isArray(raw?.leads) && raw.leads.length) return raw.leads;
-    // enrich_company → raw.contacts[]
-    if (Array.isArray(raw?.contacts) && raw.contacts.length)
-      return raw.contacts.map(c => ({ name: c.name, role: c.role, company: c.company, email: c.email, email_source: c.emailInferred ? 'pattern' : 'web', email_confidence: c.confidence, domain: null, linkedin: c.linkedin, extra_info: c.notes, source: null }));
-    // validate_leads → raw.leads[] with status field
-    if (Array.isArray(raw?.leads) && raw.leads.length) return raw.leads;
-  } catch {}
-  return null;
-}
-
-function leadsToCSV(leads) {
-  const cols = ['name','role','company','email','email_source','email_confidence','domain','linkedin','extra_info','source'];
-  const header = cols.join(',');
-  const rows = leads.map(l => cols.map(c => {
-    const v = (l[c] ?? '');
-    return '"' + String(v).replace(/"/g,'""') + '"';
-  }).join(','));
-  return [header, ...rows].join('\r\n');
-}
-
-function downloadLeadsCSV(leads, filename) {
-  const csv = '﻿' + leadsToCSV(leads);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename || `vraxia-leads-${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function downloadLeadsJSON(leads, filename) {
-  const blob = new Blob([JSON.stringify(leads, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename || `vraxia-leads-${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function appendDownloadBar(agEl, leads) {
-  const ts = new Date().toISOString().slice(0,10);
-  const fname = `vraxia-leads-${ts}`;
-  const bar = document.createElement('div');
-  bar.className = 'download-leads-bar';
-  bar.innerHTML = `
-    <span class="leads-count-badge">📋 ${leads.length} lead${leads.length !== 1 ? 's' : ''} disponíve${leads.length !== 1 ? 'is' : 'l'}</span>
-    <button class="btn-dl btn-dl-csv" onclick="downloadLeadsCSV(window._lastLeads,'${fname}.csv')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Baixar CSV
-    </button>
-    <button class="btn-dl btn-dl-json" onclick="downloadLeadsJSON(window._lastLeads,'${fname}.json')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Baixar JSON
-    </button>`;
-  agEl.appendChild(bar);
-}
-
 async function sendMsg(){
   const input=document.getElementById('chat-input');
   const msg=input.value.trim();
   if(!msg)return;
+  // Hide suggestions after first message
   const sugg=document.getElementById('chat-suggestions');
   if(sugg)sugg.style.display='none';
   input.value='';input.disabled=true;document.getElementById('send-btn').disabled=true;
@@ -527,7 +457,6 @@ async function sendMsg(){
   const agEl=appendMsg(`<span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span><span class="content"></span>`,'msg-agent streaming');
   const ct=agEl.querySelector('.content');
   const st=document.getElementById('chat-status-inline');st.classList.remove('hidden');st.textContent='● Conectando...';
-  let collectedLeads = null;
   try{
     const resp=await fetch((API_URL||'http://localhost:3000')+'/api/run',{
       method:'POST',
@@ -548,13 +477,7 @@ async function sendMsg(){
         try{const d=JSON.parse(ds);
           if(ev==='start')st.textContent='● '+d.message;
           else if(ev==='tool_call'){const e=document.createElement('div');e.className='sse-event sse-tool_call';e.textContent=`⚡ ${d.tool||d.name||'tool'}`;agEl.appendChild(e);}
-          else if(ev==='tool_result'){
-            const leads=extractLeadsFromResult(d);
-            if(leads){collectedLeads=leads;window._lastLeads=leads;}
-            const e=document.createElement('div');e.className='sse-event sse-tool_result';
-            e.textContent=leads?`✓ ${leads.length} lead${leads.length!==1?'s':''} encontrado${leads.length!==1?'s':''}`:'✓ dados recuperados';
-            agEl.appendChild(e);
-          }
+          else if(ev==='tool_result'){const e=document.createElement('div');e.className='sse-event sse-tool_result';e.textContent=`✓ dados recuperados`;agEl.appendChild(e);}
           else if(ev==='output'&&d.content){const rendered=renderMd(d.content);if(agEl.querySelector('.sse-event')){const od=document.createElement('div');od.style.cssText='margin-top:8px;line-height:1.65;font-size:13px';od.innerHTML=rendered;agEl.appendChild(od);}else{ct.innerHTML+=rendered;}}
           else if(ev==='done')st.textContent=`✓ ${d.durationMs||0}ms · $${((d.cost?.totalCostUsd||0)).toFixed(5)}`;
           else if(ev==='error')ct.textContent='❌ '+d.message;
@@ -563,13 +486,7 @@ async function sendMsg(){
       }
     }
   }catch(e){ct.textContent='❌ '+e.message;}
-  finally{
-    agEl.classList.remove('streaming');
-    if(collectedLeads?.length) appendDownloadBar(agEl, collectedLeads);
-    input.disabled=false;document.getElementById('send-btn').disabled=false;
-    st.classList.remove('hidden');input.focus();
-    document.getElementById('chat-msgs').scrollTop=99999;
-  }
+  finally{agEl.classList.remove('streaming');input.disabled=false;document.getElementById('send-btn').disabled=false;st.classList.remove('hidden');input.focus();}
 }
 
 // ══ OBSIDIAN BG ═══════════════════════════════════════════════════════════════
