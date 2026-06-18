@@ -39,7 +39,9 @@
     "tenant:provision": "tsx scripts/provision-tenant.ts",
     "db:migrate": "tsx scripts/run-migration.ts",
     "leads:acquire": "tsx scheduler/lead-acquisition-scheduler.ts",
-    "leads:acquire:daemon": "tsx scheduler/lead-acquisition-scheduler.ts"
+    "leads:acquire:daemon": "tsx scheduler/lead-acquisition-scheduler.ts",
+    "api:start": "tsx api/server.ts",
+    "api:dev": "DEV_MODE=true tsx api/server.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

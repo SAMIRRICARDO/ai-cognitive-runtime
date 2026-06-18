@@ -9,12 +9,14 @@ export { ConteudoAgent }   from "./conteudo/agent.js";
 export { LiderancaAgent }  from "./lideranca/agent.js";
 export { ProdutoAgent }    from "./produto/agent.js";
 export { CodigoAgent }     from "./codigo/agent.js";
+export { ComercialAgent }  from "./comercial/agent.js";
 
 export { createDepartmentAgent } from "./_base/agent-factory.js";
 export type { ModuleAgentOptions } from "./_base/agent-factory.js";
 
 // All available module IDs
 export const AVAILABLE_MODULES = [
+  "comercial",
   "financeiro",
   "juridico",
   "marketing",

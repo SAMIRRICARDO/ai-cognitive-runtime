@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VRAXIA — Comercial AI</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Outfit','sans-serif'],mono:['JetBrains Mono','monospace']}}}}</script>
+  <style>
+    html,body{height:100%;margin:0;}
+    body{background:#000;color:#e5e7eb;font-family:'Outfit',sans-serif;}
+    *{box-sizing:border-box;}
+    .glow-blue  {box-shadow:0 0 30px rgba(59,130,246,.15),0 0 60px rgba(59,130,246,.05);}
+    .glow-purple{box-shadow:0 0 30px rgba(139,92,246,.15),0 0 60px rgba(139,92,246,.05);}
+    .glass      {background:rgba(255,255,255,.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06);}
+    .glass-strong{background:rgba(255,255,255,.05);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.08);}
+    .gradient-text{background:linear-gradient(135deg,#60a5fa,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% 200%;animation:shimmer 3s ease infinite;}
+    .badge{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:.5px;}
+    @keyframes shimmer    {0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    @keyframes pulse-glow {0%,100%{opacity:.4}50%{opacity:1}}
+    @keyframes slideUp    {from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes typewriter {from{width:0}to{width:100%}}
+    @keyframes blink      {0%,100%{opacity:1}50%{opacity:0}}
+    @keyframes scan       {0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+    @keyframes liveInd    {0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.85)}}
+    @keyframes statFlash  {0%{color:#fff;text-shadow:0 0 12px rgba(96,165,250,.9),0 0 24px rgba(96,165,250,.5)}60%{color:#93c5fd;text-shadow:0 0 8px rgba(96,165,250,.5)}100%{color:#fff;text-shadow:none}}
+    @keyframes cardPing   {0%{box-shadow:0 0 0 0 rgba(59,130,246,.35),inset 0 0 12px rgba(59,130,246,.08);border-color:rgba(59,130,246,.35)}60%{box-shadow:0 0 18px 4px rgba(59,130,246,.12),inset 0 0 6px rgba(59,130,246,.04);border-color:rgba(59,130,246,.18)}100%{box-shadow:none;border-color:rgba(255,255,255,.06)}}
+    @keyframes barGlow    {0%,100%{filter:brightness(1)}50%{filter:brightness(1.35) drop-shadow(0 0 6px currentColor)}}
+    @keyframes chartPulse {0%{opacity:.7}50%{opacity:1}100%{opacity:.7}}
+    @keyframes ticker     {0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    @keyframes obsGrid    {0%{opacity:.04}50%{opacity:.09}100%{opacity:.04}}
+    @keyframes obsPulse   {0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.4;transform:scale(1.05)}}
+    @keyframes obsFloat   {0%,100%{transform:translateY(0) translateX(0);opacity:.6}33%{transform:translateY(-18px) translateX(8px);opacity:1}66%{transform:translateY(-8px) translateX(-6px);opacity:.7}}
+    @keyframes obsBeam    {0%{transform:scaleX(0);opacity:0}50%{transform:scaleX(1);opacity:.4}100%{transform:scaleX(0);opacity:0}}
+    @keyframes bubbleIn   {from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes bubbleOut  {to{opacity:0;transform:translateY(-4px)}}
+    @keyframes logIn      {to{opacity:.75}}
+    @keyframes spin       {to{transform:rotate(360deg)}}
+    .animate-slideUp    {animation:slideUp .8s ease forwards;}
+    .animate-pulse-glow {animation:pulse-glow 2s ease infinite;}
+    .card-hover         {transition:all .3s ease;}
+    .card-hover:hover   {transform:translateY(-4px);border-color:rgba(139,92,246,.3);box-shadow:0 0 40px rgba(139,92,246,.1);}
+    .scan-line          {position:relative;overflow:hidden;}
+    .scan-line::after   {content:'';position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(59,130,246,.05),transparent);animation:scan 3s linear infinite;}
+    .live-dot           {display:inline-block;width:7px;height:7px;border-radius:50%;background:#22d3ee;margin-right:6px;animation:liveInd 1.4s ease-in-out infinite;box-shadow:0 0 6px rgba(34,211,238,.7);}
+    .stat-value         {transition:color .2s ease;}
+    .stat-flash         {animation:statFlash .7s ease forwards;}
+    .card-ping          {animation:cardPing .9s ease forwards;}
+    .chart-bar          {transition:height 1.5s ease-in-out;}
+    .chart-bar.animating{animation:chartPulse 1.2s ease-in-out;}
+    .chart-bar-active   {animation:barGlow 2.2s ease-in-out infinite;}
+    .delta-tag          {font-size:10px;font-weight:600;letter-spacing:.3px;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:4px;transition:all .4s ease;}
+    .delta-up           {color:#4ade80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);}
+    .delta-neutral      {color:#60a5fa;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);}
+    .ticker-track       {display:flex;animation:ticker 28s linear infinite;white-space:nowrap;}
+    .ticker-track:hover {animation-play-state:paused;}
+    .status-hot         {color:#f87171;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);}
+    .status-warm        {color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);}
+    .terminal-line      {overflow:hidden;white-space:nowrap;animation:typewriter 2s steps(40) forwards;}
+    .cursor-blink::after{content:'▊';animation:blink 1s infinite;color:#60a5fa;}
+    #hero-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+    .obs-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(96,165,250,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,.06) 1px,transparent 1px);background-size:60px 60px;animation:obsGrid 4s ease-in-out infinite;}
+    .obs-orb{position:absolute;border-radius:50%;filter:blur(80px);animation:obsPulse 6s ease-in-out infinite;}
+    .obs-orb-1{width:500px;height:500px;background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%);top:-100px;left:50%;transform:translateX(-50%);}
+    .obs-orb-2{width:300px;height:300px;background:radial-gradient(circle,rgba(139,92,246,.1) 0%,transparent 70%);bottom:0;left:10%;animation-delay:-2s;}
+    .obs-orb-3{width:200px;height:200px;background:radial-gradient(circle,rgba(34,211,238,.08) 0%,transparent 70%);top:30%;right:5%;animation-delay:-4s;}
+    .obs-particle{position:absolute;border-radius:50%;animation:obsFloat linear infinite;}
+    .obs-beam{position:absolute;height:1px;transform-origin:left center;animation:obsBeam 4s ease-in-out infinite;}
+    .agents-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    @media(max-width:768px){.agents-grid{grid-template-columns:1fr;}}
+    .agent-panel{border-radius:16px;overflow:hidden;position:relative;background:#0a0e18;border:1px solid rgba(255,255,255,.06);}
+    .agent-panel-header{display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.05);}
+    .agent-panel-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:liveInd 1.2s ease-in-out infinite;box-shadow:0 0 6px rgba(74,222,128,.6);}
+    .agent-panel-title{font-size:10px;color:#60a5fa;letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;}
+    #office-speech{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:3;}
+    .o-bubble{position:absolute;background:#1e293b;border:1px solid #334155;border-radius:8px 8px 8px 2px;padding:4px 8px;font-size:9px;white-space:nowrap;animation:bubbleIn .25s ease forwards,bubbleOut .3s ease 2.2s forwards;opacity:0;pointer-events:none;max-width:150px;overflow:hidden;text-overflow:ellipsis;font-family:'JetBrains Mono',monospace;}
+    #office-log{position:absolute;bottom:10px;left:12px;font-size:8px;pointer-events:none;z-index:2;display:flex;flex-direction:column;gap:2px;font-family:'JetBrains Mono',monospace;}
+    .o-log-line{animation:logIn .2s ease forwards;opacity:0;}
+    #net-log{position:absolute;bottom:10px;left:12px;font-size:8px;letter-spacing:.4px;pointer-events:none;z-index:2;display:flex;flex-direction:column;gap:2px;font-family:'JetBrains Mono',monospace;}
+    .n-log-line{animation:logIn .2s ease forwards;opacity:0;}
+    /* Chat panel */
+    .msg-user{align-self:flex-end;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.25);border-radius:16px 16px 4px 16px;padding:10px 14px;max-width:75%;font-size:13px;}
+    .msg-agent{align-self:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:4px 16px 16px 16px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.6;}
+    .msg-agent.streaming::after{content:'▊';animation:blink 1s infinite;color:#60a5fa;margin-left:2px;}
+    .sse-event{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:5px;margin:2px 0;}
+    .sse-tool_call{color:#22d3ee;background:rgba(34,211,238,.06);}
+    .sse-tool_result{color:#4ade80;background:rgba(74,222,128,.06);}
+    .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.1);border-top-color:#60a5fa;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+  </style>
+</head>
+<body class="overflow-auto">
+
+<!-- Back button + breadcrumb -->
+<nav class="glass sticky top-0 z-50 border-b border-white/5">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <a href="/vraxia" class="flex items-center gap-2 text-gray-500 hover:text-white transition text-sm">
+        <i data-lucide="arrow-left" style="width:16px;height:16px"></i> VRAXIA OS
+      </a>
+      <span class="text-gray-700">/</span>
+      <div class="flex items-center gap-2">
+        <div style="width:22px;height:22px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:6px;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="trending-up" style="width:13px;height:13px;color:white"></i>
+        </div>
+        <span class="text-white font-semibold text-sm">Comercial AI</span>
+        <span class="badge text-cyan-300 ml-1">Pipeline Autônomo</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-gray-600 font-mono flex items-center gap-1.5"><span class="live-dot" style="margin-right:0"></span>6 agentes ativos</span>
+      <button onclick="openChat()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition font-medium">Acionar Pipeline →</button>
+    </div>
+  </div>
+</nav>
+
+<div class="w-full min-h-full max-w-7xl mx-auto px-6">
+
+  <!-- HERO -->
+  <section class="relative py-16 overflow-hidden">
+    <div id="hero-bg">
+      <div class="obs-grid"></div>
+      <div class="obs-orb obs-orb-1"></div>
+      <div class="obs-orb obs-orb-2"></div>
+      <div class="obs-orb obs-orb-3"></div>
+      <div id="obs-particles"></div>
+      <div id="obs-beams"></div>
+    </div>
+    <div class="relative text-center" style="z-index:1">
+      <div class="flex justify-center gap-3 mb-6 flex-wrap">
+        <span class="badge text-blue-300">AI-Native</span>
+        <span class="badge text-purple-300">6 Agentes Autônomos</span>
+        <span class="badge text-cyan-300">24/7 Pipeline</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl font-bold text-white leading-tight tracking-tight mb-4 animate-slideUp">
+        Pipeline comercial operando<br><span class="gradient-text">com agentes de IA.</span>
+      </h1>
+      <p class="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
+        Lead sourcing, validação, RAG contextual, outbound personalizado e follow-up automatizados.<br>
+        Infraestrutura AI-native dentro do VRAXIA OS.
+      </p>
+    </div>
+  </section>
+
+  <!-- TERMINAL -->
+  <section class="pb-12">
+    <div class="glass-strong rounded-2xl p-6 glow-blue">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+        <span class="ml-3 text-xs font-mono text-gray-500">vraxia-comercial-runtime v1.0.0</span>
+      </div>
+      <div class="font-mono text-xs md:text-sm space-y-2 text-gray-400">
+        <div class="terminal-line" style="animation-delay:0s"><span class="text-blue-400">[Orchestrator]</span> Inicializando pipeline comercial...</div>
+        <div class="terminal-line" style="animation-delay:1.5s;opacity:0;animation-fill-mode:forwards"><span class="text-green-400">[Enricher]</span> Buscando leads no segmento target...</div>
+        <div class="terminal-line" style="animation-delay:3s;opacity:0;animation-fill-mode:forwards"><span class="text-purple-400">[RAG Agent]</span> Contextualizando via knowledge base + pgvector...</div>
+        <div class="terminal-line" style="animation-delay:4.5s;opacity:0;animation-fill-mode:forwards"><span class="text-yellow-400">[Validator]</span> Validando emails → DMARC check → score IA...</div>
+        <div class="terminal-line" style="animation-delay:6s;opacity:0;animation-fill-mode:forwards"><span class="text-cyan-400">[Outbound]</span> Personalizando copy → anexando PDF → enviando...</div>
+        <div class="terminal-line" style="animation-delay:7.5s;opacity:0;animation-fill-mode:forwards"><span class="text-pink-400">[Analytics]</span> Dashboard atualizado → delivery rate: 97.3%</div>
+        <div class="terminal-line cursor-blink" style="animation-delay:9s;opacity:0;animation-fill-mode:forwards"><span class="text-green-400">[✓ Pipeline]</span> 6 agentes executados em 4.2s</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AGENT PANELS -->
+  <section class="pb-12">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-white mb-2">Time de Agentes Comerciais</h2>
+      <p class="text-gray-500 text-sm flex items-center justify-center gap-2">
+        <span class="live-dot"></span>6 agentes autônomos no pipeline 24/7
+      </p>
+    </div>
+    <div class="agents-grid">
+      <!-- Office Canvas -->
+      <div class="agent-panel" style="height:460px;">
+        <div class="agent-panel-header">
+          <div class="agent-panel-dot"></div>
+          <span class="agent-panel-title">AI Office · Equipe Virtual</span>
+        </div>
+        <div style="position:relative;height:calc(100% - 41px);">
+          <canvas id="office-canvas" style="display:block;width:100%;height:100%;"></canvas>
+          <div id="office-hud" style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;pointer-events:none;z-index:4;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:#4ade80;animation:liveInd 1.2s ease-in-out infinite;box-shadow:0 0 5px rgba(74,222,128,.7);"></div>
+              <span style="font-size:9px;color:#4ade80;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">LIVE</span>
+            </div>
+            <div style="display:flex;gap:14px;">
+              <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="o-active">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Ativos</div></div>
+              <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="o-done">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Tasks</div></div>
+            </div>
+          </div>
+          <div id="office-speech"></div>
+          <div id="office-log"></div>
+        </div>
+      </div>
+      <!-- Network Canvas -->
+      <div class="agent-panel" style="height:460px;">
+        <div class="agent-panel-header">
+          <div class="agent-panel-dot" style="background:#60a5fa;box-shadow:0 0 5px rgba(96,165,250,.7);animation-delay:-.3s;"></div>
+          <span class="agent-panel-title">Agent Network · Runtime</span>
+        </div>
+        <div style="position:relative;height:calc(100% - 41px);">
+          <canvas id="net-canvas" style="display:block;width:100%;height:100%;"></canvas>
+          <div id="net-hud" style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;pointer-events:none;z-index:4;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:#60a5fa;animation:liveInd 1.2s ease-in-out infinite;box-shadow:0 0 5px rgba(96,165,250,.7);"></div>
+              <span style="font-size:9px;color:#60a5fa;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">RUNTIME</span>
+            </div>
+            <div style="display:flex;gap:14px;">
+              <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="n-tasks">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Tasks/s</div></div>
+              <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="n-done">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Total</div></div>
+            </div>
+          </div>
+          <div id="net-log"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS TICKER -->
+  <section class="pb-6">
+    <div class="glass rounded-xl overflow-hidden py-2">
+      <div style="overflow:hidden;">
+        <div class="ticker-track text-xs font-mono text-gray-500">
+          <span class="mx-6 text-green-400">● LEADS +23%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-blue-400">● DELIVERY 97.3%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-purple-400">● CACHE HIT 89%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-cyan-400">● EMAILS +18%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-yellow-400">● FOLLOW-UP D+3 ACTIVE</span><span class="mx-6">|</span>
+          <span class="mx-6 text-pink-400">● AI COST $0.47/lead</span><span class="mx-6">|</span>
+          <span class="mx-6 text-green-400">● ECONOMIA R$4.2k/mês</span><span class="mx-6">|</span>
+          <span class="mx-6 text-blue-400">● 12 CAMPANHAS ATIVAS</span><span class="mx-6">|</span>
+          <span class="mx-6 text-green-400">● LEADS +23%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-blue-400">● DELIVERY 97.3%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-purple-400">● CACHE HIT 89%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-cyan-400">● EMAILS +18%</span><span class="mx-6">|</span>
+          <span class="mx-6 text-yellow-400">● FOLLOW-UP D+3 ACTIVE</span><span class="mx-6">|</span>
+          <span class="mx-6 text-pink-400">● AI COST $0.47/lead</span><span class="mx-6">|</span>
+          <span class="mx-6 text-green-400">● ECONOMIA R$4.2k/mês</span><span class="mx-6">|</span>
+          <span class="mx-6 text-blue-400">● 12 CAMPANHAS ATIVAS</span><span class="mx-6">|</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS ROWS -->
+  <section class="pb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-leads"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-leads">2,847</div><div class="text-xs text-gray-500 mt-1">Leads Capturados</div><div class="delta-tag delta-up" id="delta-leads">↑ 23%</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-emails"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-emails">1,429</div><div class="text-xs text-gray-500 mt-1">Emails Enviados</div><div class="delta-tag delta-up" id="delta-emails">↑ 18%</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-delivery"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-delivery">97.3%</div><div class="text-xs text-gray-500 mt-1">Taxa de Entrega</div><div class="delta-tag delta-neutral" id="delta-delivery">Estável</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-campaigns"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-campaigns">12</div><div class="text-xs text-gray-500 mt-1">Campanhas Ativas</div><div class="delta-tag delta-up" id="delta-campaigns">3 novas</div></div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-cache"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-cache">89%</div><div class="text-xs text-gray-500 mt-1">Cache Hits</div><div class="delta-tag delta-up" id="delta-cache">↑ 5%</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-savings"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-savings">R$ 4.2k</div><div class="text-xs text-gray-500 mt-1">Economia IA/mês</div><div class="delta-tag delta-up" id="delta-savings">↑ 31%</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-cost"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-cost">$0.47</div><div class="text-xs text-gray-500 mt-1">Custo OpenAI/Claude</div><div class="delta-tag delta-neutral" id="delta-cost">por lead</div></div>
+      <div class="glass rounded-xl p-5 text-center card-hover" id="card-followups"><div class="text-2xl md:text-3xl font-bold text-white stat-value" id="stat-followups">189</div><div class="text-xs text-gray-500 mt-1">Follow-ups Ativos</div><div class="delta-tag delta-up" id="delta-followups">D+3 agendado</div></div>
+    </div>
+  </section>
+
+  <!-- CHART -->
+  <section class="pb-8">
+    <div class="glass rounded-xl p-6" style="position:relative;overflow:hidden;">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-mono text-gray-500 flex items-center gap-2"><span class="live-dot"></span>Pipeline Volume — últimos 7 dias</span>
+        <span class="text-xs text-gray-600">leads processados</span>
+      </div>
+      <div class="flex items-end justify-between h-40 gap-3">
+        <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs font-mono text-gray-600" id="cl-0">45%</span><div class="w-full flex items-end justify-center" style="height:136px"><div class="chart-bar chart-bar-active w-full bg-gradient-to-t from-blue-700 to-blue-400 rounded-t" style="height:45%" id="cb-0"></div></div></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs font-mono text-gray-600" id="cl-1">62%</span><div class="w-full flex items-end justify-center" style="height:136px"><div class="chart-bar chart-bar-active w-full bg-gradient-to-t from-blue-700 to-blue-400 rounded-t" style="height:62%" id="cb-1"></div></div></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs font-mono text-gray-600" id="cl-2">55%</span><div class="w-full flex items-end justify-center" style="height:136px"><div class="chart-bar chart-bar-active w-full bg-gradient-to-t from-blue-700 to-blue-400 rounded-t" style="height:55%" id="cb-2"></div></div></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs font-mono text-gray-600" id="cl-3">78%</span><div class="w-full flex items-end justify-center" style="height:136px"><div class="chart-bar chart-bar-active w-full bg-gradient-to-t from-purple-700 to-purple-400 rounded-t" style="height:78%" id="cb-3"></div></div></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs font-mono text-gray-600" id="cl-4">85%</span><div class="w-full flex items-end justify-center" style="height:136px"><div class="chart-bar chart-bar-active w-full bg-gradient-to-t from-purple-700 to-purple-400 rounded-t" style="height:85%" id="cb-4"></div></div></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs font-mono text-gray-600" id="cl-5">92%</span><div class="w-full flex items-end justify-center" style="height:136px"><div class="chart-bar chart-bar-active w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t" style="height:92%" id="cb-5"></div></div></div>
+        <div class="flex-1 flex flex-col items-center gap-1"><span class="text-xs font-mono text-gray-600" id="cl-6">100%</span><div class="w-full flex items-end justify-center" style="height:136px"><div class="chart-bar chart-bar-active w-full bg-gradient-to-t from-cyan-500 to-cyan-300 rounded-t animate-pulse-glow" style="height:100%;box-shadow:0 0 20px rgba(34,211,238,.5)" id="cb-6"></div></div></div>
+      </div>
+      <div style="position:absolute;top:0;left:-60%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(96,165,250,.04),transparent);animation:scan 4s linear infinite;pointer-events:none;"></div>
+    </div>
+  </section>
+
+  <!-- CAMPAIGNS TABLE -->
+  <section class="pb-10">
+    <h2 class="text-2xl font-bold text-white mb-5">Relatório de Campanhas</h2>
+    <div class="glass rounded-2xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs md:text-sm">
+          <thead><tr class="border-b border-white/5 text-gray-500"><th class="text-left p-4 font-medium">Campanha</th><th class="text-left p-4 font-medium">Leads</th><th class="text-left p-4 font-medium">Enviados</th><th class="text-left p-4 font-medium">Delivery</th><th class="text-left p-4 font-medium">Status</th></tr></thead>
+          <tbody class="text-gray-300">
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">SaaS B2B - Enterprise</td><td class="p-4">412</td><td class="p-4">389</td><td class="p-4 text-green-400">98.1%</td><td class="p-4"><span class="status-hot px-2 py-1 rounded text-xs font-medium">HOT</span></td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">Fintech - Scale-ups</td><td class="p-4">287</td><td class="p-4">271</td><td class="p-4 text-green-400">96.8%</td><td class="p-4"><span class="status-hot px-2 py-1 rounded text-xs font-medium">HOT</span></td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">HealthTech - Series A+</td><td class="p-4">156</td><td class="p-4">148</td><td class="p-4 text-green-400">97.4%</td><td class="p-4"><span class="status-warm px-2 py-1 rounded text-xs font-medium">WARM</span></td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 font-medium">EdTech - Corporativo</td><td class="p-4">203</td><td class="p-4">194</td><td class="p-4 text-green-400">97.9%</td><td class="p-4"><span class="status-warm px-2 py-1 rounded text-xs font-medium">WARM</span></td></tr>
+            <tr class="hover:bg-white/[0.02]"><td class="p-4 font-medium">RetailTech - Mid-Market</td><td class="p-4">341</td><td class="p-4">327</td><td class="p-4 text-green-400">95.6%</td><td class="p-4"><span class="status-hot px-2 py-1 rounded text-xs font-medium">HOT</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /max-w -->
+
+<!-- CHAT DRAWER (fixed right) -->
+<div id="chat-drawer" class="fixed top-0 right-0 h-full w-96 glass-strong border-l border-white/8 z-50 flex flex-col" style="transform:translateX(100%);transition:transform .3s ease;">
+  <div class="p-4 border-b border-white/5 flex items-center justify-between">
+    <div>
+      <div class="text-white font-semibold text-sm">Acionar Comercial AI</div>
+      <div class="text-gray-500 text-xs">Pipeline via VRAXIA API</div>
+    </div>
+    <button onclick="closeChat()" class="text-gray-500 hover:text-white transition"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+  </div>
+  <div id="chat-msgs" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+    <div class="msg-agent">
+      <span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span>
+      Pronto. Posso executar o pipeline de prospecção, analisar campanhas, enriquecer leads, gerar copy personalizado e muito mais. O que deseja acionar?
+    </div>
+  </div>
+  <div class="p-4 border-t border-white/5">
+    <div class="flex gap-2 mb-2">
+      <textarea id="chat-in" rows="2" placeholder="Ex: Gerar lista de leads SaaS B2B série A..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white resize-none focus:outline-none focus:border-blue-500/50 transition placeholder-gray-600" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+      <button id="send-btn" onclick="sendMsg()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl self-end transition hover:opacity-90">
+        <i data-lucide="send" style="width:15px;height:15px"></i>
+      </button>
+    </div>
+    <div id="chat-status" class="text-xs text-gray-600 font-mono hidden"></div>
+  </div>
+</div>
+<div id="chat-overlay" onclick="closeChat()" class="fixed inset-0 bg-black/30 z-40 hidden"></div>
+
+<script>
+// ══ CONFIG (read from parent window or URL params) ════════════════════════════
+const params = new URLSearchParams(location.search);
+let API_URL = params.get('api') || (window.opener ? null : 'http://localhost:3000');
+let API_KEY  = params.get('key') || '';
+// If opened from main dashboard, can receive postMessage
+window.addEventListener('message', e => { if(e.data?.apiUrl) API_URL = e.data.apiUrl; if(e.data?.apiKey) API_KEY = e.data.apiKey; });
+
+// ══ CHAT DRAWER ═══════════════════════════════════════════════════════════════
+function openChat(){
+  document.getElementById('chat-drawer').style.transform='translateX(0)';
+  document.getElementById('chat-overlay').classList.remove('hidden');
+}
+function closeChat(){
+  document.getElementById('chat-drawer').style.transform='translateX(100%)';
+  document.getElementById('chat-overlay').classList.add('hidden');
+}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function appendMsg(html,cls){
+  const el=document.createElement('div');el.className=cls;el.innerHTML=html;
+  const c=document.getElementById('chat-msgs');c.appendChild(el);c.scrollTop=99999;return el;
+}
+async function sendMsg(){
+  const input=document.getElementById('chat-in');
+  const msg=input.value.trim();
+  if(!msg)return;
+  input.value='';input.disabled=true;document.getElementById('send-btn').disabled=true;
+  appendMsg(`<span class="text-gray-400 text-xs block mb-1">Você</span>${escHtml(msg)}`,'msg-user');
+  const agEl=appendMsg(`<span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span><span class="content"></span>`,'msg-agent streaming');
+  const ct=agEl.querySelector('.content');
+  const st=document.getElementById('chat-status');st.classList.remove('hidden');st.textContent='● Conectando...';
+  try{
+    const resp=await fetch((API_URL||'http://localhost:3000')+'/api/run',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',...(API_KEY?{'X-Api-Key':API_KEY}:{})},
+      body:JSON.stringify({moduleId:'comercial',message:msg})
+    });
+    if(!resp.ok){const e=await resp.json();ct.textContent='❌ '+(e.error||'Erro');agEl.classList.remove('streaming');return;}
+    const reader=resp.body.getReader();const dec=new TextDecoder();let buf='';
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const parts=buf.split('\n\n');buf=parts.pop();
+      for(const part of parts){
+        if(!part.trim())continue;
+        let ev='',ds='';
+        for(const line of part.split('\n')){if(line.startsWith('event:'))ev=line.slice(6).trim();if(line.startsWith('data:'))ds=line.slice(5).trim();}
+        if(!ds)continue;
+        try{const d=JSON.parse(ds);
+          if(ev==='start')st.textContent='● '+d.message;
+          else if(ev==='tool_call'){const e=document.createElement('div');e.className='sse-event sse-tool_call';e.textContent=`⚡ ${d.name||''}`;agEl.appendChild(e);}
+          else if(ev==='tool_result'){const e=document.createElement('div');e.className='sse-event sse-tool_result';e.textContent=`✓ resultado`;agEl.appendChild(e);}
+          else if(ev==='output'&&d.text)ct.innerHTML+=escHtml(d.text).replace(/\n/g,'<br>');
+          else if(ev==='done')st.textContent=`✓ ${d.durationMs||0}ms | $${(d.cost?.totalCost||0).toFixed(6)}`;
+          else if(ev==='error')ct.textContent='❌ '+d.message;
+        }catch{}
+        document.getElementById('chat-msgs').scrollTop=99999;
+      }
+    }
+  }catch(e){ct.textContent='❌ '+e.message;}
+  finally{agEl.classList.remove('streaming');input.disabled=false;document.getElementById('send-btn').disabled=false;st.classList.add('hidden');input.focus();}
+}
+
+// ══ OBSIDIAN BG ═══════════════════════════════════════════════════════════════
+(function(){
+  const pWrap=document.getElementById('obs-particles');
+  const bWrap=document.getElementById('obs-beams');
+  const COLORS=['rgba(96,165,250,','rgba(167,139,250,','rgba(34,211,238,','rgba(248,113,113,'];
+  for(let i=0;i<28;i++){
+    const d=document.createElement('div');const sz=1.5+Math.random()*3.5;const ci=COLORS[Math.floor(Math.random()*COLORS.length)];const dur=5+Math.random()*8;
+    d.className='obs-particle';d.style.cssText=`width:${sz}px;height:${sz}px;background:${ci}${0.4+Math.random()*0.4});top:${Math.random()*100}%;left:${Math.random()*100}%;animation:obsFloat ${dur}s ease-in-out ${Math.random()*dur}s infinite;box-shadow:0 0 ${sz*2}px ${ci}0.6);`;
+    pWrap.appendChild(d);
+  }
+  const bc=['rgba(96,165,250,.25)','rgba(167,139,250,.2)','rgba(34,211,238,.18)'];
+  for(let i=0;i<6;i++){
+    const b=document.createElement('div');const w=80+Math.random()*200;b.className='obs-beam';
+    b.style.cssText=`width:${w}px;top:${10+Math.random()*80}%;left:${Math.random()*70}%;background:${bc[i%3]};animation-delay:${Math.random()*4}s;animation-duration:${3+Math.random()*3}s;`;
+    bWrap.appendChild(b);
+  }
+})();
+
+// ══ CANVAS HELPERS ════════════════════════════════════════════════════════════
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+function ha(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+function rgb(hex){return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`;}
+
+// ══ OFFICE CANVAS (BONEQUINHOS) ═══════════════════════════════════════════════
+const AGENT_DEFS=[
+  {name:'Orchestrator',role:'Coord.',color:'#60a5fa',skin:'#fcd5a8',shirt:'#1d4ed8',hair:'#1e293b',says:['Distribuindo tasks...','Pipeline iniciado','Delegando ao RAG','Verificando status...']},
+  {name:'RAG Agent',role:'Memória',color:'#a78bfa',skin:'#e8b49a',shirt:'#6d28d9',hair:'#292524',says:['Buscando contexto...','Embeddings OK','Vector DB OK','Contexto montado']},
+  {name:'Validator',role:'Qualidade',color:'#34d399',skin:'#fbbf24',shirt:'#065f46',hair:'#1c1917',says:['Validando emails...','DMARC check OK','Lead score: 92','Lista limpa!']},
+  {name:'Outbound',role:'Vendas',color:'#f59e0b',skin:'#fcd5a8',shirt:'#92400e',hair:'#44403c',says:['Email personalizado','PDF anexado','SMTP enviando...','Follow-up D+3']},
+  {name:'Analytics',role:'Dados',color:'#f87171',skin:'#e8b49a',shirt:'#7f1d1d',hair:'#0f172a',says:['Dashboard update','Taxa: 97.3%','SQLite gravado','Métricas OK']},
+  {name:'Enricher',role:'Enrich',color:'#38bdf8',skin:'#fde68a',shirt:'#0369a1',hair:'#3f3f46',says:['LinkedIn scraped','Empresa mapeada','Intent: hot','Lead enriquecido']},
+];
+class Worker{
+  constructor(def,bx,by){this.def=def;this.bx=bx;this.by=by;this.x=bx;this.y=by;this.busy=false;this.busyTimer=0;this.busyDuration=0;this.taskDone=0;this.armAngle=0;this.headBob=0;this.orbitAngle=Math.random()*Math.PI*2;this.orbitSpeed=.3+Math.random()*.5;this.blinkTimer=0;this.blinkDuration=800+Math.random()*3000;this.blink=false;this.screenFlash=0;this.typingOff=Math.random()*100;}
+  update(dt){
+    this.typingOff+=dt;this.orbitAngle+=this.orbitSpeed*dt*.001;const d=10;
+    this.x+=(this.bx+Math.sin(this.orbitAngle)*d-this.x)*.06;this.y+=(this.by+Math.cos(this.orbitAngle*.7)*d-this.y)*.06;
+    this.blinkTimer+=dt;if(this.blinkTimer>this.blinkDuration){this.blink=!this.blink;this.blinkTimer=0;this.blinkDuration=this.blink?110:800+Math.random()*3000;}
+    if(this.busy){this.busyTimer+=dt;const t=this.typingOff*.006;this.armAngle=Math.sin(t)*.22;this.headBob=Math.sin(t*1.3)*.9;if(this.busyTimer>=this.busyDuration){this.busy=false;this.taskDone++;this.screenFlash=1;}}
+    else{this.armAngle*=.85;this.headBob*=.9;}
+    if(this.screenFlash>0)this.screenFlash=Math.max(0,this.screenFlash-dt*.004);
+  }
+  startTask(dur){this.busy=true;this.busyTimer=0;this.busyDuration=dur;this.screenFlash=0;}
+  draw(ctx){
+    const{x,y,def:d,headBob:hb,armAngle:aa,blink,busy,busyTimer,busyDuration,screenFlash:sf,typingOff:tp}=this;
+    const c=d.color,sk=d.skin,sh=d.shirt,hr=d.hair;
+    ctx.save();ctx.fillStyle='#1e293b';ctx.strokeStyle='#334155';ctx.lineWidth=.8;rr(ctx,x-32,y+28,64,13,3);ctx.fill();ctx.stroke();ctx.fillStyle='#0f172a';ctx.fillRect(x-28,y+41,4,9);ctx.fillRect(x+24,y+41,4,9);ctx.restore();
+    ctx.save();ctx.fillStyle=sf>0?`rgba(5,46,22,${.5+sf*.3})`:'#0f172a';ctx.strokeStyle='#334155';ctx.lineWidth=.8;rr(ctx,x-17,y-4,34,25,3);ctx.fill();ctx.stroke();
+    if(busy||sf>0){ctx.fillStyle=sf>0?`rgba(74,222,128,${.12+sf*.25})`:`rgba(${rgb(c)},.06)`;rr(ctx,x-15,y-2,30,21,2);ctx.fill();}
+    for(let i=0;i<4;i++){const lw=busy?(9+((tp*.03+i*7)%17)):5+i*3.5;ctx.fillStyle=i%2===0?c:'#475569';ctx.globalAlpha=busy?.65:.25;rr(ctx,x-12,y+2+i*5,Math.min(lw,24),2.5,1);ctx.fill();}
+    ctx.globalAlpha=1;ctx.fillStyle='#1e293b';ctx.fillRect(x-3,y+21,6,6);ctx.restore();
+    ctx.save();ctx.fillStyle='#162032';ctx.strokeStyle='#334155';ctx.lineWidth=.8;rr(ctx,x-10,y-1,20,13,3);ctx.fill();ctx.stroke();ctx.fillStyle='#1e293b';rr(ctx,x-11,y+14,22,15,3);ctx.fill();ctx.stroke();ctx.restore();
+    ctx.save();ctx.fillStyle='#334155';rr(ctx,x-15,y+30,30,7,2);ctx.fill();if(busy){const kf=(Math.sin(tp*.018)+1)/2;ctx.fillStyle=`rgba(${rgb(c)},${.12+kf*.2})`;rr(ctx,x-13,y+31,26,5,1);ctx.fill();}ctx.restore();
+    ctx.save();ctx.fillStyle=sk;ctx.save();ctx.translate(x-9,y+6+hb*.3);ctx.rotate(-.28+aa);rr(ctx,-3.5,0,6.5,10,3);ctx.fill();ctx.restore();ctx.save();ctx.translate(x+9,y+6+hb*.3);ctx.rotate(.28-aa);rr(ctx,-3,0,6.5,10,3);ctx.fill();ctx.restore();ctx.restore();
+    ctx.save();ctx.fillStyle=sk;ctx.beginPath();ctx.ellipse(x-13+aa*7,y+28,3.5,2.5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(x+13-aa*7,y+28,3.5,2.5,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    ctx.save();ctx.fillStyle=sh;rr(ctx,x-8,y+2+hb*.3,16,13,3);ctx.fill();ctx.restore();
+    ctx.save();ctx.fillStyle=sk;ctx.fillRect(x-3.5,y-3+hb,7,6);ctx.restore();
+    ctx.save();ctx.fillStyle=sk;rr(ctx,x-9,y-17+hb,18,17,5);ctx.fill();ctx.restore();
+    ctx.save();ctx.fillStyle=hr;rr(ctx,x-9,y-17+hb,18,8,5);ctx.fill();ctx.fillRect(x-9,y-12+hb,18,3);ctx.restore();
+    ctx.save();ctx.fillStyle='#1e293b';
+    if(!blink){ctx.beginPath();ctx.ellipse(x-3.5,y-7+hb,2,2.3,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(x+3.5,y-7+hb,2,2.3,0,0,Math.PI*2);ctx.fill();if(busy){ctx.fillStyle=c;ctx.globalAlpha=.55;ctx.beginPath();ctx.ellipse(x-3.5,y-7+hb,.9,1.1,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(x+3.5,y-7+hb,.9,1.1,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}}
+    else{ctx.strokeStyle='#1e293b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-5.5,y-7+hb);ctx.lineTo(x-1.5,y-7+hb);ctx.stroke();ctx.beginPath();ctx.moveTo(x+1.5,y-7+hb);ctx.lineTo(x+5.5,y-7+hb);ctx.stroke();}
+    ctx.restore();
+    if(busy){const t2=Date.now()*.003;ctx.save();ctx.translate(x,y);ctx.beginPath();ctx.arc(0,0,21,t2,t2+Math.PI*1.2);ctx.strokeStyle=c;ctx.lineWidth=1.8;ctx.globalAlpha=.75;ctx.stroke();ctx.restore();const prog=busyTimer/busyDuration;ctx.save();ctx.fillStyle='#0f172a';rr(ctx,x-26,y+43,52,3,1);ctx.fill();ctx.fillStyle=c;ctx.globalAlpha=.8;rr(ctx,x-26,y+43,Math.round(52*prog),3,1);ctx.fill();ctx.restore();}
+    ctx.save();const by2=y-29+hb;if(busy){ctx.fillStyle='#0f2a1a';ctx.strokeStyle=c;ctx.lineWidth=.8;rr(ctx,x-17,by2-9,34,13,6);ctx.fill();ctx.stroke();ctx.fillStyle=c;ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText('● working',x,by2);}else{ctx.fillStyle='#1a1f2e';ctx.strokeStyle='#334155';ctx.lineWidth=.8;rr(ctx,x-12,by2-9,24,13,6);ctx.fill();ctx.stroke();ctx.fillStyle='#64748b';ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText('idle',x,by2);}ctx.restore();
+    ctx.save();ctx.fillStyle=c;ctx.font='500 8px monospace';ctx.textAlign='center';ctx.globalAlpha=.85;ctx.fillText(d.name,x,y+57);ctx.fillStyle='#475569';ctx.globalAlpha=.65;ctx.font='7px monospace';ctx.fillText(d.role,x,y+66);ctx.restore();
+  }
+}
+const offCanvas=document.getElementById('office-canvas');
+const offCtx=offCanvas.getContext('2d');
+let offWorkers=[];
+function buildOffWorkers(){
+  offWorkers=[];const cw=offCanvas.clientWidth||offCanvas.parentElement.clientWidth;const ch=offCanvas.clientHeight||400;
+  offCanvas.width=cw;offCanvas.height=ch;
+  const cols=3,rows=2,spX=Math.min(150,(cw-80)/(cols-1)),spY=Math.min(110,(ch-80)/(rows-1));
+  const sx=(cw-(cols-1)*spX)/2,sy=(ch-(rows-1)*spY)/2;let idx=0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){if(idx>=AGENT_DEFS.length)break;offWorkers.push(new Worker(AGENT_DEFS[idx],Math.round(sx+c*spX),Math.round(sy+r*spY)));idx++;}
+}
+buildOffWorkers();
+const offSpeech=document.getElementById('office-speech');
+let offBubbles=0;
+function offSpawnBubble(w,msg){
+  if(offBubbles>3)return;offBubbles++;
+  const b=document.createElement('div');b.className='o-bubble';b.textContent=msg;b.style.color=w.def.color;b.style.borderColor=w.def.color+'44';
+  const scX=offCanvas.clientWidth/offCanvas.width,scY=offCanvas.clientHeight/offCanvas.height;
+  b.style.left=Math.min(Math.max(w.bx*scX-65,2),offCanvas.clientWidth-155)+'px';b.style.top=Math.max((w.by-45)*scY-16,5)+'px';
+  offSpeech.appendChild(b);setTimeout(()=>{b.remove();offBubbles=Math.max(0,offBubbles-1);},2700);
+}
+const offLog=document.getElementById('office-log');let offLogLines=[];
+function offAddLog(w,msg){const l=document.createElement('div');l.className='o-log-line';l.innerHTML=`<span style="color:${w.def.color}">[${w.def.name}]</span> <span style="color:#334155">${msg}</span>`;if(offLogLines.length>=5)offLogLines.shift().remove();offLogLines.push(l);offLog.appendChild(l);}
+let offTotalDone=0,offLastSched=0;
+function offSchedule(now){
+  if(now-offLastSched<500)return;offLastSched=now;
+  const idle=offWorkers.filter(w=>!w.busy);if(!idle.length)return;
+  const cnt=1+Math.floor(Math.random()*2);
+  for(let i=0;i<Math.min(cnt,idle.length);i++){const w=idle[Math.floor(Math.random()*idle.length)];w.startTask(1800+Math.random()*3200);const msg=w.def.says[Math.floor(Math.random()*w.def.says.length)];setTimeout(()=>offSpawnBubble(w,msg),200+Math.random()*500);offAddLog(w,msg);offTotalDone++;}
+}
+let offStTimer=0;
+function drawOffGrid(){const cw=offCanvas.width,ch=offCanvas.height;offCtx.save();offCtx.fillStyle='#0a0e18';offCtx.fillRect(0,0,cw,ch);offCtx.strokeStyle='#111827';offCtx.lineWidth=.5;for(let x=0;x<cw;x+=40){offCtx.beginPath();offCtx.moveTo(x,0);offCtx.lineTo(x,ch);offCtx.stroke();}for(let y=0;y<ch;y+=40){offCtx.beginPath();offCtx.moveTo(0,y);offCtx.lineTo(cw,y);offCtx.stroke();}offCtx.restore();}
+let offLast=performance.now();
+function offLoop(now){
+  const dt=Math.min(now-offLast,50);offLast=now;
+  offCtx.clearRect(0,0,offCanvas.width,offCanvas.height);drawOffGrid();
+  offWorkers.forEach(w=>{w.update(dt);w.draw(offCtx);});offSchedule(now);
+  offStTimer+=dt;if(offStTimer>600){offStTimer=0;document.getElementById('o-active').textContent=offWorkers.filter(w=>w.busy).length;document.getElementById('o-done').textContent=offTotalDone;}
+  requestAnimationFrame(offLoop);
+}
+requestAnimationFrame(offLoop);
+
+// ══ NETWORK CANVAS ════════════════════════════════════════════════════════════
+const NET_TYPES=[
+  {name:'Orchestrator',color:'#60a5fa',ring:'#1d4ed8',tasks:['Spawning pipeline...','Routing sub-agents','Building task graph','Delegating workloads']},
+  {name:'RAG Agent',color:'#a78bfa',ring:'#6d28d9',tasks:['Querying vector DB','Retrieving embeddings','Reranking results','Building context']},
+  {name:'Validator',color:'#34d399',ring:'#065f46',tasks:['Verifying domains','DMARC records OK','Deduplicating leads','Scoring intent']},
+  {name:'Outbound',color:'#f59e0b',ring:'#92400e',tasks:['Personalizing copy','Attaching PDF','Scheduling send','Triggering SMTP']},
+  {name:'Analytics',color:'#f87171',ring:'#7f1d1d',tasks:['Updating delivery','Computing ratios','Writing SQLite','Refreshing dash']},
+  {name:'Enricher',color:'#38bdf8',ring:'#0369a1',tasks:['LinkedIn scrape','Mapping company','Intent signal','CRM update']},
+];
+class NetAgent{
+  constructor(type,x,y){this.type=type;this.x=x;this.y=y;this.tx=x;this.ty=y;this.bx=x;this.by=y;this.r=16;this.pulse=Math.random();this.pulseDir=1;this.busy=false;this.taskTimer=0;this.taskDuration=0;this.beams=[];this.orbitAngle=Math.random()*Math.PI*2;this.orbitSpeed=.35+Math.random()*.45;this.completions=0;this.glow=0;}
+  update(dt){
+    this.orbitAngle+=this.orbitSpeed*dt*.001;const d=10;this.tx=this.bx+Math.sin(this.orbitAngle)*d;this.ty=this.by+Math.cos(this.orbitAngle*.7)*d;this.x+=(this.tx-this.x)*.06;this.y+=(this.ty-this.y)*.06;
+    this.pulse+=this.pulseDir*dt*.003;if(this.pulse>1){this.pulse=1;this.pulseDir=-1;}if(this.pulse<0){this.pulse=0;this.pulseDir=1;}
+    if(this.busy){this.taskTimer+=dt;if(this.taskTimer>=this.taskDuration){this.busy=false;this.completions++;this.glow=1;}}
+    if(this.glow>0)this.glow=Math.max(0,this.glow-dt*.003);
+    this.beams=this.beams.filter(b=>b.life>0);this.beams.forEach(b=>{b.life-=dt*.002;b.progress+=dt*.001;});
+  }
+  startTask(dur){this.taskTimer=0;this.taskDuration=dur;this.busy=true;}
+  fireBeam(tx,ty,color){this.beams.push({tx,ty,color,life:1,progress:0});}
+  draw(ctx){
+    const c=this.type.color,pr=this.pulse;
+    ctx.save();ctx.beginPath();ctx.arc(this.x,this.y,this.r+7+pr*5,0,Math.PI*2);ctx.strokeStyle=c;ctx.globalAlpha=.1+pr*.07;ctx.lineWidth=1;ctx.stroke();ctx.restore();
+    if(this.glow>0){ctx.save();ctx.beginPath();ctx.arc(this.x,this.y,this.r+18*this.glow,0,Math.PI*2);ctx.strokeStyle=c;ctx.globalAlpha=this.glow*.4;ctx.lineWidth=1.5;ctx.stroke();ctx.restore();}
+    ctx.save();ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);const gr=ctx.createRadialGradient(this.x-3,this.y-3,2,this.x,this.y,this.r);gr.addColorStop(0,ha(c,.5));gr.addColorStop(1,ha(c,.08));ctx.fillStyle=gr;ctx.fill();ctx.strokeStyle=c;ctx.globalAlpha=.65;ctx.lineWidth=1.2;ctx.stroke();ctx.restore();
+    ctx.save();ctx.beginPath();ctx.arc(this.x,this.y,4,0,Math.PI*2);ctx.fillStyle=this.busy?c:ha(c,.3);if(this.busy){ctx.shadowBlur=7;ctx.shadowColor=c;}ctx.fill();ctx.restore();
+    if(this.busy){const t=Date.now()*.003;ctx.save();ctx.translate(this.x,this.y);ctx.beginPath();ctx.arc(0,0,this.r+3,t,t+Math.PI*1.2);ctx.strokeStyle=c;ctx.lineWidth=1.8;ctx.globalAlpha=.8;ctx.stroke();ctx.restore();const prog=this.taskTimer/this.taskDuration;ctx.save();ctx.translate(this.x,this.y);ctx.beginPath();ctx.arc(0,0,this.r+6,-Math.PI/2,-Math.PI/2+prog*Math.PI*2);ctx.strokeStyle=c;ctx.lineWidth=1.8;ctx.globalAlpha=.3;ctx.stroke();ctx.restore();}
+    ctx.save();ctx.font='8px monospace';ctx.fillStyle=c;ctx.globalAlpha=.8;ctx.textAlign='center';ctx.fillText(this.type.name,this.x,this.y+this.r+13);ctx.restore();
+    this.beams.forEach(b=>{const px=this.x+(b.tx-this.x)*Math.min(b.progress,1),py=this.y+(b.ty-this.y)*Math.min(b.progress,1),trX=this.x+(b.tx-this.x)*Math.max(0,b.progress-.15),trY=this.y+(b.ty-this.y)*Math.max(0,b.progress-.15);ctx.save();ctx.beginPath();ctx.moveTo(trX,trY);ctx.lineTo(px,py);ctx.strokeStyle=b.color;ctx.lineWidth=1;ctx.globalAlpha=b.life*.35;ctx.stroke();ctx.beginPath();ctx.arc(px,py,2.5,0,Math.PI*2);ctx.fillStyle=b.color;ctx.shadowBlur=8;ctx.shadowColor=b.color;ctx.globalAlpha=b.life*.85;ctx.fill();ctx.restore();});
+  }
+}
+class Particle2{constructor(x,y,color){this.x=x;this.y=y;this.vx=(Math.random()-.5)*2;this.vy=(Math.random()-.5)*2;this.life=1;this.color=color;this.r=1+Math.random()*2;}update(dt){this.x+=this.vx*dt*.05;this.y+=this.vy*dt*.05;this.life-=dt*.003;}draw(ctx){ctx.save();ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=this.color;ctx.globalAlpha=Math.max(0,this.life)*.6;ctx.fill();ctx.restore();}}
+const netCanvas=document.getElementById('net-canvas');const netCtx=netCanvas.getContext('2d');let netAgents=[],netParticles=[],netEdges=[],netBeams=[];
+function buildNetAgents(){
+  netAgents=[];netEdges=[];const cw=netCanvas.clientWidth||netCanvas.parentElement.clientWidth;const ch=netCanvas.clientHeight||400;netCanvas.width=cw;netCanvas.height=ch;
+  const cols=3,rows=2,spX=Math.min(150,(cw-80)/(cols-1)),spY=Math.min(110,(ch-80)/(rows-1));const sx=(cw-(cols-1)*spX)/2,sy=(ch-(rows-1)*spY)/2;let idx=0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){if(idx>=NET_TYPES.length)break;netAgents.push(new NetAgent(NET_TYPES[idx],Math.round(sx+c*spX),Math.round(sy+r*spY)));idx++;}
+  for(let i=0;i<netAgents.length;i++)for(let j=i+1;j<netAgents.length;j++){const dx=netAgents[i].bx-netAgents[j].bx,dy=netAgents[i].by-netAgents[j].by;if(Math.sqrt(dx*dx+dy*dy)<220)netEdges.push([i,j]);}
+}
+buildNetAgents();
+const netLog=document.getElementById('net-log');let netLogLines=[],netTpsW=[],netTotalDone=0,netLastSched=0;
+function netAddLog(ag,msg){const l=document.createElement('div');l.className='n-log-line';l.innerHTML=`<span style="color:${ag.type.color}">[${ag.type.name}]</span> <span style="color:#334155">${msg}</span>`;if(netLogLines.length>=5)netLogLines.shift().remove();netLogLines.push(l);netLog.appendChild(l);}
+function netSchedule(now){
+  if(now-netLastSched<500)return;netLastSched=now;
+  const idle=netAgents.filter(a=>!a.busy);if(!idle.length)return;
+  const cnt=1+Math.floor(Math.random()*2);
+  for(let i=0;i<Math.min(cnt,idle.length);i++){
+    const a=idle[Math.floor(Math.random()*idle.length)];a.startTask(1500+Math.random()*3000);const msg=a.type.tasks[Math.floor(Math.random()*a.type.tasks.length)];netAddLog(a,msg);netTpsW.push(now);netTotalDone++;
+    const myIdx=netAgents.indexOf(a);const nb=netEdges.filter(e=>e[0]===myIdx||e[1]===myIdx).map(e=>netAgents[e[0]===myIdx?e[1]:e[0]]);
+    if(nb.length){const tgt=nb[Math.floor(Math.random()*nb.length)];a.fireBeam(tgt.x,tgt.y,a.type.color);netBeams.push({ax:a.x,ay:a.y,bx:tgt.x,by:tgt.y,t:0,color:a.type.color});}
+    for(let p=0;p<5;p++)netParticles.push(new Particle2(a.x,a.y,a.type.color));
+  }
+}
+let netCommTimer=0,netStTimer=0;
+function drawNetGrid(){const cw=netCanvas.width,ch=netCanvas.height;netCtx.save();netCtx.fillStyle='#0a0e18';netCtx.fillRect(0,0,cw,ch);netCtx.strokeStyle='#111827';netCtx.lineWidth=.5;for(let x=0;x<cw;x+=40){netCtx.beginPath();netCtx.moveTo(x,0);netCtx.lineTo(x,ch);netCtx.stroke();}for(let y=0;y<ch;y+=40){netCtx.beginPath();netCtx.moveTo(0,y);netCtx.lineTo(cw,y);netCtx.stroke();}netCtx.restore();}
+function drawNetEdges(){netEdges.forEach(([i,j])=>{const a=netAgents[i],b=netAgents[j];const dx=a.x-b.x,dy=a.y-b.y,dist=Math.sqrt(dx*dx+dy*dy);const alpha=Math.max(0,.06-dist*.00025);if(alpha<=0)return;netCtx.save();netCtx.beginPath();netCtx.moveTo(a.x,a.y);netCtx.lineTo(b.x,b.y);netCtx.strokeStyle='#374151';netCtx.globalAlpha=alpha;netCtx.lineWidth=.5;netCtx.stroke();netCtx.restore();});}
+function drawNetBeams(dt){netBeams=netBeams.filter(b=>b.t<1);netBeams.forEach(b=>{b.t+=dt*.0008;const px=b.ax+(b.bx-b.ax)*b.t,py=b.ay+(b.by-b.ay)*b.t,trX=b.ax+(b.bx-b.ax)*Math.max(0,b.t-.15),trY=b.ay+(b.by-b.ay)*Math.max(0,b.t-.15);netCtx.save();netCtx.beginPath();netCtx.moveTo(trX,trY);netCtx.lineTo(px,py);netCtx.strokeStyle=b.color;netCtx.lineWidth=1;netCtx.globalAlpha=(1-b.t)*.35;netCtx.stroke();netCtx.beginPath();netCtx.arc(px,py,2.5,0,Math.PI*2);netCtx.fillStyle=b.color;netCtx.shadowBlur=9;netCtx.shadowColor=b.color;netCtx.globalAlpha=(1-b.t)*.85;netCtx.fill();netCtx.restore();});}
+function drawNetHub(){const cx=netCanvas.width/2,cy=netCanvas.height/2,t=Date.now()*.001;for(let ring=0;ring<3;ring++){netCtx.save();netCtx.beginPath();netCtx.arc(cx,cy,28+ring*18+Math.sin(t+ring)*3,0,Math.PI*2);netCtx.strokeStyle='#3b82f6';netCtx.globalAlpha=.035-ring*.008;netCtx.lineWidth=1;netCtx.stroke();netCtx.restore();}}
+let netLast=performance.now();
+function netLoop(now){
+  const dt=Math.min(now-netLast,50);netLast=now;
+  netCtx.clearRect(0,0,netCanvas.width,netCanvas.height);drawNetGrid();drawNetHub();drawNetEdges();drawNetBeams(dt);
+  netParticles=netParticles.filter(p=>p.life>0);netParticles.forEach(p=>{p.update(dt);p.draw(netCtx);});
+  netAgents.forEach(a=>{a.update(dt);a.draw(netCtx);});netSchedule(now);
+  netCommTimer+=dt;if(netCommTimer>400+Math.random()*400){netCommTimer=0;if(netEdges.length){const[i,j]=netEdges[Math.floor(Math.random()*netEdges.length)];netBeams.push({ax:netAgents[i].x,ay:netAgents[i].y,bx:netAgents[j].x,by:netAgents[j].y,t:0,color:netAgents[i].type.color});}}
+  netStTimer+=dt;if(netStTimer>600){netStTimer=0;const now2=Date.now();netTpsW=netTpsW.filter(t=>now2-t<1000);document.getElementById('n-tasks').textContent=netTpsW.length;document.getElementById('n-done').textContent=netTotalDone;}
+  requestAnimationFrame(netLoop);
+}
+requestAnimationFrame(netLoop);
+window.addEventListener('resize',()=>{buildOffWorkers();buildNetAgents();});
+
+// ══ REALTIME STATS ENGINE ════════════════════════════════════════════════════
+const stats={
+  leads:    {val:2847,inc:[4,8],   fmt:v=>Math.round(v).toLocaleString('pt-BR'),el:'stat-leads',   card:'card-leads',   delta:'delta-leads',   dc:'delta-up',  dt:()=>`↑ ${(Math.random()*5+20).toFixed(1)}%`},
+  emails:   {val:1429,inc:[2,5],   fmt:v=>Math.round(v).toLocaleString('pt-BR'),el:'stat-emails',  card:'card-emails',  delta:'delta-emails',  dc:'delta-up',  dt:()=>`↑ ${(Math.random()*4+16).toFixed(1)}%`},
+  delivery: {val:97.3,inc:[-.1,.15],fmt:v=>Math.min(99.9,Math.max(94,v)).toFixed(1)+'%',el:'stat-delivery',card:'card-delivery',delta:'delta-delivery',dc:'delta-neutral',dt:()=>'Estável'},
+  campaigns:{val:12,  inc:[0,0],   fmt:v=>Math.round(v),el:'stat-campaigns',card:'card-campaigns',delta:'delta-campaigns',dc:'delta-up',dt:()=>`${Math.floor(Math.random()*2)+2} novas`},
+  cache:    {val:89,  inc:[-.3,.5],fmt:v=>Math.min(99,Math.max(78,v)).toFixed(0)+'%',el:'stat-cache',card:'card-cache',delta:'delta-cache',dc:'delta-up',dt:()=>`↑ ${(Math.random()*3+4).toFixed(1)}%`},
+  savings:  {val:4200,inc:[15,40], fmt:v=>'R$ '+(v/1000).toFixed(1)+'k',el:'stat-savings',card:'card-savings',delta:'delta-savings',dc:'delta-up',dt:()=>`↑ ${(Math.random()*6+28).toFixed(0)}%`},
+  cost:     {val:.47, inc:[-.005,.005],fmt:v=>'$'+Math.max(.38,Math.min(.58,v)).toFixed(2),el:'stat-cost',card:'card-cost',delta:'delta-cost',dc:'delta-neutral',dt:()=>'por lead'},
+  followups:{val:189, inc:[1,3],   fmt:v=>Math.round(v),el:'stat-followups',card:'card-followups',delta:'delta-followups',dc:'delta-up',dt:()=>`D+${Math.floor(Math.random()*2)+3} agendado`}
+};
+const chartH=[45,62,55,78,85,92,100];
+function flashEl(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),900);}
+function updateStats(){
+  const keys=Object.keys(stats),cnt=2+Math.floor(Math.random()*3);
+  keys.sort(()=>.5-Math.random()).slice(0,cnt).forEach(k=>{
+    const s=stats[k];const[lo,hi]=s.inc;s.val+=lo+Math.random()*(hi-lo);
+    const vEl=document.getElementById(s.el),cEl=document.getElementById(s.card),dEl=document.getElementById(s.delta);
+    if(vEl){vEl.textContent=s.fmt(s.val);flashEl(vEl,'stat-flash');}
+    if(cEl)flashEl(cEl,'card-ping');
+    if(dEl){dEl.textContent=s.dt();dEl.className='delta-tag '+s.dc;}
+  });
+  const uc=1+Math.floor(Math.random()*3);
+  for(let i=0;i<uc;i++){
+    const idx=Math.floor(Math.random()*7);const nH=Math.max(20,Math.min(100,chartH[idx]+(-8+Math.random()*16)));chartH[idx]=nH;
+    const bar=document.getElementById('cb-'+idx),lbl=document.getElementById('cl-'+idx);
+    if(bar){bar.style.height=nH+'%';bar.classList.add('animating');setTimeout(()=>bar.classList.remove('animating'),1200);}
+    if(lbl)lbl.textContent=Math.round(nH)+'%';
+  }
+}
+function scheduleNext(){const d=1800+Math.random()*1400;setTimeout(()=>{updateStats();scheduleNext();},d);}
+scheduleNext();setTimeout(updateStats,400);
+
+lucide.createIcons();
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});},{threshold:.1});
+document.querySelectorAll('.card-hover').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='all .6s ease';obs.observe(el);});
+</script>
+</body>
+</html>

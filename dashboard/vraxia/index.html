@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VRAXIA — Enterprise AI OS</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Outfit','sans-serif'], mono: ['JetBrains Mono','monospace'] } } }
+    }
+  </script>
+  <style>
+    html,body{height:100%;margin:0;}
+    body{background:#000;color:#e5e7eb;font-family:'Outfit',sans-serif;}
+    *{box-sizing:border-box;}
+
+    .glow-blue  {box-shadow:0 0 30px rgba(59,130,246,.15),0 0 60px rgba(59,130,246,.05);}
+    .glow-purple{box-shadow:0 0 30px rgba(139,92,246,.15),0 0 60px rgba(139,92,246,.05);}
+    .glass      {background:rgba(255,255,255,.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06);}
+    .glass-strong{background:rgba(255,255,255,.05);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.08);}
+
+    .gradient-text{background:linear-gradient(135deg,#60a5fa,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% 200%;animation:shimmer 3s ease infinite;}
+    .badge{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:.5px;}
+
+    @keyframes shimmer    {0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    @keyframes pulse-glow {0%,100%{opacity:.4}50%{opacity:1}}
+    @keyframes float      {0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    @keyframes slideUp    {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes liveInd    {0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.85)}}
+    @keyframes statFlash  {0%{color:#fff;text-shadow:0 0 12px rgba(96,165,250,.9)}60%{color:#93c5fd}100%{color:#fff;text-shadow:none}}
+    @keyframes cardPing   {0%{box-shadow:0 0 0 0 rgba(59,130,246,.35);border-color:rgba(59,130,246,.35)}60%{box-shadow:0 0 18px 4px rgba(59,130,246,.12);border-color:rgba(59,130,246,.18)}100%{box-shadow:none;border-color:rgba(255,255,255,.06)}}
+    @keyframes obsGrid    {0%{opacity:.04}50%{opacity:.09}100%{opacity:.04}}
+    @keyframes obsPulse   {0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.4;transform:scale(1.05)}}
+    @keyframes obsFloat   {0%,100%{transform:translateY(0) translateX(0);opacity:.6}33%{transform:translateY(-18px) translateX(8px);opacity:1}66%{transform:translateY(-8px) translateX(-6px);opacity:.7}}
+    @keyframes ticker     {0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    @keyframes typewriter {from{width:0}to{width:100%}}
+    @keyframes blink      {0%,100%{opacity:1}50%{opacity:0}}
+    @keyframes scan       {0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+    @keyframes spin       {to{transform:rotate(360deg)}}
+    @keyframes bubbleIn   {from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes bubbleOut  {to{opacity:0;transform:translateY(-4px)}}
+    @keyframes logIn      {to{opacity:.75}}
+    @keyframes chartGrow  {from{height:0}to{}}
+
+    .animate-slideUp    {animation:slideUp .6s ease forwards;}
+    .animate-pulse-glow {animation:pulse-glow 2s ease infinite;}
+    .card-hover         {transition:all .3s ease;}
+    .card-hover:hover   {transform:translateY(-4px);border-color:rgba(139,92,246,.3);box-shadow:0 0 40px rgba(139,92,246,.1);}
+    .scan-line          {position:relative;overflow:hidden;}
+    .scan-line::after   {content:'';position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(59,130,246,.05),transparent);animation:scan 3s linear infinite;}
+    .live-dot           {display:inline-block;width:7px;height:7px;border-radius:50%;background:#22d3ee;margin-right:6px;animation:liveInd 1.4s ease-in-out infinite;box-shadow:0 0 6px rgba(34,211,238,.7);}
+    .ticker-track       {display:flex;animation:ticker 28s linear infinite;white-space:nowrap;}
+    .ticker-track:hover {animation-play-state:paused;}
+    .stat-flash         {animation:statFlash .7s ease forwards;}
+    .card-ping          {animation:cardPing .9s ease forwards;}
+
+    /* Obsidian bg */
+    #hero-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+    .obs-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(96,165,250,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,.06) 1px,transparent 1px);background-size:60px 60px;animation:obsGrid 4s ease-in-out infinite;}
+    .obs-orb{position:absolute;border-radius:50%;filter:blur(80px);animation:obsPulse 6s ease-in-out infinite;}
+    .obs-orb-1{width:500px;height:500px;background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%);top:-100px;left:50%;transform:translateX(-50%);}
+    .obs-orb-2{width:300px;height:300px;background:radial-gradient(circle,rgba(139,92,246,.1) 0%,transparent 70%);bottom:0;left:10%;animation-delay:-2s;}
+    .obs-orb-3{width:200px;height:200px;background:radial-gradient(circle,rgba(34,211,238,.08) 0%,transparent 70%);top:30%;right:5%;animation-delay:-4s;}
+    .obs-particle{position:absolute;border-radius:50%;animation:obsFloat linear infinite;}
+
+    /* Layout */
+    #app    {display:flex;height:100vh;overflow:hidden;}
+    #sidebar{width:240px;flex-shrink:0;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;overflow-y:auto;background:#050810;}
+    #main   {flex:1;overflow-y:auto;background:#000;}
+
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .2s;margin:1px 8px;}
+    .nav-item:hover,.nav-item.active{background:rgba(59,130,246,.08);color:#93c5fd;}
+    .nav-item.active{border-left:2px solid #60a5fa;margin-left:6px;}
+    .nav-item svg{flex-shrink:0;}
+    .module-card{cursor:pointer;transition:all .3s;}
+    .module-card.active-module{border-color:rgba(96,165,250,.4)!important;background:rgba(59,130,246,.06)!important;}
+
+    /* Chat */
+    #chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+    .msg-user{align-self:flex-end;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.25);border-radius:16px 16px 4px 16px;padding:10px 14px;max-width:75%;font-size:13px;}
+    .msg-agent{align-self:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:4px 16px 16px 16px;padding:10px 14px;max-width:85%;font-size:13px;line-height:1.6;}
+    .msg-agent.streaming::after{content:'▊';animation:blink 1s infinite;color:#60a5fa;margin-left:2px;}
+
+    /* SSE events */
+    .sse-event{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 8px;border-radius:6px;margin:2px 0;}
+    .sse-thinking{color:#a78bfa;background:rgba(139,92,246,.06);}
+    .sse-tool_call{color:#22d3ee;background:rgba(34,211,238,.06);}
+    .sse-tool_result{color:#4ade80;background:rgba(74,222,128,.06);}
+    .sse-error{color:#f87171;background:rgba(248,113,113,.06);}
+
+    /* Login screen */
+    #login-screen{position:fixed;inset:0;z-index:100;background:#000;display:flex;align-items:center;justify-content:center;}
+    #login-screen.hidden{display:none;}
+
+    /* Spinner */
+    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.1);border-top-color:#60a5fa;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;}
+
+    /* Agent canvas panels */
+    .agent-panel{border-radius:16px;overflow:hidden;position:relative;background:#0a0e18;border:1px solid rgba(255,255,255,.06);}
+    .agent-panel-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.05);}
+    .agent-panel-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;animation:liveInd 1.2s ease-in-out infinite;box-shadow:0 0 5px rgba(74,222,128,.6);}
+    .agent-panel-title{font-size:10px;color:#60a5fa;letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;}
+    .o-bubble{position:absolute;background:#1e293b;border:1px solid #334155;border-radius:8px 8px 8px 2px;padding:4px 8px;font-size:9px;white-space:nowrap;animation:bubbleIn .25s ease forwards,bubbleOut .3s ease 2.2s forwards;opacity:0;pointer-events:none;max-width:140px;overflow:hidden;text-overflow:ellipsis;font-family:'JetBrains Mono',monospace;}
+    .o-log-line{animation:logIn .2s ease forwards;opacity:0;font-family:'JetBrains Mono',monospace;font-size:8px;color:#475569;letter-spacing:.4px;}
+    .n-log-line{animation:logIn .2s ease forwards;opacity:0;}
+
+    /* Skill browser */
+    .skill-tag{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.15);border-radius:20px;padding:2px 8px;font-size:10px;color:#93c5fd;}
+    .skill-item{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;}
+    .skill-item:hover{border-color:rgba(96,165,250,.25);background:rgba(59,130,246,.05);}
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+  </style>
+</head>
+<body class="h-full overflow-hidden">
+
+<!-- ══ LOGIN SCREEN ══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+    <div class="obs-grid"></div>
+    <div class="obs-orb obs-orb-1"></div>
+    <div class="obs-orb obs-orb-2"></div>
+    <div class="obs-orb obs-orb-3"></div>
+  </div>
+  <div class="glass-strong rounded-3xl p-10 w-full max-w-md mx-4 text-center glow-blue relative" style="z-index:1;">
+    <div class="flex items-center justify-center gap-3 mb-6">
+      <div style="width:42px;height:42px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <span class="text-white font-bold text-2xl tracking-tight">VRA<span class="gradient-text">XIA</span></span>
+    </div>
+    <p class="text-gray-400 text-sm mb-8">Enterprise AI OS — Plataforma de Agentes IA</p>
+
+    <div class="space-y-3 text-left">
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">API Key do Tenant</label>
+        <input id="login-key" type="password" placeholder="vrx_..." class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 font-mono transition placeholder-gray-600">
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">API URL</label>
+        <input id="login-url" type="text" value="http://localhost:3000" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 font-mono transition">
+      </div>
+    </div>
+
+    <button id="login-btn" onclick="doLogin()" class="mt-6 w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 transition flex items-center justify-center gap-2">
+      <span id="login-btn-text">Entrar na plataforma</span>
+    </button>
+    <p id="login-error" class="text-red-400 text-xs mt-3 hidden"></p>
+    <p class="text-gray-700 text-xs mt-6">Modo DEV: deixe a API Key vazia e use DEV_MODE=true no servidor</p>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ═══════════════════════════════════════════════════════════════ -->
+<div id="app" class="hidden">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="p-4 border-b border-white/5">
+      <div class="flex items-center gap-2">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div>
+          <div class="text-white font-bold text-sm tracking-tight">VRAXIA</div>
+          <div class="text-gray-600 text-xs font-mono">Enterprise AI OS</div>
+        </div>
+      </div>
+      <div id="tenant-badge" class="mt-3 px-3 py-1.5 glass rounded-lg text-xs font-mono text-gray-400 truncate">—</div>
+    </div>
+
+    <nav class="flex-1 py-3">
+      <div class="px-4 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Navegação</div>
+      <div class="nav-item active" onclick="showView('overview')" id="nav-overview">
+        <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i> Overview
+      </div>
+      <div class="nav-item" onclick="showView('chat')" id="nav-chat">
+        <i data-lucide="message-square" style="width:16px;height:16px"></i> Chat IA
+      </div>
+      <div class="nav-item" onclick="showView('skills')" id="nav-skills">
+        <i data-lucide="book-open" style="width:16px;height:16px"></i> Skills Browser
+      </div>
+      <div class="nav-item" onclick="showView('usage')" id="nav-usage">
+        <i data-lucide="bar-chart-2" style="width:16px;height:16px"></i> Uso & Custo
+      </div>
+      <div class="nav-item" onclick="showView('runtime')" id="nav-runtime">
+        <i data-lucide="cpu" style="width:16px;height:16px"></i> Runtime IA
+      </div>
+
+      <div class="px-4 mt-5 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Pipelines</div>
+      <div class="nav-item" onclick="openModule('comercial')" style="border-left:2px solid rgba(34,211,238,.4);margin-left:6px;color:#22d3ee;">
+        <i data-lucide="trending-up" style="width:14px;height:14px;color:#22d3ee"></i>
+        <span>Comercial AI</span>
+        <span style="font-size:9px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);border-radius:8px;padding:1px 5px;margin-left:auto;">LIVE</span>
+      </div>
+
+      <div class="px-4 mt-4 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Módulos</div>
+      <div id="sidebar-modules" class="space-y-0.5">
+        <div class="nav-item text-gray-700 text-xs">Carregando...</div>
+      </div>
+    </nav>
+
+    <div class="p-4 border-t border-white/5">
+      <div class="flex items-center gap-2 text-xs text-gray-600">
+        <span class="live-dot" style="margin-right:0"></span>
+        <span id="api-status">Conectado</span>
+      </div>
+      <button onclick="doLogout()" class="mt-2 text-xs text-gray-600 hover:text-gray-400 transition">Sair</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main">
+
+    <!-- ── OVERVIEW ──────────────────────────────────────────────────────── -->
+    <div id="view-overview">
+      <!-- Hero banner -->
+      <div class="relative overflow-hidden px-8 pt-10 pb-8 border-b border-white/5">
+        <div id="hero-bg">
+          <div class="obs-grid"></div>
+          <div class="obs-orb obs-orb-1" style="opacity:.5"></div>
+          <div class="obs-orb obs-orb-3" style="opacity:.4"></div>
+        </div>
+        <div class="relative" style="z-index:1">
+          <div class="flex gap-2 mb-4 flex-wrap">
+            <span class="badge text-blue-300">AI-Native</span>
+            <span class="badge text-purple-300">Multi-Tenant</span>
+            <span class="badge text-cyan-300">BYOK</span>
+          </div>
+          <h1 class="text-3xl font-bold text-white mb-2">Enterprise AI OS <span class="gradient-text">VRAXIA</span></h1>
+          <p class="text-gray-400 text-sm max-w-lg" id="overview-subtitle">Plataforma modular de agentes IA por departamento. Selecione um módulo para começar.</p>
+        </div>
+      </div>
+
+      <!-- Ticker -->
+      <div class="border-b border-white/5 overflow-hidden py-2">
+        <div class="ticker-track text-xs font-mono text-gray-600" id="overview-ticker">
+          <span class="mx-5 text-green-400">● VRAXIA RUNTIME ONLINE</span>
+          <span class="mx-5">|</span>
+          <span class="mx-5 text-blue-400">● BYOK ACTIVE</span>
+          <span class="mx-5">|</span>
+          <span class="mx-5 text-purple-400">● MULTI-TENANT READY</span>
+          <span class="mx-5">|</span>
+          <span class="mx-5 text-cyan-400">● AGENTES PRONTOS</span>
+          <span class="mx-5">|</span>
+          <span class="mx-5 text-green-400">● VRAXIA RUNTIME ONLINE</span>
+          <span class="mx-5">|</span>
+          <span class="mx-5 text-blue-400">● BYOK ACTIVE</span>
+          <span class="mx-5">|</span>
+          <span class="mx-5 text-purple-400">● MULTI-TENANT READY</span>
+          <span class="mx-5">|</span>
+          <span class="mx-5 text-cyan-400">● AGENTES PRONTOS</span>
+          <span class="mx-5">|</span>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-8 py-6 border-b border-white/5">
+        <div class="glass rounded-xl p-5 text-center card-hover">
+          <div class="text-2xl font-bold text-white" id="stat-modules-total">—</div>
+          <div class="text-xs text-gray-500 mt-1">Módulos Ativos</div>
+        </div>
+        <div class="glass rounded-xl p-5 text-center card-hover">
+          <div class="text-2xl font-bold text-white" id="stat-skills-total">—</div>
+          <div class="text-xs text-gray-500 mt-1">Skills Disponíveis</div>
+        </div>
+        <div class="glass rounded-xl p-5 text-center card-hover">
+          <div class="text-2xl font-bold text-white" id="stat-runs-total">—</div>
+          <div class="text-xs text-gray-500 mt-1">Execuções Totais</div>
+        </div>
+        <div class="glass rounded-xl p-5 text-center card-hover">
+          <div class="text-2xl font-bold text-white" id="stat-cost-total">—</div>
+          <div class="text-xs text-gray-500 mt-1">Custo Total USD</div>
+        </div>
+      </div>
+
+      <!-- Module grid -->
+      <div class="px-8 py-6">
+        <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <span class="live-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,.7)"></span>Módulos Departamentais
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="module-grid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <!-- Agent runtime panels -->
+      <div class="px-8 py-6 border-t border-white/5">
+        <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <span class="live-dot"></span>Agent Runtime
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="agent-panel" style="height:320px;">
+            <div class="agent-panel-header">
+              <div class="agent-panel-dot"></div>
+              <span class="agent-panel-title">AI Office · Agentes Virtuais</span>
+            </div>
+            <div style="position:relative;height:calc(100% - 37px);">
+              <canvas id="office-canvas" style="display:block;width:100%;height:100%;"></canvas>
+              <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;pointer-events:none;z-index:4;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:6px;height:6px;border-radius:50%;background:#4ade80;animation:liveInd 1.2s ease-in-out infinite;box-shadow:0 0 5px rgba(74,222,128,.7);"></div>
+                  <span style="font-size:9px;color:#4ade80;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">LIVE</span>
+                </div>
+                <div style="display:flex;gap:12px;">
+                  <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="o-active">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Ativos</div></div>
+                  <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="o-done">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Tasks</div></div>
+                </div>
+              </div>
+              <div id="office-speech" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:3;"></div>
+              <div id="office-log" style="position:absolute;bottom:10px;left:12px;pointer-events:none;z-index:2;display:flex;flex-direction:column;gap:2px;"></div>
+            </div>
+          </div>
+
+          <div class="agent-panel" style="height:320px;">
+            <div class="agent-panel-header">
+              <div class="agent-panel-dot" style="background:#60a5fa;box-shadow:0 0 5px rgba(96,165,250,.7);animation-delay:-.3s;"></div>
+              <span class="agent-panel-title">Network · Module Runtime</span>
+            </div>
+            <div style="position:relative;height:calc(100% - 37px);">
+              <canvas id="net-canvas" style="display:block;width:100%;height:100%;"></canvas>
+              <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;pointer-events:none;z-index:4;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:6px;height:6px;border-radius:50%;background:#60a5fa;animation:liveInd 1.2s ease-in-out infinite;box-shadow:0 0 5px rgba(96,165,250,.7);"></div>
+                  <span style="font-size:9px;color:#60a5fa;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">RUNTIME</span>
+                </div>
+                <div style="display:flex;gap:12px;">
+                  <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="n-tasks">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Tasks/s</div></div>
+                  <div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:#f1f5f9;font-family:'JetBrains Mono',monospace;" id="n-done">0</div><div style="font-size:7px;color:#475569;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Total</div></div>
+                </div>
+              </div>
+              <div id="net-log" style="position:absolute;bottom:10px;left:12px;pointer-events:none;z-index:2;display:flex;flex-direction:column;gap:2px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHAT ──────────────────────────────────────────────────────────── -->
+    <div id="view-chat" class="hidden h-full flex flex-col">
+      <div class="px-6 py-4 border-b border-white/5 flex items-center gap-4 flex-shrink-0">
+        <div>
+          <h2 class="text-white font-semibold">Chat com Agente IA</h2>
+          <p class="text-gray-500 text-xs">Selecione um módulo e inicie uma conversa</p>
+        </div>
+        <div class="ml-auto flex items-center gap-3">
+          <select id="chat-module" class="bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50">
+            <option value="">Selecionar módulo...</option>
+          </select>
+          <button onclick="clearChat()" class="glass px-3 py-2 rounded-xl text-xs text-gray-400 hover:text-white transition">Limpar</button>
+        </div>
+      </div>
+
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
+        <div class="msg-agent self-start">
+          <span class="text-blue-400 font-semibold text-xs block mb-1">VRAXIA OS</span>
+          Olá! Selecione um módulo no menu acima e faça sua pergunta. Cada módulo tem centenas de skills especializadas prontas para usar.
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-white/5 flex-shrink-0">
+        <div class="flex gap-3">
+          <textarea id="chat-input" rows="2" placeholder="Digite sua mensagem..." class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white resize-none focus:outline-none focus:border-blue-500/50 transition placeholder-gray-600" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+          <button id="send-btn" onclick="sendMessage()" class="px-5 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium hover:opacity-90 transition flex items-center gap-2 self-end">
+            <i data-lucide="send" style="width:16px;height:16px"></i>
+          </button>
+        </div>
+        <div id="chat-status" class="text-xs text-gray-600 mt-2 font-mono hidden"></div>
+      </div>
+    </div>
+
+    <!-- ── SKILLS BROWSER ─────────────────────────────────────────────── -->
+    <div id="view-skills" class="hidden">
+      <div class="px-8 py-6 border-b border-white/5">
+        <h2 class="text-xl font-bold text-white mb-1">Skills Browser</h2>
+        <p class="text-gray-500 text-sm">Explore as skills disponíveis por módulo</p>
+      </div>
+      <div class="flex h-full" style="height:calc(100vh - 89px);">
+        <!-- Module selector -->
+        <div class="w-48 border-r border-white/5 overflow-y-auto py-3 flex-shrink-0">
+          <div id="skills-module-list" class="space-y-0.5 px-2">
+            <!-- filled by JS -->
+          </div>
+        </div>
+        <!-- Skills list -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <div class="px-5 py-3 border-b border-white/5 flex gap-2">
+            <input id="skill-search" type="text" placeholder="Buscar skills..." class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/40 placeholder-gray-600 transition" oninput="searchSkills()">
+            <span id="skill-count" class="text-xs text-gray-600 self-center px-2">—</span>
+          </div>
+          <div id="skills-list" class="flex-1 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+            <!-- filled by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USAGE ─────────────────────────────────────────────────────── -->
+    <div id="view-usage" class="hidden">
+      <div class="px-8 py-6 border-b border-white/5">
+        <h2 class="text-xl font-bold text-white mb-1">Uso & Custo por Módulo</h2>
+        <p class="text-gray-500 text-sm">Rastreamento de tokens e custo por tenant</p>
+      </div>
+      <div class="px-8 py-6">
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="glass rounded-xl p-5 text-center">
+            <div class="text-2xl font-bold text-white" id="u-total-cost">$0.000000</div>
+            <div class="text-xs text-gray-500 mt-1">Custo Total</div>
+          </div>
+          <div class="glass rounded-xl p-5 text-center">
+            <div class="text-2xl font-bold text-white" id="u-total-runs">0</div>
+            <div class="text-xs text-gray-500 mt-1">Execuções</div>
+          </div>
+          <div class="glass rounded-xl p-5 text-center">
+            <div class="text-2xl font-bold text-white" id="u-tenant">—</div>
+            <div class="text-xs text-gray-500 mt-1">Tenant ID</div>
+          </div>
+        </div>
+        <div class="glass rounded-xl overflow-hidden">
+          <table class="w-full text-sm">
+            <thead><tr class="border-b border-white/5 text-gray-500 text-xs">
+              <th class="text-left p-4 font-medium">Módulo</th>
+              <th class="text-right p-4 font-medium">Execuções</th>
+              <th class="text-right p-4 font-medium">Tokens In</th>
+              <th class="text-right p-4 font-medium">Tokens Out</th>
+              <th class="text-right p-4 font-medium">Custo USD</th>
+              <th class="text-right p-4 font-medium">Economia</th>
+              <th class="text-left p-4 font-medium">Último uso</th>
+            </tr></thead>
+            <tbody id="usage-tbody" class="text-gray-300">
+              <tr><td colspan="7" class="p-8 text-center text-gray-600">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RUNTIME ────────────────────────────────────────────────────── -->
+    <div id="view-runtime" class="hidden">
+      <div class="px-8 py-6 border-b border-white/5">
+        <h2 class="text-xl font-bold text-white mb-1">AI Runtime</h2>
+        <p class="text-gray-500 text-sm">Arquitetura cognitiva do VRAXIA OS</p>
+      </div>
+      <div class="px-8 py-6">
+        <!-- Terminal -->
+        <div class="glass-strong rounded-2xl p-6 mb-6 glow-blue">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+            <span class="ml-3 text-xs font-mono text-gray-500">vraxia-runtime v1.0.0</span>
+          </div>
+          <div class="font-mono text-xs space-y-2 text-gray-400" id="runtime-terminal">
+            <div style="animation:slideUp .5s ease forwards"><span class="text-blue-400">[BaseAgent]</span> Inicializando runtime cognitivo...</div>
+            <div style="animation:slideUp .5s .3s ease both"><span class="text-green-400">[SkillRegistry]</span> Indexando 1.161+ skills departamentais...</div>
+            <div style="animation:slideUp .5s .6s ease both"><span class="text-purple-400">[MemoryManager]</span> Conectando Redis + pgvector...</div>
+            <div style="animation:slideUp .5s .9s ease both"><span class="text-yellow-400">[TenantManager]</span> BYOK ativo — chaves criptografadas AES-256-GCM</div>
+            <div style="animation:slideUp .5s 1.2s ease both"><span class="text-cyan-400">[API]</span> SSE streaming habilitado em /api/run</div>
+            <div style="animation:slideUp .5s 1.5s ease both"><span class="text-pink-400">[CostTracker]</span> Monitorando tokens por tenant...</div>
+            <div style="animation:slideUp .5s 1.8s ease both" id="rt-final"><span class="text-green-400">[✓ VRAXIA OS]</span> Plataforma pronta<span style="animation:blink 1s infinite;color:#60a5fa">▊</span></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-blue-400 font-mono text-xs mb-2">01</div><h4 class="text-white font-semibold text-sm mb-1">Multi-Tenant BYOK</h4><p class="text-gray-500 text-xs">Cada cliente usa suas próprias API keys. Zero custo de LLM para VRAXIA.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-purple-400 font-mono text-xs mb-2">02</div><h4 class="text-white font-semibold text-sm mb-1">SkillRegistry</h4><p class="text-gray-500 text-xs">1.161+ skills indexadas por palavra-chave. list_skills, search_skills, run_skill.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-cyan-400 font-mono text-xs mb-2">03</div><h4 class="text-white font-semibold text-sm mb-1">SSE Streaming</h4><p class="text-gray-500 text-xs">thinking → tool_call → tool_result → output → done em tempo real.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-green-400 font-mono text-xs mb-2">04</div><h4 class="text-white font-semibold text-sm mb-1">Memory 3 Camadas</h4><p class="text-gray-500 text-xs">Redis (curto prazo) + pgvector (semântico) + MemoryManager por tenant.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-pink-400 font-mono text-xs mb-2">05</div><h4 class="text-white font-semibold text-sm mb-1">Cost Optimization</h4><p class="text-gray-500 text-xs">Haiku para tarefas leves, Sonnet para orquestração, Opus para planejamento.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-yellow-400 font-mono text-xs mb-2">06</div><h4 class="text-white font-semibold text-sm mb-1">Prompt Cache</h4><p class="text-gray-500 text-xs">cache_control ephemeral em system prompts. Economia de até 90% em tokens.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-orange-400 font-mono text-xs mb-2">07</div><h4 class="text-white font-semibold text-sm mb-1">AES-256-GCM Vault</h4><p class="text-gray-500 text-xs">Chaves de API dos tenants criptografadas com VRAXIA_MASTER_KEY.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-indigo-400 font-mono text-xs mb-2">08</div><h4 class="text-white font-semibold text-sm mb-1">DAG Orchestration</h4><p class="text-gray-500 text-xs">TaskGraph com execução em waves paralelas para workflows multi-agente.</p></div>
+          <div class="glass rounded-xl p-5 card-hover scan-line"><div class="text-teal-400 font-mono text-xs mb-2">09</div><h4 class="text-white font-semibold text-sm mb-1">Observabilidade</h4><p class="text-gray-500 text-xs">Token usage, latência, custo, cache hits e tool usage por execução.</p></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ══ STATE ══════════════════════════════════════════════════════════════════════
+let API_URL = 'http://localhost:3000';
+let API_KEY = '';
+let modules = [];
+let currentSkillModule = null;
+let allSkills = [];
+let activeEventSource = null;
+let currentView = 'overview';
+
+// ══ AUTH ══════════════════════════════════════════════════════════════════════
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  const txtEl = document.getElementById('login-btn-text');
+  API_URL = document.getElementById('login-url').value.trim().replace(/\/$/, '');
+  API_KEY = document.getElementById('login-key').value.trim();
+  errEl.classList.add('hidden');
+  txtEl.innerHTML = '<span class="spinner"></span>';
+  try {
+    const r = await apiFetch('/api/health');
+    if (!r.ok) throw new Error('API não respondeu');
+    const data = await r.json();
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    await initApp();
+  } catch(e) {
+    errEl.textContent = 'Não foi possível conectar: ' + e.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    txtEl.textContent = 'Entrar na plataforma';
+  }
+}
+
+function doLogout() {
+  API_KEY = '';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+}
+
+function apiFetch(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (API_KEY) headers['X-Api-Key'] = API_KEY;
+  return fetch(API_URL + path, { ...opts, headers });
+}
+
+// ══ INIT ═══════════════════════════════════════════════════════════════════════
+async function initApp() {
+  await loadModules();
+  await loadUsage();
+  lucide.createIcons();
+  initOfficeCanvas();
+  initNetCanvas();
+}
+
+async function loadModules() {
+  try {
+    const r = await apiFetch('/api/modules');
+    const data = await r.json();
+    modules = data.modules || [];
+    renderModuleGrid();
+    renderSidebarModules();
+    renderChatModuleSelect();
+    renderSkillsModuleList();
+    updateOverviewStats();
+  } catch(e) {
+    console.error('Failed to load modules', e);
+  }
+}
+
+async function loadUsage() {
+  try {
+    const r = await apiFetch('/api/usage');
+    const data = await r.json();
+    document.getElementById('u-total-cost').textContent = '$' + (data.totalCostUsd || 0).toFixed(6);
+    document.getElementById('u-total-runs').textContent = data.totalRuns || 0;
+    document.getElementById('u-tenant').textContent = data.tenantId || '—';
+    document.getElementById('stat-runs-total').textContent = data.totalRuns || 0;
+    document.getElementById('stat-cost-total').textContent = '$' + (data.totalCostUsd || 0).toFixed(4);
+    const tbody = document.getElementById('usage-tbody');
+    if (!data.byModule || data.byModule.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-600 font-mono text-xs">Nenhuma execução registrada ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.byModule.map(m => `
+      <tr class="border-b border-white/5 hover:bg-white/[0.02] text-xs">
+        <td class="p-3 font-semibold text-white">${m.moduleId}</td>
+        <td class="p-3 text-right text-gray-400">${m.runs}</td>
+        <td class="p-3 text-right text-gray-500">${m.totalInputTokens.toLocaleString()}</td>
+        <td class="p-3 text-right text-gray-500">${m.totalOutputTokens.toLocaleString()}</td>
+        <td class="p-3 text-right text-green-400 font-mono">$${m.totalCostUsd.toFixed(6)}</td>
+        <td class="p-3 text-right text-blue-400 font-mono">$${m.totalSavingsUsd.toFixed(6)}</td>
+        <td class="p-3 text-gray-500 text-xs">${m.lastRunAt ? new Date(m.lastRunAt).toLocaleString('pt-BR') : '—'}</td>
+      </tr>`).join('');
+  } catch(e) {
+    console.error('Failed to load usage', e);
+  }
+}
+
+// ══ MODULE GRID ════════════════════════════════════════════════════════════════
+const MODULE_ICONS = {
+  comercial:  'trending-up',
+  financeiro: 'wallet', juridico: 'scale', marketing: 'megaphone',
+  operacoes: 'network', conteudo: 'pen-tool', lideranca: 'users',
+  produto: 'package', codigo: 'code-2',
+};
+const MODULE_COLORS = {
+  comercial:  '#22d3ee',
+  financeiro: '#4ade80', juridico: '#f87171', marketing: '#f472b6',
+  operacoes: '#fbbf24', conteudo: '#a78bfa', lideranca: '#60a5fa',
+  produto: '#22d3ee', codigo: '#fb923c',
+};
+
+function renderModuleGrid() {
+  const grid = document.getElementById('module-grid');
+  let activeCount = 0, skillSum = 0;
+  grid.innerHTML = modules.map(m => {
+    if (m.active) { activeCount++; skillSum += m.skillCount || 0; }
+    const icon = MODULE_ICONS[m.id] || 'cpu';
+    const color = MODULE_COLORS[m.id] || '#60a5fa';
+    return `<div class="glass rounded-xl p-5 card-hover module-card ${m.active ? '' : 'opacity-40'}" onclick="openModule('${m.id}')">
+      <div class="flex items-start justify-between mb-4">
+        <div style="width:40px;height:40px;background:${color}20;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="${icon}" style="width:20px;height:20px;color:${color}"></i>
+        </div>
+        <span class="text-xs px-2 py-0.5 rounded-full font-mono" style="background:${color}15;color:${color};border:1px solid ${color}30">${m.active ? 'ATIVO' : 'INATIVO'}</span>
+      </div>
+      <h3 class="text-white font-semibold text-sm mb-1 capitalize">${m.name || m.id}</h3>
+      <p class="text-gray-500 text-xs mb-3 leading-relaxed line-clamp-2">${m.description || ''}</p>
+      <div class="flex items-center justify-between text-xs">
+        <span class="text-gray-600"><span class="font-mono text-white">${m.skillCount || 0}</span> skills</span>
+        <span class="text-gray-700">${m.plan_min || 'starter'}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('stat-modules-total').textContent = activeCount;
+  document.getElementById('stat-skills-total').textContent = skillSum.toLocaleString();
+  lucide.createIcons();
+}
+
+function renderSidebarModules() {
+  const el = document.getElementById('sidebar-modules');
+  el.innerHTML = modules.map(m => {
+    const icon = MODULE_ICONS[m.id] || 'cpu';
+    const color = MODULE_COLORS[m.id] || '#60a5fa';
+    return `<div class="nav-item ${m.active ? '' : 'opacity-40'}" onclick="openModule('${m.id}')">
+      <i data-lucide="${icon}" style="width:14px;height:14px;color:${color}"></i>
+      <span class="capitalize">${m.name || m.id}</span>
+    </div>`;
+  }).join('');
+  const badge = document.getElementById('tenant-badge');
+  badge.textContent = API_KEY ? 'tenant: ' + API_KEY.slice(0,16) + '…' : 'DEV MODE';
+  lucide.createIcons();
+}
+
+function renderChatModuleSelect() {
+  const sel = document.getElementById('chat-module');
+  sel.innerHTML = '<option value="">Selecionar módulo...</option>' +
+    modules.filter(m => m.active).map(m =>
+      `<option value="${m.id}">${m.name || m.id} (${m.skillCount} skills)</option>`
+    ).join('');
+}
+
+function renderSkillsModuleList() {
+  const el = document.getElementById('skills-module-list');
+  el.innerHTML = modules.map(m => {
+    const color = MODULE_COLORS[m.id] || '#60a5fa';
+    return `<div class="nav-item text-xs ${m.active ? '' : 'opacity-40'}" id="sm-${m.id}" onclick="loadSkillsFor('${m.id}')">
+      <span style="width:6px;height:6px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span>
+      <span class="capitalize">${m.name || m.id}</span>
+    </div>`;
+  }).join('');
+}
+
+function updateOverviewStats() {
+  const tickers = document.getElementById('overview-ticker');
+  const activeCount = modules.filter(m => m.active).length;
+  const totalSkills = modules.reduce((s, m) => s + (m.skillCount || 0), 0);
+  // Update ticker dynamically
+  tickers.innerHTML = `
+    <span class="mx-5 text-green-400">● ${activeCount} MÓDULOS ATIVOS</span><span class="mx-5">|</span>
+    <span class="mx-5 text-blue-400">● ${totalSkills.toLocaleString()} SKILLS</span><span class="mx-5">|</span>
+    <span class="mx-5 text-purple-400">● BYOK ACTIVE</span><span class="mx-5">|</span>
+    <span class="mx-5 text-cyan-400">● MULTI-TENANT PRONTO</span><span class="mx-5">|</span>
+    <span class="mx-5 text-green-400">● ${activeCount} MÓDULOS ATIVOS</span><span class="mx-5">|</span>
+    <span class="mx-5 text-blue-400">● ${totalSkills.toLocaleString()} SKILLS</span><span class="mx-5">|</span>
+    <span class="mx-5 text-purple-400">● BYOK ACTIVE</span><span class="mx-5">|</span>
+    <span class="mx-5 text-cyan-400">● MULTI-TENANT PRONTO</span><span class="mx-5">|</span>
+  `;
+}
+
+// ══ NAVIGATION ════════════════════════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + name).classList.remove('hidden');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  currentView = name;
+  if (name === 'usage') loadUsage();
+  if (name === 'skills' && !currentSkillModule && modules.length) loadSkillsFor(modules.find(m => m.active)?.id || modules[0]?.id);
+  lucide.createIcons();
+}
+
+function openModule(moduleId) {
+  if (moduleId === 'comercial') {
+    // Comercial has a dedicated full-page experience
+    const url = `/vraxia/comercial.html?api=${encodeURIComponent(API_URL)}&key=${encodeURIComponent(API_KEY)}`;
+    window.open(url, '_blank');
+    return;
+  }
+  showView('chat');
+  const sel = document.getElementById('chat-module');
+  if (sel) sel.value = moduleId;
+}
+
+// ══ CHAT & SSE ════════════════════════════════════════════════════════════════
+function clearChat() {
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="msg-agent">
+      <span class="text-blue-400 font-semibold text-xs block mb-1">VRAXIA OS</span>
+      Conversa limpa. Selecione um módulo e faça sua pergunta.
+    </div>`;
+}
+
+function appendMsg(html, cls) {
+  const el = document.createElement('div');
+  el.className = cls;
+  el.innerHTML = html;
+  const container = document.getElementById('chat-messages');
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+  return el;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const moduleId = document.getElementById('chat-module').value;
+  const message = input.value.trim();
+  if (!message || !moduleId) {
+    if (!moduleId) alert('Selecione um módulo primeiro.');
+    return;
+  }
+  if (activeEventSource) { activeEventSource.close(); activeEventSource = null; }
+
+  input.value = '';
+  input.disabled = true;
+  document.getElementById('send-btn').disabled = true;
+
+  appendMsg(`<span class="text-gray-400 text-xs block mb-1">Você</span>${escapeHtml(message)}`, 'msg-user');
+
+  const agentEl = appendMsg(`<span class="text-blue-400 font-semibold text-xs block mb-1">${moduleId.toUpperCase()} Agent</span><span class="content"></span>`, 'msg-agent streaming');
+  const contentEl = agentEl.querySelector('.content');
+
+  const status = document.getElementById('chat-status');
+  status.classList.remove('hidden');
+  status.textContent = '● Conectando ao agente...';
+
+  try {
+    const resp = await fetch(API_URL + '/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(API_KEY ? {'X-Api-Key': API_KEY} : {}) },
+      body: JSON.stringify({ moduleId, message }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      contentEl.textContent = '❌ ' + (err.error || 'Erro ao executar agente');
+      agentEl.classList.remove('streaming');
+      return;
+    }
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split('\n\n');
+      buffer = parts.pop();
+      for (const part of parts) {
+        if (!part.trim()) continue;
+        const lines = part.split('\n');
+        let event = '', dataStr = '';
+        for (const line of lines) {
+          if (line.startsWith('event:')) event = line.slice(6).trim();
+          if (line.startsWith('data:')) dataStr = line.slice(5).trim();
+        }
+        if (!dataStr) continue;
+        try {
+          const data = JSON.parse(dataStr);
+          handleSSEEvent(event, data, contentEl, agentEl, status);
+        } catch {}
+      }
+    }
+  } catch(e) {
+    contentEl.textContent = '❌ Erro de conexão: ' + e.message;
+  } finally {
+    agentEl.classList.remove('streaming');
+    input.disabled = false;
+    document.getElementById('send-btn').disabled = false;
+    status.classList.add('hidden');
+    input.focus();
+    document.getElementById('chat-messages').scrollTop = 999999;
+  }
+}
+
+function handleSSEEvent(event, data, contentEl, agentEl, statusEl) {
+  switch(event) {
+    case 'start':
+      statusEl.textContent = '● ' + data.message;
+      break;
+    case 'thinking':
+      statusEl.textContent = '● Pensando...';
+      break;
+    case 'tool_call':
+      statusEl.textContent = `● Usando ferramenta: ${data.name || ''}`;
+      addSSEEvent(agentEl, `tool: ${data.name || ''}(${JSON.stringify(data.input || {}).slice(0,60)}…)`, 'sse-tool_call');
+      break;
+    case 'tool_result':
+      addSSEEvent(agentEl, `result: ${JSON.stringify(data.result || data).slice(0,80)}…`, 'sse-tool_result');
+      break;
+    case 'output':
+      if (data.text) {
+        contentEl.innerHTML += escapeHtml(data.text).replace(/\n/g, '<br>');
+      }
+      break;
+    case 'done':
+      statusEl.textContent = `✓ Concluído — ${data.durationMs || 0}ms | $${(data.cost?.totalCost || 0).toFixed(6)}`;
+      break;
+    case 'error':
+      contentEl.textContent = '❌ ' + data.message;
+      break;
+  }
+  document.getElementById('chat-messages').scrollTop = 999999;
+}
+
+function addSSEEvent(parentEl, text, cls) {
+  const ev = document.createElement('div');
+  ev.className = 'sse-event ' + cls;
+  ev.textContent = text;
+  parentEl.appendChild(ev);
+}
+
+// ══ SKILLS BROWSER ════════════════════════════════════════════════════════════
+async function loadSkillsFor(moduleId) {
+  if (!moduleId) return;
+  currentSkillModule = moduleId;
+  document.querySelectorAll('[id^="sm-"]').forEach(el => el.classList.remove('active'));
+  const sm = document.getElementById('sm-' + moduleId);
+  if (sm) sm.classList.add('active');
+
+  const list = document.getElementById('skills-list');
+  const countEl = document.getElementById('skill-count');
+  list.innerHTML = '<div class="col-span-2 text-center p-8 text-gray-600 text-xs font-mono">Carregando skills...</div>';
+  try {
+    const r = await apiFetch(`/api/modules/${moduleId}`);
+    const data = await r.json();
+    allSkills = data.skills || [];
+    countEl.textContent = allSkills.length + ' skills';
+    renderSkillsList(allSkills);
+  } catch(e) {
+    list.innerHTML = '<div class="col-span-2 p-4 text-red-400 text-xs">Erro ao carregar skills</div>';
+  }
+}
+
+function renderSkillsList(skills) {
+  const list = document.getElementById('skills-list');
+  if (!skills.length) {
+    list.innerHTML = '<div class="col-span-2 text-center p-8 text-gray-600 text-xs font-mono">Nenhuma skill encontrada.</div>';
+    return;
+  }
+  list.innerHTML = skills.map(s => `
+    <div class="skill-item" title="${escapeHtml(s.description || '')}">
+      <div class="text-white text-xs font-semibold mb-1">${escapeHtml(s.name || s.id)}</div>
+      <div class="text-gray-500 text-xs mb-2 leading-relaxed line-clamp-2">${escapeHtml(s.description || '')}</div>
+      <div class="flex flex-wrap gap-1">${(s.tags || []).slice(0,3).map(t => `<span class="skill-tag">${escapeHtml(t)}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+let searchDebounce;
+async function searchSkills() {
+  clearTimeout(searchDebounce);
+  const q = document.getElementById('skill-search').value.trim();
+  if (!q) { renderSkillsList(allSkills); return; }
+  searchDebounce = setTimeout(async () => {
+    if (!currentSkillModule) return;
+    try {
+      const r = await apiFetch(`/api/modules/${currentSkillModule}/search`, { method: 'POST', body: JSON.stringify({ query: q, limit: 20 }) });
+      const data = await r.json();
+      renderSkillsList(data.results || []);
+      document.getElementById('skill-count').textContent = (data.results || []).length + ' resultados';
+    } catch {}
+  }, 300);
+}
+
+// ══ CANVAS: OFFICE ANIMATION ══════════════════════════════════════════════════
+function initOfficeCanvas() {
+  const canvas = document.getElementById('office-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+  resize();
+  new ResizeObserver(resize).observe(canvas);
+
+  const DEPT_NAMES = ['Financeiro','Jurídico','Marketing','Operações','Conteúdo','Liderança','Produto','Código'];
+  const agents = Array.from({length: 8}, (_, i) => ({
+    x: 60 + (i % 4) * (canvas.width/4 - 20),
+    y: 60 + Math.floor(i / 4) * (canvas.offsetHeight / 2 - 30),
+    vx: (Math.random() - .5) * .6, vy: (Math.random() - .5) * .6,
+    color: Object.values(MODULE_COLORS)[i] || '#60a5fa',
+    name: DEPT_NAMES[i],
+    task: 0, busy: false, pulse: 0,
+  }));
+
+  let tasksDone = 0, active = 0;
+  const speechEl = document.getElementById('office-speech');
+  const logEl = document.getElementById('office-log');
+  const TASKS = ['Analisando dados…','Gerando relatório…','Buscando contexto…','Executando skill…','Respondendo query…','Otimizando prompt…','Consultando memória…','Processando lead…'];
+
+  function addBubble(agent, text) {
+    if (!speechEl) return;
+    const b = document.createElement('div');
+    b.className = 'o-bubble';
+    b.textContent = text;
+    b.style.left = Math.min(agent.x + 12, canvas.width - 160) + 'px';
+    b.style.top = Math.max(agent.y - 30, 5) + 'px';
+    speechEl.appendChild(b);
+    setTimeout(() => b.remove(), 2600);
+  }
+
+  function addLog(text) {
+    if (!logEl || logEl.children.length > 4) { if (logEl) logEl.innerHTML = ''; }
+    const l = document.createElement('div'); l.className = 'o-log-line'; l.textContent = text; logEl.appendChild(l);
+  }
+
+  setInterval(() => {
+    const ag = agents[Math.floor(Math.random() * agents.length)];
+    if (!ag.busy) { ag.busy = true; ag.pulse = 1; addBubble(ag, TASKS[Math.floor(Math.random() * TASKS.length)]); addLog('[' + ag.name + '] task started'); setTimeout(() => { ag.busy = false; tasksDone++; document.getElementById('o-done').textContent = tasksDone; }, 2500); }
+  }, 1800);
+
+  function draw() {
+    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#050810'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    active = agents.filter(a => a.busy).length;
+    document.getElementById('o-active').textContent = active;
+
+    agents.forEach(ag => {
+      ag.x += ag.vx; ag.y += ag.vy;
+      if (ag.x < 20 || ag.x > canvas.width - 20) ag.vx *= -1;
+      if (ag.y < 20 || ag.y > canvas.height - 20) ag.vy *= -1;
+
+      if (ag.busy && ag.pulse < 30) {
+        ctx.beginPath(); ctx.arc(ag.x, ag.y, 18 + ag.pulse * .5, 0, Math.PI*2);
+        ctx.strokeStyle = ag.color + '30'; ctx.lineWidth = 1; ctx.stroke(); ag.pulse++;
+      }
+
+      ctx.beginPath(); ctx.arc(ag.x, ag.y, 12, 0, Math.PI*2);
+      ctx.fillStyle = ag.busy ? ag.color + 'cc' : ag.color + '55'; ctx.fill();
+      if (ag.busy) { ctx.strokeStyle = ag.color; ctx.lineWidth = 1.5; ctx.stroke(); }
+      ctx.fillStyle = '#fff'; ctx.font = '8px JetBrains Mono'; ctx.textAlign = 'center';
+      ctx.fillText(ag.name.slice(0,3).toUpperCase(), ag.x, ag.y + 24);
+    });
+
+    // Draw connections
+    ctx.lineWidth = .4;
+    for (let i = 0; i < agents.length; i++) {
+      for (let j = i+1; j < agents.length; j++) {
+        const dx = agents[i].x - agents[j].x, dy = agents[i].y - agents[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 140) {
+          ctx.beginPath(); ctx.moveTo(agents[i].x, agents[i].y); ctx.lineTo(agents[j].x, agents[j].y);
+          ctx.strokeStyle = `rgba(96,165,250,${(1 - dist/140) * .15})`; ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ══ CANVAS: NETWORK ANIMATION ════════════════════════════════════════════════
+function initNetCanvas() {
+  const canvas = document.getElementById('net-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+  resize();
+  new ResizeObserver(resize).observe(canvas);
+
+  const nodes = Array.from({length: 12}, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+    vx: (Math.random() - .5) * .8, vy: (Math.random() - .5) * .8,
+    r: 4 + Math.random() * 5,
+    color: ['#60a5fa','#a78bfa','#4ade80','#22d3ee','#f472b6','#fbbf24'][Math.floor(Math.random()*6)],
+    pulse: 0,
+  }));
+
+  let taskTotal = 0, tasksPerSec = 0, secCount = 0;
+  const logEl = document.getElementById('net-log');
+  const LOG_MSGS = ['task dispatched','skill resolved','cache hit','tool invoked','memory read','agent replied','workflow done','token saved'];
+
+  function addNetLog(text) {
+    if (!logEl || logEl.children.length > 4) { if (logEl) logEl.innerHTML = ''; }
+    const l = document.createElement('div'); l.className = 'n-log-line';
+    l.style.fontSize = '8px'; l.style.color = '#475569'; l.style.letterSpacing = '.4px';
+    l.textContent = text; logEl.appendChild(l);
+  }
+
+  setInterval(() => {
+    const n = nodes[Math.floor(Math.random() * nodes.length)]; n.pulse = 15;
+    taskTotal++; tasksPerSec++;
+    document.getElementById('n-done').textContent = taskTotal;
+    addNetLog('[net] ' + LOG_MSGS[Math.floor(Math.random() * LOG_MSGS.length)]);
+  }, 700);
+
+  setInterval(() => {
+    document.getElementById('n-tasks').textContent = tasksPerSec;
+    tasksPerSec = 0;
+  }, 1000);
+
+  function draw() {
+    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#050810'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.lineWidth = .3;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+        const d = Math.sqrt(dx*dx+dy*dy);
+        if (d < 120) {
+          ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = `rgba(96,165,250,${(1-d/120)*.2})`; ctx.stroke();
+        }
+      }
+    }
+
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < n.r || n.x > canvas.width - n.r) n.vx *= -1;
+      if (n.y < n.r || n.y > canvas.height - n.r) n.vy *= -1;
+      if (n.pulse > 0) {
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + (15 - n.pulse) * .8, 0, Math.PI*2);
+        ctx.fillStyle = n.color + '15'; ctx.fill(); n.pulse--;
+      }
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+      ctx.fillStyle = n.color; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ══ UTILS ═════════════════════════════════════════════════════════════════════
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══ BOOT ══════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  document.getElementById('login-key').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+});
+</script>
+</body>
+</html>

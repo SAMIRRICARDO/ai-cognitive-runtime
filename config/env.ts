@@ -9,6 +9,8 @@ const envSchema = z.object({
   // ── SaaS / Multi-tenant ───────────────────────────────────────────────────
   // Required in production; omit in single-tenant / dev mode.
   VRAXIA_MASTER_KEY: z.string().min(32).optional(),
+  VRAXIA_ADMIN_KEY:  z.string().optional(),
+  API_PORT:          z.coerce.number().int().positive().default(3000),
 
   // ── API Keys ──────────────────────────────────────────────────────────────
   ANTHROPIC_API_KEY: z.string().min(1),

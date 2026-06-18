@@ -1,0 +1,10 @@
+{
+  "id": "comercial",
+  "name": "Comercial AI",
+  "version": "1.0.0",
+  "department": "Comercial & Outbound",
+  "description": "Pipeline comercial autônomo: lead sourcing, validação, RAG contextual, outbound personalizado, follow-up e analytics de campanhas",
+  "plan_min": "starter",
+  "agents": ["orchestrator", "rag", "validator", "outbound", "analytics", "enricher"],
+  "tags": ["outbound", "leads", "prospecção", "email", "follow-up", "pipeline", "SDR", "analytics", "enriquecimento", "validação"]
+}
