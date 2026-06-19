@@ -399,6 +399,7 @@ let API_KEY  = params.get('key') || '';
 window.addEventListener('message', e => { if(e.data?.apiUrl) API_URL = e.data.apiUrl; if(e.data?.apiKey) API_KEY = e.data.apiKey; });
 
 // ══ INLINE CHAT ═══════════════════════════════════════════════════════════════
+const sessionId = 'browser-' + Math.random().toString(36).slice(2, 8);
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function renderMd(text){
   let s=String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -449,44 +450,26 @@ async function sendMsg(){
   const input=document.getElementById('chat-input');
   const msg=input.value.trim();
   if(!msg)return;
-  // Hide suggestions after first message
   const sugg=document.getElementById('chat-suggestions');
   if(sugg)sugg.style.display='none';
   input.value='';input.disabled=true;document.getElementById('send-btn').disabled=true;
   appendMsg(`<span class="text-gray-400 text-xs block mb-1">Você</span>${escHtml(msg)}`,'msg-user');
   const agEl=appendMsg(`<span class="text-blue-400 font-semibold text-xs block mb-1">Comercial AI</span><span class="content"></span>`,'msg-agent streaming');
   const ct=agEl.querySelector('.content');
-  const st=document.getElementById('chat-status-inline');st.classList.remove('hidden');st.textContent='● Conectando...';
+  const st=document.getElementById('chat-status-inline');st.classList.remove('hidden');st.textContent='● Processando...';
   try{
-    const resp=await fetch((API_URL||'http://localhost:3000')+'/api/run',{
+    const resp=await fetch((API_URL||'')+'/api/sense/commercial/chat',{
       method:'POST',
-      headers:{'Content-Type':'application/json',...(API_KEY?{'X-Api-Key':API_KEY}:{})},
-      body:JSON.stringify({moduleId:'comercial',message:msg})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sessionId:sessionId,message:msg})
     });
     if(!resp.ok){const e=await resp.json();ct.textContent='❌ '+(e.error||'Erro');agEl.classList.remove('streaming');return;}
-    const reader=resp.body.getReader();const dec=new TextDecoder();let buf='';
-    while(true){
-      const{done,value}=await reader.read();if(done)break;
-      buf+=dec.decode(value,{stream:true});
-      const parts=buf.split('\n\n');buf=parts.pop();
-      for(const part of parts){
-        if(!part.trim())continue;
-        let ev='',ds='';
-        for(const line of part.split('\n')){if(line.startsWith('event:'))ev=line.slice(6).trim();if(line.startsWith('data:'))ds=line.slice(5).trim();}
-        if(!ds)continue;
-        try{const d=JSON.parse(ds);
-          if(ev==='start')st.textContent='● '+d.message;
-          else if(ev==='tool_call'){const e=document.createElement('div');e.className='sse-event sse-tool_call';e.textContent=`⚡ ${d.tool||d.name||'tool'}`;agEl.appendChild(e);}
-          else if(ev==='tool_result'){const e=document.createElement('div');e.className='sse-event sse-tool_result';e.textContent=`✓ dados recuperados`;agEl.appendChild(e);}
-          else if(ev==='output'&&d.content){const rendered=renderMd(d.content);if(agEl.querySelector('.sse-event')){const od=document.createElement('div');od.style.cssText='margin-top:8px;line-height:1.65;font-size:13px';od.innerHTML=rendered;agEl.appendChild(od);}else{ct.innerHTML+=rendered;}}
-          else if(ev==='done')st.textContent=`✓ ${d.durationMs||0}ms · $${((d.cost?.totalCostUsd||0)).toFixed(5)}`;
-          else if(ev==='error')ct.textContent='❌ '+d.message;
-        }catch{}
-        document.getElementById('chat-msgs').scrollTop=99999;
-      }
-    }
+    const d=await resp.json();
+    const text=d.message||'✅ Feito.';
+    ct.innerHTML=renderMd(text);
+    st.textContent='✓ OK';
   }catch(e){ct.textContent='❌ '+e.message;}
-  finally{agEl.classList.remove('streaming');input.disabled=false;document.getElementById('send-btn').disabled=false;st.classList.remove('hidden');input.focus();}
+  finally{agEl.classList.remove('streaming');input.disabled=false;document.getElementById('send-btn').disabled=false;input.focus();}
 }
 
 // ══ OBSIDIAN BG ═══════════════════════════════════════════════════════════════
