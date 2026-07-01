@@ -8,7 +8,21 @@ import { spawn } from 'child_process';
 import { DEFAULT_CONFIG, pickRandomWindow, randomMinuteInWindow, SchedulerConfig } from './config.js';
 import { sendDailyReport } from '../notifications/telegram.js';
 
-const WORK_DIR     = path.resolve(process.cwd(), '.vraxia-work');
+// Diretório raiz do pacote packages/work/ — independente do CWD do Task Scheduler
+// __dirname = packages/work/src/scheduler → ../../.. = packages/work/
+const PKG_DIR  = path.resolve(__dirname, '../../');
+
+// Carrega .env da raiz do monorepo (Task Scheduler não herda variáveis do shell)
+const MONO_ROOT = path.resolve(PKG_DIR, '../../');
+const ENV_PATH  = path.join(MONO_ROOT, '.env');
+if (fs.existsSync(ENV_PATH)) {
+  for (const line of fs.readFileSync(ENV_PATH, 'utf-8').split('\n')) {
+    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.+)$/);
+    if (m) process.env[m[1]] ??= m[2].trim();
+  }
+}
+
+const WORK_DIR      = path.join(PKG_DIR, '.vraxia-work');
 const COOLDOWN_PATH = path.join(WORK_DIR, 'cooldown.json');
 const HISTORY_PATH  = path.join(WORK_DIR, 'scheduler-history.jsonl');
 
@@ -56,7 +70,7 @@ function ranToday(): boolean {
     return fs.readFileSync(HISTORY_PATH, 'utf-8')
       .split('\n')
       .filter(l => l.trim())
-      .some(l => { try { const e = JSON.parse(l); return e.date === today && !e.dryRun; } catch { return false; } });
+      .some(l => { try { const e = JSON.parse(l); return e.date === today && !e.dryRun && e.exitCode === 0; } catch { return false; } });
   } catch { return false; }
 }
 
@@ -66,14 +80,14 @@ function runHunt(cfg: SchedulerConfig): Promise<{ exitCode: number | null; durat
   return new Promise(resolve => {
     const start = Date.now();
     const args = [
-      'src/cli/hunt.ts',
+      path.join(PKG_DIR, 'src/cli/hunt.ts'),
       '--platform', cfg.platform,
       '--limit', String(cfg.maxDailyApplications),
     ];
     if (cfg.dryRun) args.push('--dry-run');
 
     const child = spawn('npx', ['tsx', ...args], {
-      cwd:   path.resolve(process.cwd()),
+      cwd:   PKG_DIR,  // packages/work/ — onde estão package.json e node_modules
       stdio: 'inherit',
       env:   process.env,
       shell: true,
