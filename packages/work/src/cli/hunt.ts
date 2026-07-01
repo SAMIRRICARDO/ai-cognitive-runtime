@@ -1,33 +1,28 @@
 // packages/work/src/cli/hunt.ts
-// VRAXIA WORK — Hunt Mode (LinkedIn + Gupy)
-// Uso: tsx src/cli/hunt.ts [--platform linkedin|gupy|all] [--dry-run] [--headless]
+// VRAXIA WORK — Hunt Mode (LinkedIn + Gupy + Catho)
+// Uso: tsx src/cli/hunt.ts [--platform linkedin|gupy|catho|all] [--dry-run] [--headless]
+
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(process.cwd(), '../../.env'), override: false });
+dotenv.config({ path: path.resolve(process.cwd(), '.env'), override: false });
 
 import { program } from 'commander';
-import path from 'path';
-import fs from 'fs';
-
-// Carrega .env manualmente (sem dependência de dotenv)
-const envPath = path.resolve(process.cwd(), '.env');
-if (fs.existsSync(envPath)) {
-  for (const line of fs.readFileSync(envPath, 'utf-8').split('\n')) {
-    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.+)$/);
-    if (m) process.env[m[1]] ??= m[2].trim();
-  }
-}
 import { LinkedInSession } from '../engine/session.js';
 import { JobSearchEngine } from '../engine/search.js';
 import { EasyApplyEngine } from '../engine/apply.js';
 import { GupySearchEngine, GupyApplyEngine, GupyJob } from '../engine/gupy.js';
+import { CathoSession, CathoSearchEngine, CathoApplyEngine } from '../engine/catho.js';
 import { ObsidianVaultLoader } from '../rag/vault-loader.js';
 import { VaultRetriever } from '../rag/retriever.js';
 import { JobFilterAgent } from '../agents/JobFilterAgent.js';
 import { QuestionnaireAgent } from '../agents/QuestionnaireAgent.js';
 import { QuestionnaireLogger } from '../agents/QuestionnaireLogger.js';
 import { StatusTracker } from '../agents/StatusTracker.js';
-import { JobSearchConfig, Job, ApplicationStatus } from '../types/index.js';
+import { JobSearchConfig, CathoSearchConfig, CathoJob, Job, ApplicationStatus } from '../types/index.js';
 
 program
-  .option('--platform <p>', 'Plataforma: linkedin | gupy | all', 'all')
+  .option('--platform <p>', 'Plataforma: linkedin | gupy | catho | all', 'all')
   .option('--dry-run', 'Nao submete — apenas escaneia e filtra')
   .option('--headless', 'Browser em modo headless')
   .option('--limit <n>', 'Maximo de aplicacoes por sessao', '10')
@@ -95,6 +90,22 @@ const GUPY_CONFIG = {
   locations: ['Sao Paulo'],
 };
 
+// Catho — SP capital (presencial/híbrido)
+const CATHO_CONFIG_SP: CathoSearchConfig = {
+  keywords: KEYWORDS,
+  location: 'São Paulo',
+  remote: false,
+  titleBlacklist: TITLE_BLACKLIST,
+};
+
+// Catho — remoto Brasil
+const CATHO_CONFIG_REMOTE: CathoSearchConfig = {
+  keywords: KEYWORDS,
+  location: '',
+  remote: true,
+  titleBlacklist: TITLE_BLACKLIST,
+};
+
 const PERSONAL_DATA = {
   name: process.env.CANDIDATE_NAME ?? 'Ricardo Almeida',
   email: process.env.LINKEDIN_EMAIL ?? '',
@@ -157,7 +168,7 @@ async function processJob(
 }
 
 async function main() {
-  const platform = opts.platform as 'linkedin' | 'gupy' | 'all';
+  const platform = opts.platform as 'linkedin' | 'gupy' | 'catho' | 'all';
   const dryRun = !!opts.dryRun;
   const maxApply = parseInt(opts.limit, 10);
 
@@ -270,6 +281,45 @@ async function main() {
       if (applied) {
         totalApplied++;
         await new Promise(r => setTimeout(r, 3000 + Math.random() * 5000));
+      }
+    }
+  }
+
+  if ((platform === 'catho' || platform === 'all') && totalApplied < maxApply) {
+    console.log('\nCATHO — Buscando vagas (SP + Remoto)...');
+
+    const cathoSession = new CathoSession(page);
+    const cathoLoggedIn = await cathoSession.login();
+    if (!cathoLoggedIn) {
+      console.error('[Catho] Falha no login — pulando plataforma.');
+    } else {
+      const cathoSearch = new CathoSearchEngine(page);
+      const cathoApply  = new CathoApplyEngine(page);
+
+      const jobsSP     = await cathoSearch.searchJobs(CATHO_CONFIG_SP).catch(e => { console.warn('[Catho] Busca SP falhou:', e); return [] as CathoJob[]; });
+      const jobsRemote = await cathoSearch.searchJobs(CATHO_CONFIG_REMOTE).catch(e => { console.warn('[Catho] Busca remoto falhou:', e); return [] as CathoJob[]; });
+
+      const seenCatho = new Set<string>();
+      const cathoJobs = [...jobsSP, ...jobsRemote].filter(j => { if (seenCatho.has(j.id)) return false; seenCatho.add(j.id); return true; });
+      console.log(`${cathoJobs.length} vagas únicas encontradas no Catho (SP: ${jobsSP.length}, Remoto: ${jobsRemote.length}).\n`);
+
+      for (const job of cathoJobs) {
+        if (totalApplied >= maxApply) break;
+        console.log(`\n[Catho] ${job.title} @ ${job.company}`);
+        job.description = await cathoSearch.scrapeJobDescription(job.applicationUrl);
+
+        const applied = await processJob(job, agents, tracker, async (j) => {
+          return cathoApply.apply(j as CathoJob, {
+            resumePath, dryRun,
+            onQuestion: async (q) => (await agents.questionnaire.answer(q)).answer,
+          });
+        }, dryRun);
+
+        if (applied) {
+          totalApplied++;
+          // Anti-ban: 45s–2min entre candidaturas no Catho
+          await new Promise(r => setTimeout(r, 45000 + Math.random() * 75000));
+        }
       }
     }
   }

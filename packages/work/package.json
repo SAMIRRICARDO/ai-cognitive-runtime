@@ -7,12 +7,16 @@
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "hunt": "tsx src/cli/hunt.ts",
+    "serve": "tsx src/api/server.ts",
     "dashboard": "tsx src/api/server.ts",
+    "tunnel": "tsx src/tunnel/start-tunnel.ts",
+    "start:full": "concurrently \"npm run serve\" \"npm run tunnel\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.0",
     "commander": "^12.1.0",
+    "concurrently": "^9.2.3",
     "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3",
     "playwright": "^1.44.1",

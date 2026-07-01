@@ -50,10 +50,15 @@ function dbQuery(db: Database, sql: string, params: (string | number | null)[] =
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function detectPlatform(url: string): string {
-  const u = (url ?? '').toLowerCase();
-  if (u.includes('linkedin.com')) return 'LinkedIn';
-  if (u.includes('gupy'))         return 'Gupy';
+function detectPlatform(row: Record<string, unknown>): string {
+  const dbPlatform = (row['platform'] as string | null) ?? '';
+  if (dbPlatform === 'catho')   return 'Catho';
+  if (dbPlatform === 'gupy')    return 'Gupy';
+  if (dbPlatform === 'linkedin') return 'LinkedIn';
+  const url = ((row['linkedin_url'] as string) ?? '').toLowerCase();
+  if (url.includes('linkedin.com'))  return 'LinkedIn';
+  if (url.includes('gupy'))          return 'Gupy';
+  if (url.includes('catho.com.br'))  return 'Catho';
   return 'Outro';
 }
 
@@ -74,11 +79,27 @@ function estimateCost(entries: Record<string, unknown>[]): number {
 }
 
 // ── CORS middleware ───────────────────────────────────────────────────────────
-function setCors(_req: Request, res: Response, next: NextFunction): void {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+const ALLOWED_ORIGINS = [
+  'http://localhost:3001',
+  'http://localhost:3000',
+  /^https:\/\/vraxia.*\.vercel\.app$/,
+  /^https:\/\/.*\.vercel\.app$/,
+  /^https:\/\/.*\.trycloudflare\.com$/,
+  /^https:\/\/.*\.ngrok-free\.app$/,
+  /^https:\/\/.*\.ngrok\.io$/,
+];
+if (process.env.DASHBOARD_URL) ALLOWED_ORIGINS.push(process.env.DASHBOARD_URL);
+
+function setCors(req: Request, res: Response, next: NextFunction): void {
+  const origin = req.headers.origin ?? '';
+  const allowed = ALLOWED_ORIGINS.some(p =>
+    typeof p === 'string' ? p === origin : p.test(origin)
+  );
+  res.setHeader('Access-Control-Allow-Origin', allowed ? origin : '');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (_req.method === 'OPTIONS') { res.sendStatus(204); return; }
+  res.setHeader('Vary', 'Origin');
+  if (req.method === 'OPTIONS') { res.sendStatus(204); return; }
   next();
 }
 
@@ -91,6 +112,11 @@ app.use(express.json());
 app.use('/work', express.static(DASH_DIR));
 app.get('/work', (_req: Request, res: Response) => {
   res.sendFile(path.join(DASH_DIR, 'index.html'));
+});
+
+// ── GET /api/work/health ─────────────────────────────────────────────────────
+app.get('/api/work/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' });
 });
 
 // ── GET /api/work/stats ───────────────────────────────────────────────────────
@@ -184,7 +210,7 @@ app.get('/api/work/applications', async (req: Request, res: Response) => {
       });
       return {
         ...r,
-        platform: detectPlatform(r['linkedin_url'] as string),
+        platform: detectPlatform(r),
         modality: geo.modality,
         modalityReason: geo.reason,
       };

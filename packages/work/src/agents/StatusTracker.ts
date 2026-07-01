@@ -63,6 +63,10 @@ export class StatusTracker {
       CREATE INDEX IF NOT EXISTS idx_status ON job_applications(status);
       CREATE INDEX IF NOT EXISTS idx_company ON job_applications(company);
     `);
+    // Migration: add platform column for existing databases
+    try {
+      this.db.run(`ALTER TABLE job_applications ADD COLUMN platform TEXT DEFAULT 'linkedin'`);
+    } catch { /* column already exists */ }
     this.save();
   }
 
@@ -71,8 +75,8 @@ export class StatusTracker {
       INSERT INTO job_applications (
         id, job_title, company, location, linkedin_url, description,
         is_easy_apply, status, score_total, score_action, score_reason,
-        questionnaire_answers, scanned_at, applied_at, updated_at, notes
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        questionnaire_answers, scanned_at, applied_at, updated_at, notes, platform
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
         score_total = excluded.score_total,
@@ -81,7 +85,8 @@ export class StatusTracker {
         questionnaire_answers = excluded.questionnaire_answers,
         applied_at = excluded.applied_at,
         updated_at = excluded.updated_at,
-        notes = excluded.notes
+        notes = excluded.notes,
+        platform = excluded.platform
     `, [
       app.job.id,
       app.job.title,
@@ -99,6 +104,7 @@ export class StatusTracker {
       app.appliedAt ?? null,
       new Date().toISOString(),
       app.notes ?? null,
+      app.job.platform ?? 'linkedin',
     ]);
     this.save();
   }

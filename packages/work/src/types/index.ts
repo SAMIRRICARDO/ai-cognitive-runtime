@@ -1,5 +1,7 @@
 // packages/work/src/types/index.ts
 
+export type Platform = 'linkedin' | 'gupy' | 'catho';
+
 export type ExperienceLevel =
   | 'INTERNSHIP'
   | 'ENTRY_LEVEL'
@@ -66,6 +68,23 @@ export interface Job {
   isEasyApply: boolean;
   postedAt?: string;
   scannedAt: string;
+  platform?: Platform;
+}
+
+export interface CathoJob extends Job {
+  cathoJobId: string;
+  applicationUrl: string;
+  salaryRange?: string;
+  benefits?: string[];
+  companySize?: string;
+}
+
+export interface CathoSearchConfig {
+  keywords: string[];
+  location: string;
+  remote: boolean;
+  contractType?: 1 | 2 | 3; // 1=CLT 2=PJ 3=Estágio
+  titleBlacklist?: string[];
 }
 
 export interface JobScore {
