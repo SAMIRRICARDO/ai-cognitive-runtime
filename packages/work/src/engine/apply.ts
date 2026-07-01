@@ -110,17 +110,18 @@ export class EasyApplyEngine {
     let stepCount = 0;
     const maxSteps = 10;
 
-    // Detecta redirect pós-candidatura: URL saiu de /apply → /jobs/view/?trackingId=
-    const checkApplyRedirect = (label: string): boolean => {
+    // true=submetida(return true) | false=abandonada(break) | null=continua
+    const checkApplyRedirect = (label: string): boolean | null => {
       const url = this.page.url();
       if (isPageFlow && !url.includes('/apply')) {
         if (url.includes('trackingId=')) {
           console.log(`[Apply] ✅ Candidatura submetida — ${label} (redirect com trackingId).`);
           return true;
         }
-        console.warn(`[Apply] URL saiu do fluxo apply (${label}): ${url.slice(0, 80)}`);
+        console.warn(`[Apply] URL saiu do fluxo apply — ${label}: ${url.slice(0, 80)}`);
+        return false; // form fechou sem submissão — abortar loop
       }
-      return false;
+      return null;
     };
 
     while (stepCount < maxSteps) {
@@ -129,17 +130,24 @@ export class EasyApplyEngine {
       console.log(`[Apply] Step ${stepCount} URL: ${stepUrl.slice(0, 80)}`);
 
       // Candidatura pode ter sido submetida durante o delay/load anterior
-      if (checkApplyRedirect(`início step ${stepCount}`)) return true;
+      const r0 = checkApplyRedirect(`início step ${stepCount}`);
+      if (r0 === true) return true;
+      if (r0 === false) break;
 
-      // Fecha qualquer dropdown/search aberto que possa interceptar cliques
-      await this.page.keyboard.press('Escape').catch(() => {});
-      await delay(300, 500);
+      // Descarta modal "Salvar esta candidatura?" antes de interagir
+      await this.dismissSaveModal();
+      await this.handleAbandonModal();
 
       await this.handleFileUpload(options.resumePath, options.coverLetterPath);
       await this.handleQuestions(options.onQuestion);
 
       // Formulário de campo único pode auto-submeter ao preencher
-      if (checkApplyRedirect('pós-questionário')) return true;
+      const r1 = checkApplyRedirect('pós-questionário');
+      if (r1 === true) return true;
+      if (r1 === false) break;
+
+      // Descarta modal que possa ter aparecido durante preenchimento
+      await this.dismissSaveModal();
 
       const action = await this.detectNextAction();
       console.log(`[Apply] Ação detectada: ${action}`);
@@ -153,8 +161,11 @@ export class EasyApplyEngine {
         await this.clickNext();
         await this.page.waitForLoadState('domcontentloaded', { timeout: 8000 }).catch(() => {});
         await delay(1500, 2500);
+        await this.dismissSaveModal();
         // "Avançar" em formulário de 1 passo = submit disfarçado
-        if (checkApplyRedirect('pós-avançar')) return true;
+        const r2 = checkApplyRedirect('pós-avançar');
+        if (r2 === true) return true;
+        if (r2 === false) break;
         continue;
       }
 
@@ -163,6 +174,38 @@ export class EasyApplyEngine {
     }
 
     return false;
+  }
+
+  // ── Modais de salvamento / abandono ──────────────────────────────────────
+
+  private async dismissSaveModal(): Promise<void> {
+    try {
+      const saveModal = this.page.locator('div[role="dialog"]:has-text("Salvar esta candidatura")');
+      if (await saveModal.count() === 0) return;
+      const saveBtn = saveModal.locator('button:has-text("Salvar")');
+      if (await saveBtn.count() > 0) {
+        await saveBtn.click();
+        await this.page.waitForTimeout(1000);
+        console.log('[Apply] Modal "Salvar candidatura" detectado — clicou Salvar.');
+      }
+    } catch {
+      // nunca travar o fluxo principal
+    }
+  }
+
+  private async handleAbandonModal(): Promise<void> {
+    try {
+      const abandonModal = this.page.locator('div[role="dialog"]:has-text("Descartar")');
+      if (await abandonModal.count() === 0) return;
+      const discardBtn = abandonModal.locator('button:has-text("Descartar")');
+      if (await discardBtn.count() > 0) {
+        await discardBtn.click();
+        await this.page.waitForTimeout(800);
+        console.log('[Apply] Modal de abandono detectado — descartou.');
+      }
+    } catch {
+      // nunca travar o fluxo principal
+    }
   }
 
   // ── Estratégias de detecção do botão Easy Apply ────────────────────────────
