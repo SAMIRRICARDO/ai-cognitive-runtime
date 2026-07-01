@@ -13,6 +13,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.0",
     "commander": "^12.1.0",
+    "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3",
     "playwright": "^1.44.1",
     "playwright-extra": "^4.3.6",
@@ -21,8 +22,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
+    "@types/sql.js": "^1.4.9",
     "tsx": "^4.15.0",
-    "typescript": "^5.4.5",
-    "@types/sql.js": "^1.4.9"
+    "typescript": "^5.4.5"
   }
 }

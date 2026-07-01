@@ -4,23 +4,17 @@
 
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import { DEFAULT_CONFIG, pickRandomWindow, randomMinuteInWindow, SchedulerConfig } from './config.js';
 import { sendDailyReport } from '../notifications/telegram.js';
 
 // Diretório raiz do pacote packages/work/ — independente do CWD do Task Scheduler
-// __dirname = packages/work/src/scheduler → ../../.. = packages/work/
+// __dirname = packages/work/src/scheduler → ../../ = packages/work/
 const PKG_DIR  = path.resolve(__dirname, '../../');
 
 // Carrega .env da raiz do monorepo (Task Scheduler não herda variáveis do shell)
-const MONO_ROOT = path.resolve(PKG_DIR, '../../');
-const ENV_PATH  = path.join(MONO_ROOT, '.env');
-if (fs.existsSync(ENV_PATH)) {
-  for (const line of fs.readFileSync(ENV_PATH, 'utf-8').split('\n')) {
-    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.+)$/);
-    if (m) process.env[m[1]] ??= m[2].trim();
-  }
-}
+dotenv.config({ path: path.resolve(PKG_DIR, '../../.env'), override: false });
 
 const WORK_DIR      = path.join(PKG_DIR, '.vraxia-work');
 const COOLDOWN_PATH = path.join(WORK_DIR, 'cooldown.json');
