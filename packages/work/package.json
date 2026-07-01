@@ -1,0 +1,28 @@
+{
+  "name": "@vraxia/work",
+  "version": "0.1.0",
+  "description": "VRAXIA WORK — LinkedIn job hunt & recruit automation module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "hunt": "tsx src/cli/hunt.ts",
+    "dashboard": "tsx src/api/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "commander": "^12.1.0",
+    "gray-matter": "^4.0.3",
+    "playwright": "^1.44.1",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "sql.js": "^1.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.5",
+    "@types/sql.js": "^1.4.9"
+  }
+}
