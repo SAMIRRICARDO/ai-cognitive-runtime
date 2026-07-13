@@ -1,0 +1,5 @@
+{"date":"2026-07-01","window":"Imediato","firedAt":"2026-07-01T19:01:05.078Z","exitCode":0,"durationMs":452457,"platform":"all","dryRun":false}
+{"date":"2026-07-08","window":"Imediato","firedAt":"2026-07-08T15:01:04.366Z","exitCode":0,"durationMs":1629998,"platform":"all","dryRun":false}
+{"date":"2026-07-09","window":"Imediato","firedAt":"2026-07-09T03:01:05.322Z","exitCode":0,"durationMs":1623849,"platform":"all","dryRun":false}
+{"date":"2026-07-10","window":"Imediato","firedAt":"2026-07-10T03:02:18.973Z","exitCode":1,"durationMs":24321,"platform":"all","dryRun":false}
+{"date":"2026-07-13","window":"Imediato","firedAt":"2026-07-13T03:02:16.227Z","exitCode":1,"durationMs":8932,"platform":"all","dryRun":false}

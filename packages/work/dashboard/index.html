@@ -1,0 +1,3226 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VRAXIA WORK — Job Hunt Dashboard</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Outfit','sans-serif'],mono:['JetBrains Mono','monospace']}}}}</script>
+
+  <style>
+    html,body{height:100%;margin:0;}
+    body{background:#000;color:#e5e7eb;font-family:'Outfit',sans-serif;}
+    *{box-sizing:border-box;}
+
+    /* Glass */
+    .glass      {background:rgba(255,255,255,.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06);}
+    .glass-strong{background:rgba(255,255,255,.05);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,.08);}
+    .glow-blue  {box-shadow:0 0 30px rgba(59,130,246,.15),0 0 60px rgba(59,130,246,.05);}
+    .glow-green {box-shadow:0 0 20px rgba(34,197,94,.12);}
+
+    /* Text */
+    .gradient-text{background:linear-gradient(135deg,#60a5fa,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% 200%;animation:shimmer 3s ease infinite;}
+
+    /* Animations */
+    @keyframes shimmer   {0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    @keyframes liveInd   {0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.85)}}
+    @keyframes slideUp   {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin      {to{transform:rotate(360deg)}}
+    @keyframes scan      {0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+    @keyframes pulse-glow{0%,100%{opacity:.4}50%{opacity:1}}
+    @keyframes fadeIn    {from{opacity:0}to{opacity:1}}
+    @keyframes obsGrid   {0%{opacity:.04}50%{opacity:.09}100%{opacity:.04}}
+
+    /* Layout */
+    #app    {display:flex;height:100vh;overflow:hidden;}
+    #sidebar{width:240px;flex-shrink:0;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;background:#050810;overflow-y:auto;}
+    #main   {flex:1;overflow-y:auto;background:#000;}
+
+    /* Nav */
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;cursor:pointer;font-size:13px;color:#6b7280;transition:all .2s;margin:1px 8px;}
+    .nav-item:hover{background:rgba(59,130,246,.08);color:#93c5fd;}
+    .nav-item.active{background:rgba(34,197,94,.08);color:#86efac;border-left:2px solid #22c55e;margin-left:6px;}
+
+    /* Live dot */
+    .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22d3ee;margin-right:6px;animation:liveInd 1.4s ease-in-out infinite;box-shadow:0 0 6px rgba(34,211,238,.7);}
+
+    /* Cards */
+    .card-hover{transition:all .3s ease;}
+    .card-hover:hover{transform:translateY(-3px);border-color:rgba(96,165,250,.3);}
+
+    /* Scan line */
+    .scan-line{position:relative;overflow:hidden;}
+    .scan-line::after{content:'';position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(59,130,246,.05),transparent);animation:scan 3s linear infinite;}
+
+    /* Spinner */
+    .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.1);border-top-color:#60a5fa;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;}
+
+    /* Badge */
+    .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:.3px;}
+    .badge-green  {background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#86efac;}
+    .badge-blue   {background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#93c5fd;}
+    .badge-yellow {background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);color:#fde68a;}
+    .badge-gray   {background:rgba(107,114,128,.12);border:1px solid rgba(107,114,128,.25);color:#9ca3af;}
+    .badge-red    {background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;}
+    .badge-purple {background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);color:#c4b5fd;}
+    .badge-cyan   {background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.25);color:#67e8f9;}
+    .badge-orange {background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.25);color:#fdba74;}
+
+    /* Table */
+    .tbl{width:100%;border-collapse:collapse;}
+    .tbl th{text-align:left;padding:10px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#4b5563;font-weight:600;border-bottom:1px solid rgba(255,255,255,.05);}
+    .tbl td{padding:10px 12px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);}
+    .tbl tr:hover td{background:rgba(255,255,255,.02);}
+
+    /* Score badge */
+    .score-high{background:rgba(34,197,94,.15);color:#86efac;padding:2px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;}
+    .score-mid {background:rgba(251,191,36,.15);color:#fde68a;padding:2px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;}
+    .score-low {background:rgba(239,68,68,.15);color:#fca5a5;padding:2px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;}
+
+    /* Accordion */
+    .accordion-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;border-radius:10px;transition:background .2s;}
+    .accordion-header:hover{background:rgba(255,255,255,.03);}
+    .accordion-body{overflow:hidden;transition:max-height .3s ease;max-height:0;}
+    .accordion-body.open{max-height:2000px;}
+
+    /* Terminal */
+    .terminal{background:#0a0e18;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#4ade80;min-height:80px;max-height:200px;overflow-y:auto;}
+
+    /* Filters */
+    .filter-select{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#e5e7eb;font-size:13px;outline:none;transition:border-color .2s;}
+    .filter-select:focus{border-color:rgba(96,165,250,.4);}
+    .filter-input{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#e5e7eb;font-size:13px;outline:none;transition:border-color .2s;width:200px;}
+    .filter-input:focus{border-color:rgba(96,165,250,.4);}
+    .filter-input::placeholder{color:#4b5563;}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none;}
+    .btn-primary{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;}
+    .btn-primary:hover{opacity:.9;transform:translateY(-1px);}
+    .btn-secondary{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:#93c5fd;}
+    .btn-secondary:hover{background:rgba(59,130,246,.25);}
+    .btn-danger{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;}
+    .btn-danger:hover{background:rgba(239,68,68,.25);}
+    .btn-ghost{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#9ca3af;}
+    .btn-ghost:hover{color:#e5e7eb;}
+
+    /* Hunt status pill */
+    .hunt-idle    {color:#6b7280;background:rgba(107,114,128,.1);border:1px solid rgba(107,114,128,.2);}
+    .hunt-running {color:#22d3ee;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);}
+    .hunt-done    {color:#86efac;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);}
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+
+    /* Obs bg */
+    .obs-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(96,165,250,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,.06) 1px,transparent 1px);background-size:60px 60px;animation:obsGrid 4s ease-in-out infinite;pointer-events:none;}
+
+    /* Chart containers */
+    .chart-box{position:relative;height:220px;}
+
+    /* Animate in */
+    .animate-in{animation:slideUp .5s ease forwards;}
+
+    /* Empty state */
+    .empty-state{text-align:center;padding:48px 20px;color:#4b5563;}
+
+    /* ── Truth Engine ────────────────────────────────────────────────── */
+    .truth-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+    .truth-verified {background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#86efac;}
+    .truth-probable {background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);color:#fde68a;}
+    .truth-rejected {background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;}
+    .truth-unknown  {background:rgba(107,114,128,.15);border:1px solid rgba(107,114,128,.3);color:#9ca3af;}
+    .truth-expired  {background:rgba(75,85,99,.15);border:1px solid rgba(75,85,99,.3);color:#6b7280;}
+    .truth-meter-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:4px;}
+    .truth-meter-fill{height:100%;border-radius:4px;transition:width .7s ease;}
+    .error-cat-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+    .error-cat-row:last-child{border-bottom:none;}
+
+    /* ── Chat footer ──────────────────────────────────────────────────── */
+    #chat-footer{position:fixed;bottom:0;left:240px;right:0;z-index:100;background:rgba(0,0,0,.9);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.06);padding:12px 20px;display:flex;gap:10px;align-items:center;}
+    #chat-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 16px;color:#e5e7eb;font-size:13px;outline:none;transition:border-color .2s;font-family:'Outfit',sans-serif;}
+    #chat-input:focus{border-color:rgba(96,165,250,.4);}
+    #chat-input::placeholder{color:#4b5563;}
+    #chat-bubble{position:fixed;bottom:80px;right:20px;left:260px;z-index:99;max-height:280px;overflow-y:auto;background:rgba(5,8,16,.97);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px;font-size:13px;display:none;box-shadow:0 -8px 32px rgba(0,0,0,.6);}
+    .chat-msg-user{color:#93c5fd;margin-bottom:10px;padding:8px 12px;background:rgba(59,130,246,.08);border-radius:10px;}
+    .chat-msg-ai{color:#d1d5db;margin-bottom:10px;line-height:1.6;}
+    .chat-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+    .chat-action-btn{font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);color:#93c5fd;cursor:pointer;transition:background .2s;}
+    .chat-action-btn:hover{background:rgba(96,165,250,.2);}
+    @media(max-width:768px){#chat-footer{left:0;}#chat-bubble{left:0;right:0;}}
+
+    /* ── Explain modal ────────────────────────────────────────────────── */
+    #explain-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;}
+    #explain-modal.open{display:flex;}
+    .explain-box{background:#0a0e1a;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.8);}
+    .explain-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:16px;}
+    .explain-reason{background:rgba(255,255,255,.03);border-radius:10px;padding:12px 16px;font-size:12px;color:#9ca3af;line-height:1.7;margin-bottom:10px;border-left:2px solid rgba(96,165,250,.4);}
+    .explain-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#4b5563;margin-bottom:6px;font-weight:600;}
+
+    /* ── Analytics ────────────────────────────────────────────────────── */
+    .funnel-step{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+    .funnel-step:last-child{border-bottom:none;}
+    .funnel-bar{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+    .funnel-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+    /* ── Marketplace ───────────────────────────────────────────────────── */
+    .mkt-filter-btn{font-size:11px;padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#9ca3af;cursor:pointer;transition:all .2s;}
+    .mkt-filter-btn.active,.mkt-filter-btn:hover{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fbbf24;}
+    .mkt-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .2s;}
+    .mkt-card:hover{border-color:rgba(245,158,11,.25);transform:translateY(-2px);}
+    .mkt-card.installed{border-color:rgba(34,197,94,.25);background:rgba(34,197,94,.04);}
+    .mkt-card-header{display:flex;align-items:center;gap:10px;}
+    .mkt-icon{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .mkt-name{font-size:13px;font-weight:700;color:#fff;}
+    .mkt-author{font-size:10px;color:#4b5563;}
+    .mkt-desc{font-size:11px;color:#9ca3af;line-height:1.5;flex:1;}
+    .mkt-tags{display:flex;flex-wrap:wrap;gap:4px;}
+    .mkt-tag{font-size:9px;padding:2px 7px;border-radius:20px;background:rgba(96,165,250,.1);color:#93c5fd;border:1px solid rgba(96,165,250,.15);}
+    .mkt-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
+    .mkt-price{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#34d399;}
+    .mkt-cat{font-size:9px;color:#6b7280;}
+    .funnel-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#fff;min-width:36px;text-align:right;}
+
+    /* ── Mobile hamburger button ──────────────────────────────── */
+    .hamburger{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#9ca3af;cursor:pointer;flex-shrink:0;}
+
+    /* ── Sidebar overlay ──────────────────────────────────────── */
+    #sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;backdrop-filter:blur(2px);}
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media(max-width:768px){
+      /* App layout */
+      #app{display:block;height:auto;min-height:100vh;overflow:visible;}
+      #main{width:100%;height:auto;min-height:100vh;overflow:visible;}
+
+      /* Sidebar becomes drawer */
+      #sidebar{
+        position:fixed;left:-260px;top:0;bottom:0;z-index:200;
+        width:240px;height:100vh;transition:left .25s ease;
+        box-shadow:4px 0 24px rgba(0,0,0,.6);
+      }
+      #sidebar.open{left:0;}
+
+      /* Sections: smaller padding */
+      #sec-kpis,#sec-table,#sec-charts,#sec-questionnaire,#sec-hunt{
+        padding-left:1rem;padding-right:1rem;padding-top:1.25rem;padding-bottom:1.25rem;
+      }
+
+      /* Header */
+      .header-inner{padding:1.25rem 1rem;}
+      h1.text-2xl{font-size:1.25rem;}
+
+      /* KPI grid: 2 cols */
+      .kpi-grid{grid-template-columns:repeat(2,1fr)!important;}
+      .kpi-grid>div{padding:1rem;}
+      .kpi-grid .text-2xl{font-size:1.25rem;}
+
+      /* Filters: wrap & full-width selects */
+      .filter-select{font-size:12px;padding:6px 8px;}
+      .filter-input{width:100%;}
+
+      /* Charts: reduce height */
+      .chart-box{height:180px;}
+
+      /* Table: smaller font */
+      .tbl td{font-size:11px;padding:8px 8px;}
+      .tbl th{padding:8px 8px;}
+
+      /* Hunt controls: stack */
+      .hunt-grid{grid-template-columns:1fr!important;}
+
+      /* Connection panel: compact */
+      #connection-panel{top:8px;right:8px;}
+      #api-config-drawer{right:8px;width:calc(100vw - 16px);}
+
+      /* Hamburger: show */
+      .hamburger{display:flex;}
+
+      /* Hunt pill: hide on small screens */
+      #hunt-pill{display:none;}
+    }
+
+    @media(max-width:480px){
+      .kpi-grid{grid-template-columns:repeat(2,1fr)!important;}
+      .chart-box{height:150px;}
+    }
+  </style>
+</head>
+<body class="h-full overflow-hidden">
+
+<!-- ══ CONNECTION PANEL ═══════════════════════════════════════════════════════ -->
+<div id="connection-panel" style="position:fixed;top:12px;right:12px;z-index:9999;display:flex;align-items:center;gap:8px;">
+  <div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:5px 12px;font-size:12px;">
+    <span id="conn-dot" style="width:7px;height:7px;border-radius:50%;background:#6b7280;display:inline-block;flex-shrink:0;"></span>
+    <span id="conn-text" style="color:#9ca3af;white-space:nowrap;">Conectando...</span>
+  </div>
+  <button onclick="toggleConfig()" title="Configurar API URL" style="width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.1);color:#9ca3af;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">⚙</button>
+</div>
+
+<!-- API config drawer -->
+<div id="api-config-drawer" style="display:none;position:fixed;top:52px;right:12px;z-index:9998;background:rgba(5,8,16,.95);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.6);">
+  <div style="font-size:11px;color:#6b7280;margin-bottom:8px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;">API URL</div>
+  <input id="api-url-input" type="text" placeholder="https://abc123.trycloudflare.com"
+    style="width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 10px;color:#e5e7eb;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;margin-bottom:10px;box-sizing:border-box;">
+  <div style="display:flex;gap:8px;">
+    <button onclick="saveApiUrl()" style="flex:1;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#86efac;border-radius:8px;padding:7px;font-size:12px;cursor:pointer;">Salvar & Reconectar</button>
+    <button onclick="clearApiUrl()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#fca5a5;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer;">Limpar</button>
+  </div>
+  <div style="margin-top:10px;font-size:10px;color:#4b5563;">
+    Deixe vazio para usar <code style="color:#60a5fa;">http://localhost:3001</code> (modo local).<br>
+    Cole a URL do cloudflared/ngrok para acesso remoto.
+  </div>
+</div>
+
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div id="app">
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+  <div id="sidebar">
+    <!-- Logo -->
+    <div class="p-4 border-b border-white/5">
+      <div class="flex items-center gap-2">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,#16a34a,#15803d);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i data-lucide="briefcase" style="width:16px;height:16px;color:white"></i>
+        </div>
+        <div>
+          <div class="text-white font-bold text-sm tracking-tight">VRAXIA</div>
+          <div class="text-gray-600 text-xs font-mono">WORK Module</div>
+        </div>
+      </div>
+      <a href="http://localhost:3000" target="_blank" class="mt-3 flex items-center gap-2 px-3 py-1.5 glass rounded-lg text-xs text-gray-500 hover:text-gray-300 transition">
+        <i data-lucide="arrow-left" style="width:11px;height:11px"></i>
+        Voltar ao VRAXIA OS
+      </a>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 py-3">
+      <div class="px-4 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Dashboard</div>
+
+      <div class="nav-item" id="nav-home" onclick="navTo('sec-home')">
+        <i data-lucide="home" style="width:15px;height:15px"></i> Home
+      </div>
+      <div class="nav-item active" id="nav-kpis" onclick="navTo('sec-kpis')">
+        <i data-lucide="layout-dashboard" style="width:15px;height:15px"></i> KPIs
+      </div>
+      <div class="nav-item" id="nav-table" onclick="navTo('sec-table')">
+        <i data-lucide="list" style="width:15px;height:15px"></i> Candidaturas
+      </div>
+      <div class="nav-item" id="nav-charts" onclick="navTo('sec-charts')">
+        <i data-lucide="bar-chart-2" style="width:15px;height:15px"></i> Gráficos
+      </div>
+      <div class="nav-item" id="nav-questionnaire" onclick="navTo('sec-questionnaire')">
+        <i data-lucide="message-circle" style="width:15px;height:15px"></i> Questionários
+      </div>
+      <div class="nav-item" id="nav-analytics" onclick="navTo('sec-analytics')">
+        <i data-lucide="trending-up" style="width:15px;height:15px"></i> Analytics
+      </div>
+      <div class="nav-item" id="nav-truth" onclick="navTo('sec-truth')">
+        <i data-lucide="shield-check" style="width:15px;height:15px"></i> Truth Engine
+      </div>
+      <div class="nav-item" id="nav-marketplace" onclick="navTo('sec-marketplace')">
+        <i data-lucide="store" style="width:15px;height:15px"></i> Marketplace
+      </div>
+      <div class="nav-item" id="nav-learning" onclick="navTo('sec-learning')">
+        <i data-lucide="book-open" style="width:15px;height:15px"></i> Aprendizado
+      </div>
+      <div class="nav-item" id="nav-network" onclick="navTo('sec-network')">
+        <i data-lucide="users" style="width:15px;height:15px"></i> Networking
+      </div>
+      <div class="nav-item" id="nav-hunt" onclick="navTo('sec-hunt')">
+        <i data-lucide="play-circle" style="width:15px;height:15px"></i> Hunt Mode
+      </div>
+
+      <div class="px-4 mt-5 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Plataformas</div>
+      <div class="nav-item" onclick="filterPlatform('LinkedIn')">
+        <i data-lucide="linkedin" style="width:14px;height:14px;color:#0ea5e9"></i>
+        <span>LinkedIn</span>
+      </div>
+      <div class="nav-item" onclick="filterPlatform('Gupy')">
+        <i data-lucide="building-2" style="width:14px;height:14px;color:#a78bfa"></i>
+        <span>Gupy</span>
+      </div>
+      <div class="nav-item" onclick="filterPlatform('Catho')">
+        <i data-lucide="briefcase" style="width:14px;height:14px;color:#fb923c"></i>
+        <span>Catho</span>
+      </div>
+
+      <div class="px-4 mt-5 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Módulo</div>
+      <div class="mx-3 p-3 glass rounded-xl">
+        <div class="text-xs text-gray-500 mb-1">Candidato</div>
+        <div class="text-white text-xs font-semibold">Samir Ricardo</div>
+        <div class="text-gray-500 text-xs">AI Architect</div>
+      </div>
+    </nav>
+
+    <!-- Footer -->
+    <div class="p-4 border-t border-white/5">
+      <div class="flex items-center gap-2 text-xs text-gray-600">
+        <span class="live-dot" id="status-dot" style="background:#22d3ee;margin-right:0"></span>
+        <span id="status-label">API Online</span>
+      </div>
+      <button onclick="refreshAll()" class="mt-2 text-xs text-gray-600 hover:text-gray-400 transition flex items-center gap-1">
+        <i data-lucide="refresh-cw" style="width:11px;height:11px"></i> Atualizar dados
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ MAIN ═════════════════════════════════════════════════════════════════ -->
+  <div id="main">
+
+    <!-- Header -->
+    <div class="relative overflow-hidden border-b border-white/5">
+      <div class="obs-grid" style="opacity:.5"></div>
+      <div class="relative header-inner px-8 pt-8 pb-6" style="z-index:1">
+        <div class="flex items-center gap-3 mb-2">
+          <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+            <i data-lucide="menu" style="width:18px;height:18px"></i>
+          </button>
+          <div style="width:40px;height:40px;background:rgba(34,197,94,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(34,197,94,.3);flex-shrink:0;">
+            <i data-lucide="briefcase" style="width:20px;height:20px;color:#22c55e"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white">VRAXIA <span class="gradient-text">WORK</span></h1>
+            <p class="text-gray-500 text-xs">Job Hunt Autônomo — LinkedIn, Gupy &amp; Catho</p>
+          </div>
+          <div class="ml-auto flex items-center gap-3">
+            <div id="hunt-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono hunt-idle">
+              <span class="live-dot" style="background:#6b7280;box-shadow:none;margin-right:0"></span>
+              <span id="hunt-status-label">Aguardando</span>
+            </div>
+            <div class="text-xs text-gray-600 font-mono" id="last-updated">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 0: HOME ──────────────────────────────────────────────────── -->
+    <div id="sec-home" class="px-8 py-6 border-b border-white/5" style="background:linear-gradient(135deg,rgba(34,197,94,.04) 0%,transparent 60%);">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <div class="text-xs text-gray-600 font-mono uppercase tracking-widest mb-1">Career OS — Bem-vindo</div>
+          <h2 class="text-xl font-bold text-white mb-1">Olá, Samir 👋</h2>
+          <p class="text-gray-400 text-sm" id="home-summary">Carregando resumo do dia...</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="text-xs text-gray-600 font-mono" id="home-date"></div>
+          <div class="text-xs text-green-400 font-mono mt-1" id="home-streak"></div>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-green-400 font-mono" id="home-applied">—</div>
+          <div class="text-xs text-gray-500 mt-1">Candidaturas Hoje</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-blue-400 font-mono" id="home-queue">—</div>
+          <div class="text-xs text-gray-500 mt-1">Na Fila de Revisão</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-purple-400 font-mono" id="home-match">—</div>
+          <div class="text-xs text-gray-500 mt-1">Vagas +90% Match</div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex flex-wrap gap-3">
+        <button onclick="startHunt(5)" class="btn btn-primary">
+          <i data-lucide="play" style="width:14px;height:14px"></i> Candidatar 5 vagas
+        </button>
+        <button onclick="startHunt(0,true)" class="btn btn-secondary">
+          <i data-lucide="eye" style="width:14px;height:14px"></i> Dry-run (só filtrar)
+        </button>
+        <button onclick="navTo('sec-table');document.getElementById('f-status').value='queued';loadApplications()" class="btn btn-ghost">
+          <i data-lucide="list" style="width:14px;height:14px"></i> Revisar fila
+        </button>
+        <button onclick="navTo('sec-analytics')" class="btn btn-ghost">
+          <i data-lucide="bar-chart-2" style="width:14px;height:14px"></i> Ver analytics
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SECTION 1: KPIs ─────────────────────────────────────────────────── -->
+    <div id="sec-kpis" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="live-dot" style="background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">KPIs da Sessão</span>
+        <button onclick="refreshStats()" class="ml-auto text-xs text-gray-600 hover:text-gray-400 transition">↻ refresh</button>
+      </div>
+      <div class="kpi-grid grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
+        <!-- Vagas Escaneadas -->
+        <div class="glass rounded-xl p-5 card-hover scan-line">
+          <div class="flex items-center gap-2 mb-3">
+            <div style="width:30px;height:30px;background:rgba(59,130,246,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="search" style="width:14px;height:14px;color:#60a5fa"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white font-mono" id="kpi-scanned">—</div>
+          <div class="text-xs text-gray-500 mt-1">Vagas Escaneadas</div>
+        </div>
+        <!-- Candidaturas -->
+        <div class="glass rounded-xl p-5 card-hover scan-line">
+          <div class="flex items-center gap-2 mb-3">
+            <div style="width:30px;height:30px;background:rgba(34,197,94,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="send" style="width:14px;height:14px;color:#22c55e"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white font-mono" id="kpi-applied">—</div>
+          <div class="text-xs text-gray-500 mt-1">Candidaturas</div>
+        </div>
+        <!-- Taxa de Aprovação -->
+        <div class="glass rounded-xl p-5 card-hover scan-line">
+          <div class="flex items-center gap-2 mb-3">
+            <div style="width:30px;height:30px;background:rgba(251,191,36,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="percent" style="width:14px;height:14px;color:#fbbf24"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white font-mono" id="kpi-rate">—</div>
+          <div class="text-xs text-gray-500 mt-1">Taxa de Aprovação</div>
+        </div>
+        <!-- Custo Estimado -->
+        <div class="glass rounded-xl p-5 card-hover scan-line">
+          <div class="flex items-center gap-2 mb-3">
+            <div style="width:30px;height:30px;background:rgba(34,211,238,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="dollar-sign" style="width:14px;height:14px;color:#22d3ee"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white font-mono" id="kpi-cost">—</div>
+          <div class="text-xs text-gray-500 mt-1">Custo Haiku (est.)</div>
+        </div>
+        <!-- Última Execução -->
+        <div class="glass rounded-xl p-5 card-hover scan-line">
+          <div class="flex items-center gap-2 mb-3">
+            <div style="width:30px;height:30px;background:rgba(139,92,246,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="clock" style="width:14px;height:14px;color:#a78bfa"></i>
+            </div>
+          </div>
+          <div class="text-sm font-bold text-white font-mono leading-snug" id="kpi-lastrun">—</div>
+          <div class="text-xs text-gray-500 mt-1">Última Execução</div>
+        </div>
+        <!-- Vagas Remotas -->
+        <div class="glass rounded-xl p-5 card-hover scan-line">
+          <div class="flex items-center gap-2 mb-3">
+            <div style="width:30px;height:30px;background:rgba(59,130,246,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="globe" style="width:14px;height:14px;color:#93c5fd"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white font-mono" id="kpi-remote">—</div>
+          <div class="text-xs text-gray-500 mt-1">Vagas Remotas</div>
+        </div>
+        <!-- Presencial/Híbrido -->
+        <div class="glass rounded-xl p-5 card-hover scan-line">
+          <div class="flex items-center gap-2 mb-3">
+            <div style="width:30px;height:30px;background:rgba(251,146,60,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="building-2" style="width:14px;height:14px;color:#fdba74"></i>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white font-mono" id="kpi-onsite">—</div>
+          <div class="text-xs text-gray-500 mt-1">Presencial/Híbrido</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 2: TABELA ───────────────────────────────────────────────── -->
+    <div id="sec-table" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="live-dot" style="background:#60a5fa;box-shadow:0 0 6px rgba(96,165,250,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Candidaturas</span>
+        <span id="table-count" class="ml-2 text-xs text-gray-600 font-mono"></span>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-2 mb-4">
+        <select id="f-status" class="filter-select" onchange="loadApplications()">
+          <option value="all">Todos os status</option>
+          <option value="applied">Aplicado</option>
+          <option value="queued">Na fila</option>
+          <option value="review">Revisão</option>
+          <option value="filtered_out">Filtrado</option>
+          <option value="error">Erro</option>
+          <option value="interview">Entrevista</option>
+          <option value="applying">Aplicando</option>
+        </select>
+        <select id="f-platform" class="filter-select" onchange="loadApplications()">
+          <option value="all">Todas plataformas</option>
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="Gupy">Gupy</option>
+          <option value="Catho">Catho</option>
+        </select>
+        <select id="f-modality" class="filter-select" onchange="loadApplications()">
+          <option value="all">Todas modalidades</option>
+          <option value="REMOTO">Remoto</option>
+          <option value="HÍBRIDO">Híbrido</option>
+          <option value="PRESENCIAL">Presencial</option>
+          <option value="DESCONHECIDO">Desconhecido</option>
+        </select>
+        <select id="f-period" class="filter-select" onchange="loadApplications()">
+          <option value="all">Todo período</option>
+          <option value="hoje">Hoje</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="30d">Últimos 30 dias</option>
+        </select>
+        <input id="f-search" type="text" class="filter-input" placeholder="Buscar empresa ou cargo…" oninput="debounceSearch()" />
+      </div>
+
+      <!-- Table -->
+      <div class="glass rounded-xl overflow-hidden">
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Empresa</th>
+                <th>Cargo</th>
+                <th>Plataforma</th>
+                <th>Modalidade</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="apps-tbody">
+              <tr><td colspan="8" class="empty-state py-12"><span class="spinner"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Show all button -->
+      <div id="show-all-wrapper" style="display:none;" class="mt-3 text-center">
+        <button id="btn-show-all" onclick="showAllApps()" class="btn btn-ghost" style="width:100%;justify-content:center;gap:8px;padding:12px;">
+          <i data-lucide="chevrons-down" style="width:15px;height:15px"></i>
+          <span id="btn-show-all-label">Ver todas as candidaturas</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SECTION 3: GRÁFICOS ────────────────────────────────────────────── -->
+    <div id="sec-charts" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-5">
+        <span class="live-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Análise Visual</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <!-- Candidaturas por dia -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Candidaturas por Dia (14d)</div>
+          <div class="chart-box"><canvas id="chart-daily"></canvas></div>
+        </div>
+        <!-- Distribuição por Status -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Distribuição por Status</div>
+          <div class="chart-box"><canvas id="chart-status"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Top 10 empresas -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Top 10 Empresas</div>
+          <div class="chart-box"><canvas id="chart-companies"></canvas></div>
+        </div>
+        <!-- Candidaturas acumuladas -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Candidaturas Acumuladas</div>
+          <div class="chart-box"><canvas id="chart-cumulative"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 4: QUESTIONÁRIOS ───────────────────────────────────────── -->
+    <div id="sec-questionnaire" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="live-dot" style="background:#f472b6;box-shadow:0 0 6px rgba(244,114,182,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Log de Questionários (SenseLayer)</span>
+        <span id="q-count" class="ml-2 text-xs text-gray-600 font-mono"></span>
+        <button onclick="loadQuestionnaire()" class="ml-auto text-xs text-gray-600 hover:text-gray-400 transition">↻ refresh</button>
+      </div>
+
+      <!-- Filtro por tipo -->
+      <div class="flex gap-2 mb-4 flex-wrap">
+        <select id="q-filter-type" class="filter-select" onchange="loadQuestionnaire()">
+          <option value="all">Todos os tipos</option>
+          <option value="FAST_YESNO">Sim/Não (FAST)</option>
+          <option value="FAST_NUMERIC">Número (FAST)</option>
+          <option value="FAST_SALARY">Salário (FAST)</option>
+          <option value="TECH_STACK">Tech Stack (LLM)</option>
+          <option value="MOTIVATION">Motivação (LLM)</option>
+          <option value="SOFT_SKILL">Soft Skill (LLM)</option>
+          <option value="OPEN_ENDED">Aberta (LLM)</option>
+        </select>
+        <select id="q-filter-source" class="filter-select" onchange="loadQuestionnaire()">
+          <option value="all">Todas as fontes</option>
+          <option value="fast">Apenas FAST (zero custo)</option>
+          <option value="llm">Apenas LLM (com custo)</option>
+          <option value="greenhouse">Greenhouse</option>
+          <option value="easy_apply">LinkedIn Easy Apply</option>
+          <option value="ats_field">Campos ATS preenchidos</option>
+        </select>
+        <input id="q-search" type="text" class="filter-input" placeholder="Buscar pergunta…" oninput="debounceQSearch()" style="width:180px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;cursor:pointer;user-select:none;">
+          <input type="checkbox" id="q-hide-basic" checked onchange="loadQuestionnaire()" style="accent-color:#22c55e;">
+          Ocultar campos básicos
+        </label>
+      </div>
+
+      <div id="questionnaire-container">
+        <div class="empty-state">
+          <i data-lucide="file-text" style="width:32px;height:32px;margin:0 auto 12px;opacity:.3"></i>
+          <p class="text-sm">Nenhum questionário registrado. Execute o hunt com <code class="text-xs text-blue-400">--log-questions</code></p>
+        </div>
+      </div>
+
+      <!-- Show all button -->
+      <div id="q-show-all-wrapper" style="display:none;" class="mt-3 text-center">
+        <button onclick="showAllQuestionnaire()" class="btn btn-ghost" style="width:100%;justify-content:center;gap:8px;padding:12px;">
+          <i data-lucide="chevrons-down" style="width:15px;height:15px"></i>
+          <span id="q-show-all-label">Ver todos os questionários</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SECTION: MARKETPLACE ─────────────────────────────────────────── -->
+    <div id="sec-marketplace" class="px-8 py-6">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-lg font-semibold flex items-center gap-2">
+          <i data-lucide="store" style="width:18px;height:18px;color:#f59e0b"></i> Marketplace de Agentes
+        </h2>
+        <div class="text-xs text-gray-500">Instale agentes especializados para o seu Career OS</div>
+      </div>
+
+      <!-- Category filter -->
+      <div id="mkt-filters" class="flex flex-wrap gap-2 mb-5">
+        <button onclick="filterMarketplace('all')" class="mkt-filter-btn active" data-cat="all">Todos</button>
+        <button onclick="filterMarketplace('hunt')"        class="mkt-filter-btn" data-cat="hunt">🎯 Hunt</button>
+        <button onclick="filterMarketplace('resume')"      class="mkt-filter-btn" data-cat="resume">📄 Currículo</button>
+        <button onclick="filterMarketplace('salary')"      class="mkt-filter-btn" data-cat="salary">💰 Salário</button>
+        <button onclick="filterMarketplace('network')"     class="mkt-filter-btn" data-cat="network">🤝 Networking</button>
+        <button onclick="filterMarketplace('interview')"   class="mkt-filter-btn" data-cat="interview">🎓 Entrevista</button>
+        <button onclick="filterMarketplace('productivity')" class="mkt-filter-btn" data-cat="productivity">⚡ Prod.</button>
+      </div>
+
+      <!-- Installed strip -->
+      <div id="mkt-installed-strip" class="mb-5 hidden">
+        <div class="text-xs text-green-400 uppercase tracking-widest mb-2 font-semibold">✅ Instalados</div>
+        <div id="mkt-installed-list" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- Agent grid -->
+      <div id="mkt-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="empty-state py-10 col-span-3"><span class="spinner"></span> Carregando marketplace...</div>
+      </div>
+
+      <!-- Plugin run modal (resultado da execução) -->
+      <div id="mkt-run-modal" style="display:none;position:fixed;inset:0;z-index:1002;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);" onclick="if(event.target===this)closeMktModal()">
+        <div class="glass" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(680px,96vw);max-height:85vh;overflow-y:auto;border-radius:20px;padding:28px;border:1px solid rgba(255,255,255,.12);">
+          <div class="flex items-center justify-between mb-4">
+            <div class="font-semibold text-sm" id="mkt-run-title">Plugin</div>
+            <button onclick="closeMktModal()" class="btn btn-ghost text-xs">✕</button>
+          </div>
+          <div id="mkt-run-body" class="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap"></div>
+          <div id="mkt-run-actions" class="flex flex-wrap gap-2 mt-4"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION: LEARNING / ROADMAP ──────────────────────────────────── -->
+    <div id="sec-learning" class="px-8 py-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-semibold flex items-center gap-2">
+          <i data-lucide="book-open" style="width:18px;height:18px;color:#a78bfa"></i> Roadmap de Aprendizado
+        </h2>
+        <button onclick="loadLearning(true)" class="btn btn-secondary text-xs">
+          <i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Gerar com IA
+        </button>
+      </div>
+
+      <!-- Top gap -->
+      <div id="learning-top-gap" class="glass rounded-xl p-5 mb-5 border border-purple-500/20">
+        <div class="text-xs text-purple-400 uppercase tracking-widest mb-1">Prioridade #1</div>
+        <div id="learning-top-gap-text" class="text-white font-semibold text-base">—</div>
+        <div id="learning-weekly" class="text-gray-400 text-xs mt-2">Meta semanal: —</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+        <div class="glass rounded-xl p-4">
+          <div class="text-xs text-red-400 uppercase tracking-widest mb-3 font-semibold">⚡ Imediato (1-4 sem)</div>
+          <div id="learning-immediate" class="space-y-1 text-sm text-gray-300">—</div>
+        </div>
+        <div class="glass rounded-xl p-4">
+          <div class="text-xs text-yellow-400 uppercase tracking-widest mb-3 font-semibold">📅 Médio Prazo (1-3 meses)</div>
+          <div id="learning-midterm" class="space-y-1 text-sm text-gray-300">—</div>
+        </div>
+        <div class="glass rounded-xl p-4">
+          <div class="text-xs text-blue-400 uppercase tracking-widest mb-3 font-semibold">🔮 Longo Prazo (3-6 meses)</div>
+          <div id="learning-longterm" class="space-y-1 text-sm text-gray-300">—</div>
+        </div>
+      </div>
+
+      <!-- Skills map: tenho vs mercado pede -->
+      <h3 class="text-sm font-semibold text-gray-300 mb-3">Mapa de Habilidades — Tenho vs Mercado Pede</h3>
+      <div id="learning-skills-map" class="space-y-2">
+        <div class="empty-state py-4 text-xs">Carregando mapa...</div>
+      </div>
+    </div>
+
+    <!-- ── SECTION: NETWORKING / CRM ──────────────────────────────────────── -->
+    <div id="sec-network" class="px-8 py-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-semibold flex items-center gap-2">
+          <i data-lucide="users" style="width:18px;height:18px;color:#34d399"></i> Networking & CRM
+        </h2>
+        <button onclick="openNetworkForm()" class="btn btn-primary text-xs">
+          <i data-lucide="plus" style="width:12px;height:12px"></i> Adicionar recrutador
+        </button>
+      </div>
+
+      <!-- Form: gerar mensagem de conexão -->
+      <div class="glass rounded-xl p-4 mb-5 border border-green-500/20">
+        <div class="text-xs text-green-400 uppercase tracking-widest mb-3 font-semibold">Gerar Mensagem de Conexão</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+          <input id="net-recruiter-name" class="filter-select" placeholder="Nome do recrutador" />
+          <input id="net-company" class="filter-select" placeholder="Empresa" />
+          <input id="net-job-title" class="filter-select" placeholder="Cargo da vaga" />
+        </div>
+        <button onclick="generateNetMessage()" class="btn btn-secondary text-xs w-full">
+          <i data-lucide="message-square" style="width:12px;height:12px"></i> Gerar mensagem com IA
+        </button>
+        <div id="net-message-result" class="mt-3 text-xs text-gray-300 bg-white/5 rounded-lg p-3 hidden"></div>
+      </div>
+
+      <!-- CRM Table -->
+      <div class="glass rounded-xl overflow-hidden">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="border-b border-white/5 text-gray-500">
+              <th class="text-left px-4 py-3 font-medium">Recrutador</th>
+              <th class="text-left px-4 py-3 font-medium">Empresa</th>
+              <th class="text-left px-4 py-3 font-medium">Último Contato</th>
+              <th class="text-left px-4 py-3 font-medium">Status</th>
+              <th class="text-left px-4 py-3 font-medium">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="crm-tbody">
+            <tr><td colspan="5" class="empty-state py-6 text-center">Nenhum recrutador cadastrado</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Add Recruiter Modal -->
+      <div id="network-form-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);" onclick="if(event.target===this)closeNetworkForm()">
+        <div class="glass" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(500px,95vw);border-radius:20px;padding:28px;border:1px solid rgba(255,255,255,.1);">
+          <div class="flex justify-between items-center mb-5">
+            <div class="text-sm font-semibold">Adicionar Recrutador</div>
+            <button onclick="closeNetworkForm()" class="btn btn-ghost text-xs">✕</button>
+          </div>
+          <div class="space-y-3">
+            <input id="nf-name"     class="filter-select w-full" placeholder="Nome completo *" />
+            <input id="nf-company"  class="filter-select w-full" placeholder="Empresa *" />
+            <input id="nf-linkedin" class="filter-select w-full" placeholder="LinkedIn URL" />
+            <input id="nf-email"    class="filter-select w-full" placeholder="E-mail" />
+            <input id="nf-role"     class="filter-select w-full" placeholder="Cargo do recrutador" />
+            <textarea id="nf-notes" class="filter-select w-full" rows="2" placeholder="Notas / contexto"></textarea>
+          </div>
+          <button onclick="saveRecruiter()" class="btn btn-primary w-full mt-4 text-sm">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 5: HUNT MODE ───────────────────────────────────────────── -->
+    <div id="sec-hunt" class="px-8 py-6">
+      <div class="flex items-center gap-2 mb-5">
+        <span class="live-dot" style="background:#fb923c;box-shadow:0 0 6px rgba(251,146,60,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Hunt Mode — Controles</span>
+      </div>
+
+      <div class="hunt-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Controls -->
+        <div class="glass rounded-xl p-6">
+          <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+            <i data-lucide="settings" style="width:16px;height:16px;color:#fb923c"></i>
+            Configuração
+          </h3>
+
+          <div class="space-y-4">
+            <!-- Platform -->
+            <div>
+              <label class="text-xs text-gray-500 block mb-1.5">Plataforma</label>
+              <div class="flex gap-2">
+                <button id="btn-linkedin" onclick="setPlatform('linkedin')" class="btn btn-secondary flex-1" style="background:rgba(14,165,233,.1);border-color:rgba(14,165,233,.3);color:#38bdf8;">
+                  <i data-lucide="linkedin" style="width:14px;height:14px"></i> LinkedIn
+                </button>
+                <button id="btn-gupy" onclick="setPlatform('gupy')" class="btn btn-ghost flex-1">
+                  <i data-lucide="building-2" style="width:14px;height:14px"></i> Gupy
+                </button>
+                <button id="btn-all" onclick="setPlatform('all')" class="btn btn-ghost flex-1">
+                  Ambas
+                </button>
+              </div>
+            </div>
+
+            <!-- Limit -->
+            <div>
+              <label class="text-xs text-gray-500 block mb-1.5">Limite de candidaturas</label>
+              <input id="hunt-limit" type="number" min="1" max="50" value="10"
+                class="filter-input w-full" style="width:100%;">
+            </div>
+
+            <!-- Options -->
+            <div class="flex flex-col gap-2">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="opt-dryrun" checked class="w-4 h-4 accent-blue-500">
+                <div>
+                  <span class="text-sm text-gray-300">Dry Run</span>
+                  <span class="text-xs text-gray-600 ml-2">Simula sem submeter</span>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="opt-headless" class="w-4 h-4 accent-blue-500">
+                <div>
+                  <span class="text-sm text-gray-300">Headless</span>
+                  <span class="text-xs text-gray-600 ml-2">Browser invisível</span>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="opt-logq" class="w-4 h-4 accent-blue-500">
+                <div>
+                  <span class="text-sm text-gray-300">Log Questionários</span>
+                  <span class="text-xs text-gray-600 ml-2">Salva perguntas/respostas</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3 pt-2">
+              <button onclick="startHunt()" id="btn-start-hunt" class="btn btn-primary flex-1">
+                <i data-lucide="play" style="width:15px;height:15px"></i>
+                Iniciar Hunt
+              </button>
+              <button onclick="stopHunt()" id="btn-stop-hunt" class="btn btn-danger" style="display:none;">
+                <i data-lucide="square" style="width:15px;height:15px"></i>
+                Parar
+              </button>
+            </div>
+
+            <!-- CLI command preview -->
+            <div>
+              <div class="text-xs text-gray-600 mb-1.5">Comando equivalente:</div>
+              <div id="cli-preview" class="font-mono text-xs text-green-400 bg-black/40 px-3 py-2 rounded-lg border border-white/5 break-all">
+                npx tsx src/cli/hunt.ts --platform linkedin --limit 10 --dry-run
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status panel -->
+        <div class="glass rounded-xl p-6">
+          <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+            <i data-lucide="activity" style="width:16px;height:16px;color:#22d3ee"></i>
+            Status em Tempo Real
+          </h3>
+
+          <!-- Status -->
+          <div class="flex items-center gap-3 mb-5">
+            <div id="hunt-status-big" class="px-4 py-2 rounded-full text-sm font-mono font-semibold hunt-idle flex items-center gap-2">
+              <span class="live-dot" id="hunt-dot-big" style="background:#6b7280;box-shadow:none;margin-right:0"></span>
+              <span id="hunt-status-big-label">Aguardando</span>
+            </div>
+            <div class="text-xs text-gray-600 font-mono" id="hunt-pid"></div>
+          </div>
+
+          <!-- Stats during hunt -->
+          <div class="grid grid-cols-3 gap-3 mb-5">
+            <div class="glass rounded-lg p-3 text-center">
+              <div class="text-lg font-bold text-white font-mono" id="live-scanned">—</div>
+              <div class="text-xs text-gray-600">Escaneadas</div>
+            </div>
+            <div class="glass rounded-lg p-3 text-center">
+              <div class="text-lg font-bold text-white font-mono" id="live-applied">—</div>
+              <div class="text-xs text-gray-600">Aplicadas</div>
+            </div>
+            <div class="glass rounded-lg p-3 text-center">
+              <div class="text-lg font-bold text-white font-mono" id="live-cost">—</div>
+              <div class="text-xs text-gray-600">Custo est.</div>
+            </div>
+          </div>
+
+          <!-- Terminal output -->
+          <div>
+            <div class="text-xs text-gray-600 mb-1.5">Output do hunt:</div>
+            <div class="terminal" id="hunt-terminal">
+              <span style="color:#4b5563;">// Aguardando início do Hunt Mode...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spacer -->
+      <div class="h-8"></div>
+    </div>
+
+    <!-- ── SECTION 6: ANALYTICS EXECUTIVO ───────────────────────────────────── -->
+    <div id="sec-analytics" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-5">
+        <span class="live-dot" style="background:#a78bfa;box-shadow:0 0 6px rgba(167,139,250,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Analytics Executivo — Career Intelligence</span>
+        <button onclick="loadAnalytics()" class="ml-auto text-xs text-gray-600 hover:text-gray-400 transition">↻ refresh</button>
+      </div>
+
+      <!-- Funil -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-4 font-semibold">Funil de Candidatura</div>
+          <div id="analytics-funnel">
+            <div class="empty-state py-4"><span class="spinner"></span></div>
+          </div>
+        </div>
+        <!-- ATS + Skills gap -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-4 font-semibold">Distribuição de Score</div>
+          <div class="chart-box"><canvas id="chart-score-dist"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Platform + Top keywords -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-4 font-semibold">Por Plataforma</div>
+          <div class="chart-box" style="height:160px;"><canvas id="chart-platform"></canvas></div>
+        </div>
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Top Empresas com Mais Candidaturas</div>
+          <div id="analytics-companies" style="max-height:180px;overflow-y:auto;">
+            <div class="empty-state py-4"><span class="spinner"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs row -->
+      <div id="analytics-insights"></div>
+
+      <!-- Top tecnologias + Skills map -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">🔥 Top Tecnologias no Mercado</div>
+          <div id="analytics-keywords" class="space-y-2">
+            <div class="empty-state py-2 text-xs">Sem dados — rode o hunt primeiro</div>
+          </div>
+        </div>
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">🗺 Mapa de Habilidades</div>
+          <div id="analytics-skills-map" class="space-y-1">
+            <div class="empty-state py-2 text-xs">Sem dados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rejection reasons + Hire probability -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">⛔ Motivos de Rejeição</div>
+          <div id="analytics-rejection" class="space-y-2">
+            <div class="empty-state py-2 text-xs">Sem dados suficientes</div>
+          </div>
+        </div>
+        <div class="glass rounded-xl p-5 text-center flex flex-col items-center justify-center">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">🎯 Probabilidade de Hire</div>
+          <div id="analytics-hire-prob" class="text-5xl font-black font-mono text-green-400">—%</div>
+          <div id="analytics-hire-label" class="text-xs text-gray-500 mt-2">baseado no histórico acumulado</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 7: TRUTH ENGINE ─────────────────────────────────────────── -->
+    <div id="sec-truth" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="live-dot" style="background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Truth Engine — Auditoria de Evidências</span>
+        <button onclick="loadTruth()" class="ml-auto text-xs text-gray-600 hover:text-gray-400 transition">↻ refresh</button>
+      </div>
+      <p class="text-xs text-gray-600 mb-5">
+        Truth Engine avalia <strong class="text-gray-400">evidências objetivas</strong> por candidatura.
+        <span class="text-gray-700">≠</span>
+        <strong class="text-gray-500">Workflow Status</strong> (estado do robô) — são conceitos totalmente distintos.
+      </p>
+
+      <!-- ── BLOCO A: WORKFLOW STATUS ─────────────────────────── -->
+      <div class="mb-5">
+        <div class="text-xs text-gray-600 uppercase tracking-widest font-semibold mb-3 flex items-center gap-2">
+          <i data-lucide="cpu" style="width:12px;height:12px;color:#60a5fa"></i>
+          Workflow Status — Estado da Automação
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(59,130,246,.15)">
+            <div class="text-xs text-gray-500 mb-1">Queued</div>
+            <div class="text-2xl font-bold font-mono text-blue-400" id="wf-queued">—</div>
+            <div class="text-xs text-gray-600 mt-1">aguardando apply</div>
+          </div>
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(34,211,238,.15)">
+            <div class="text-xs text-gray-500 mb-1">Running</div>
+            <div class="text-2xl font-bold font-mono text-cyan-400" id="wf-running">—</div>
+            <div class="text-xs text-gray-600 mt-1">robô em execução</div>
+          </div>
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(52,211,153,.2)">
+            <div class="text-xs text-gray-500 mb-1">Submitted</div>
+            <div class="text-2xl font-bold font-mono text-emerald-400" id="wf-submitted">—</div>
+            <div class="text-xs text-gray-600 mt-1">robô submeteu</div>
+          </div>
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(239,68,68,.15)">
+            <div class="text-xs text-gray-500 mb-1">Failed</div>
+            <div class="text-2xl font-bold font-mono text-red-400" id="wf-failed">—</div>
+            <div class="text-xs text-gray-600 mt-1">erro / timeout</div>
+          </div>
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(107,114,128,.15)">
+            <div class="text-xs text-gray-500 mb-1">Cancelled</div>
+            <div class="text-2xl font-bold font-mono text-gray-400" id="wf-cancelled">—</div>
+            <div class="text-xs text-gray-600 mt-1">filtrado / dup.</div>
+          </div>
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(251,146,60,.15)">
+            <div class="text-xs text-gray-500 mb-1">Blocked</div>
+            <div class="text-2xl font-bold font-mono text-orange-400" id="wf-blocked">—</div>
+            <div class="text-xs text-gray-600 mt-1">captcha / ban</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BLOCO B: TRUTH STATUS ────────────────────────────── -->
+      <div class="mb-5">
+        <div class="text-xs text-gray-600 uppercase tracking-widest font-semibold mb-3 flex items-center gap-2">
+          <i data-lucide="shield-check" style="width:12px;height:12px;color:#4ade80"></i>
+          Truth Status — Evidências Objetivas
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          <!-- Truth Rate -->
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(74,222,128,.25)">
+            <div class="text-xs text-gray-500 mb-1">Truth Rate</div>
+            <div class="text-2xl font-bold font-mono text-green-400" id="truth-rate">—</div>
+            <div class="text-xs text-gray-600 mt-1">VERIFIED / total</div>
+          </div>
+          <!-- Verified -->
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(34,197,94,.2)">
+            <div class="text-xs text-gray-500 mb-1">Verified</div>
+            <div class="text-2xl font-bold font-mono text-green-400" id="truth-verified-count">—</div>
+            <div class="flex gap-1 mt-2"><span class="truth-badge truth-verified">VERIFIED</span></div>
+          </div>
+          <!-- Probable -->
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(251,191,36,.15)">
+            <div class="text-xs text-gray-500 mb-1">Probable</div>
+            <div class="text-2xl font-bold font-mono text-yellow-400" id="truth-probable-count">—</div>
+            <div class="flex gap-1 mt-2"><span class="truth-badge truth-probable">PROBABLE</span></div>
+          </div>
+          <!-- Rejected -->
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(239,68,68,.15)">
+            <div class="text-xs text-gray-500 mb-1">Rejected</div>
+            <div class="text-2xl font-bold font-mono text-red-400" id="truth-rejected-count">—</div>
+            <div class="flex gap-1 mt-2"><span class="truth-badge truth-rejected">REJECTED</span></div>
+          </div>
+          <!-- Pending Verification -->
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(96,165,250,.15)">
+            <div class="text-xs text-gray-500 mb-1">Pending</div>
+            <div class="text-2xl font-bold font-mono text-blue-400" id="truth-pending-count">—</div>
+            <div class="text-xs text-gray-600 mt-1">sem avaliação</div>
+          </div>
+          <!-- Portal Confirm Rate -->
+          <div class="glass rounded-xl p-4 card-hover" style="border:1px solid rgba(34,211,238,.15)">
+            <div class="text-xs text-gray-500 mb-1">Portal Confirm</div>
+            <div class="text-2xl font-bold font-mono text-cyan-400" id="truth-portal-rate">—</div>
+            <div class="text-xs text-gray-600 mt-1">rede / My Jobs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BLOCO C: Funil Workflow + Breakdown Erros ────────── -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <!-- Workflow Funnel -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-4 font-semibold flex items-center gap-2">
+            <i data-lucide="filter" style="width:13px;height:13px;color:#60a5fa"></i>
+            Funil de Workflow (automação)
+          </div>
+          <div id="truth-funnel">
+            <div class="empty-state py-4"><span class="spinner"></span></div>
+          </div>
+        </div>
+
+        <!-- Error Classification -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-4 font-semibold flex items-center gap-2">
+            <i data-lucide="alert-triangle" style="width:13px;height:13px;color:#fb923c"></i>
+            Classificação de Erros (RCA Automático)
+          </div>
+          <div id="truth-errors">
+            <div class="empty-state py-4"><span class="spinner"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BLOCO D: Proof Types + Distribuição Truth ──────────── -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Proof types -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-4 font-semibold flex items-center gap-2">
+            <i data-lucide="check-circle-2" style="width:13px;height:13px;color:#4ade80"></i>
+            Tipos de Prova Coletadas
+          </div>
+          <div id="truth-proofs">
+            <div class="empty-state py-4 text-xs">Carregando provas...</div>
+          </div>
+        </div>
+
+        <!-- Truth Status Distribution chart -->
+        <div class="glass rounded-xl p-5">
+          <div class="text-xs text-gray-500 uppercase tracking-wide mb-4 font-semibold flex items-center gap-2">
+            <i data-lucide="pie-chart" style="width:13px;height:13px;color:#60a5fa"></i>
+            Distribuição Truth Status
+          </div>
+          <div class="chart-box" style="height:200px;"><canvas id="chart-confidence"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacer final para chat -->
+    <div class="h-20"></div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ EXPLAIN MODAL ═════════════════════════════════════════════════════════ -->
+<div id="explain-modal" onclick="if(event.target===this)closeExplain()">
+  <div class="explain-box">
+    <div class="flex items-center justify-between mb-4">
+      <div class="explain-title" id="explain-title">Por que esta decisão?</div>
+      <button onclick="closeExplain()" style="background:none;border:none;color:#6b7280;font-size:20px;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div id="explain-content">
+      <div class="empty-state py-4"><span class="spinner"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AGENT MODALS (ATS / CV / ENTREVISTA / SALÁRIO) ═══════════════════════ -->
+<div id="agent-modal" style="display:none;position:fixed;inset:0;z-index:1001;background:rgba(0,0,0,.85);backdrop-filter:blur(6px);" onclick="if(event.target===this)closeAgentModal()">
+  <div class="glass" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(640px,96vw);max-height:85vh;overflow-y:auto;border-radius:20px;padding:28px;border:1px solid rgba(255,255,255,.12);">
+    <div class="flex items-center justify-between mb-4">
+      <div class="text-sm font-semibold" id="agent-modal-title">Agente</div>
+      <button onclick="closeAgentModal()" class="btn btn-ghost text-xs">✕ Fechar</button>
+    </div>
+    <div id="agent-modal-content">
+      <div class="empty-state py-8"><span class="spinner"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AUDIT MODAL (Truth Engine per-application) ═══════════════════════════ -->
+<div id="audit-modal" style="display:none;position:fixed;inset:0;z-index:1002;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);" onclick="if(event.target===this)closeAuditModal()">
+  <div class="glass" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(780px,96vw);max-height:88vh;overflow-y:auto;border-radius:20px;padding:28px;border:1px solid rgba(167,139,250,.25);">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <div class="text-sm font-semibold text-purple-300" id="audit-modal-title">Auditoria Truth Engine</div>
+        <div class="text-xs text-gray-600 mt-0.5" id="audit-modal-subtitle"></div>
+      </div>
+      <button onclick="closeAuditModal()" class="btn btn-ghost text-xs">✕ Fechar</button>
+    </div>
+    <div id="audit-modal-content">
+      <div class="empty-state py-8"><span class="spinner"></span> Carregando auditoria...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHAT FOOTER ══════════════════════════════════════════════════════════ -->
+<div id="chat-footer">
+  <div style="font-size:11px;color:#4b5563;white-space:nowrap;font-family:'JetBrains Mono',monospace;">⚡ Career OS</div>
+  <input id="chat-input" type="text" placeholder="Pergunte algo… ex: buscar vagas, preparar entrevista, analytics"
+    onkeydown="if(event.key==='Enter')sendChat()" />
+  <button onclick="sendChat()" class="btn btn-primary" style="padding:9px 16px;flex-shrink:0;">
+    <i data-lucide="send" style="width:14px;height:14px"></i>
+  </button>
+</div>
+
+<!-- Chat response bubble -->
+<div id="chat-bubble">
+  <div id="chat-history"></div>
+</div>
+
+<script>
+// ══ CONFIG ════════════════════════════════════════════════════════════════════
+let API = window.VRAXIA_API_URL
+  || localStorage.getItem('vraxia_api_url')
+  || '';  // empty = same origin (local mode)
+
+async function autoDiscoverTunnel() {
+  // Se já tem URL configurada e está funcionando, não faz nada
+  if (API) {
+    try {
+      const r = await fetch(`${API}/api/work/health`, { signal: AbortSignal.timeout(3000) });
+      if (r.ok) return; // URL atual funciona, mantém
+    } catch {}
+  }
+
+  // Tenta api-config.json (injetado pelo deploy — funciona via Vercel/acesso remoto)
+  try {
+    const c = await fetch('./api-config.json', { signal: AbortSignal.timeout(2000) });
+    if (c.ok) {
+      const cfg = await c.json();
+      if (cfg.apiUrl && cfg.apiUrl.startsWith('https://')) {
+        const r2 = await fetch(`${cfg.apiUrl}/api/work/health`, { signal: AbortSignal.timeout(3000) });
+        if (r2.ok) {
+          API = cfg.apiUrl;
+          localStorage.setItem('vraxia_api_url', cfg.apiUrl);
+          const inp = document.getElementById('api-url-input');
+          if (inp) inp.value = cfg.apiUrl;
+          console.log('[VRAXIA] Túnel via api-config.json:', cfg.apiUrl);
+          return;
+        }
+      }
+    }
+  } catch {}
+
+  // Tenta localhost (acesso local ou via AnyDesk)
+  try {
+    const r = await fetch('http://localhost:3001/api/work/health', { signal: AbortSignal.timeout(3000) });
+    if (!r.ok) return;
+
+    // Localhost respondeu — busca URL do túnel
+    const t = await fetch('http://localhost:3001/api/work/tunnel-url', { signal: AbortSignal.timeout(3000) });
+    const d = await t.json();
+
+    if (d.url && d.url.startsWith('https://')) {
+      API = d.url;
+      localStorage.setItem('vraxia_api_url', d.url);
+      const inp = document.getElementById('api-url-input');
+      if (inp) inp.value = d.url;
+      console.log('[VRAXIA] Túnel auto-configurado:', d.url);
+    } else {
+      // Sem túnel ativo — usa localhost diretamente
+      API = 'http://localhost:3001';
+    }
+  } catch {}
+}
+
+Chart.defaults.color = '#6b7280';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.04)';
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 10;
+
+// ══ STATE ════════════════════════════════════════════════════════════════════
+let charts = {};
+let selectedPlatform = 'linkedin';
+let huntPolling = null;
+let searchTimer = null;
+
+// ══ HELPERS ══════════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
+function fmtDateShort(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
+function scoreBadge(score) {
+  const n = Number(score ?? 0);
+  const cls = n >= 75 ? 'score-high' : n >= 50 ? 'score-mid' : 'score-low';
+  return `<span class="${cls}">${n}/100</span>`;
+}
+
+function statusBadge(status) {
+  const MAP = {
+    applied:              ['badge-green',  'Aplicado'],
+    queued:               ['badge-blue',   'Na fila'],
+    review:               ['badge-yellow', 'Revisão'],
+    filtered_out:         ['badge-gray',   'Filtrado'],
+    error:                ['badge-red',    'Erro'],
+    interview:            ['badge-purple', 'Entrevista'],
+    applying:             ['badge-cyan',   'Aplicando'],
+    scanned:              ['badge-gray',   'Scanned'],
+    questionnaire_pending:['badge-yellow', 'Questionário'],
+    questionnaire_done:   ['badge-green',  'Q. Concluído'],
+    rejected:             ['badge-red',    'Rejeitado'],
+  };
+  const [cls, label] = MAP[status] ?? ['badge-gray', status];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function typeBadge(type) {
+  const MAP = {
+    FAST_YESNO:       ['badge-blue',   'Sim/Não'],
+    FAST_NUMERIC:     ['badge-cyan',   'Número'],
+    FAST_SALARY:      ['badge-yellow', 'Salário'],
+    TECH_STACK:       ['badge-purple', 'Tech'],
+    MOTIVATION:       ['badge-green',  'Motivação'],
+    COMPANY_SPECIFIC: ['badge-yellow', 'Empresa'],
+    SOFT_SKILL:       ['badge-pink',   'Soft Skill'],
+    PROJECT:          ['badge-blue',   'Projeto'],
+    OPEN_ENDED:       ['badge-gray',   'Aberta'],
+    ATS_FIELD:        ['badge-orange', 'Campo ATS'],
+  };
+  const [cls, label] = MAP[type] ?? ['badge-gray', type];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function atsBadge(source) {
+  if (!source || source === 'easy_apply') return '<span class="badge badge-cyan" style="font-size:9px">Easy Apply</span>';
+  if (source === 'greenhouse')            return '<span class="badge badge-green" style="font-size:9px">Greenhouse</span>';
+  if (source === 'lever')                 return '<span class="badge badge-purple" style="font-size:9px">Lever</span>';
+  if (source === 'workday')               return '<span class="badge badge-blue" style="font-size:9px">Workday</span>';
+  if (source === 'external')              return '<span class="badge badge-gray" style="font-size:9px">ATS Ext.</span>';
+  return '';
+}
+
+function platformBadge(p) {
+  if (p === 'LinkedIn') return `<span class="badge badge-cyan">LinkedIn</span>`;
+  if (p === 'Gupy')     return `<span class="badge badge-purple">Gupy</span>`;
+  if (p === 'Catho')    return `<span class="badge badge-orange">Catho</span>`;
+  return `<span class="badge badge-gray">${esc(p)}</span>`;
+}
+
+function modalityBadge(m) {
+  if (m === 'REMOTO')       return `<span class="badge badge-blue">Remoto</span>`;
+  if (m === 'HÍBRIDO')      return `<span class="badge badge-purple">Híbrido</span>`;
+  if (m === 'PRESENCIAL')   return `<span class="badge badge-orange">Presencial</span>`;
+  if (m === 'DESCONHECIDO') return `<span class="badge badge-gray">?</span>`;
+  return `<span class="badge badge-gray">—</span>`;
+}
+
+// ══ SIDEBAR (MOBILE) ═════════════════════════════════════════════════════════
+function toggleSidebar() {
+  const sb = $('sidebar'), ov = $('sidebar-overlay');
+  const open = !sb.classList.contains('open');
+  sb.classList.toggle('open', open);
+  if (ov) ov.style.display = open ? 'block' : 'none';
+}
+function closeSidebar() {
+  const sb = $('sidebar'), ov = $('sidebar-overlay');
+  sb.classList.remove('open');
+  if (ov) ov.style.display = 'none';
+}
+
+// ══ SCROLL NAV ═══════════════════════════════════════════════════════════════
+const SEC_TO_NAV = {
+  'sec-home':          'nav-home',
+  'sec-kpis':          'nav-kpis',
+  'sec-table':         'nav-table',
+  'sec-charts':        'nav-charts',
+  'sec-questionnaire': 'nav-questionnaire',
+  'sec-analytics':     'nav-analytics',
+  'sec-truth':         'nav-truth',
+  'sec-marketplace':   'nav-marketplace',
+  'sec-learning':      'nav-learning',
+  'sec-network':       'nav-network',
+  'sec-hunt':          'nav-hunt',
+};
+
+function setNavActive(secId) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navId = SEC_TO_NAV[secId];
+  if (navId) {
+    const el = document.getElementById(navId);
+    if (el) el.classList.add('active');
+  }
+}
+
+function navTo(secId) {
+  const el = document.getElementById(secId);
+  if (!el) return;
+  // scrollIntoView encontra o scroll container correto automaticamente
+  // (funciona em #main desktop e no body em mobile)
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setNavActive(secId);
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+function filterPlatform(platform) {
+  const sel = document.getElementById('f-platform');
+  if (sel) { sel.value = platform; loadApplications(); }
+  navTo('sec-table');
+}
+
+// ══ STATS ════════════════════════════════════════════════════════════════════
+async function refreshStats() {
+  try {
+    const r = await fetch(`${API}/api/work/stats`);
+    const d = await r.json();
+    $('kpi-scanned').textContent = d.totalScanned ?? 0;
+    $('kpi-applied').textContent = d.totalApplied ?? 0;
+    $('kpi-rate').textContent    = ((d.filterRate ?? 0) * 100).toFixed(1) + '%';
+    $('kpi-cost').textContent    = '$' + (d.estimatedCostUsd ?? 0).toFixed(4);
+    $('kpi-lastrun').textContent = fmtDateShort(d.lastRun);
+    $('kpi-remote').textContent  = d.remoteCount ?? 0;
+    $('kpi-onsite').textContent  = d.onsiteCount ?? 0;
+    $('live-scanned').textContent = d.totalScanned ?? '—';
+    $('live-applied').textContent = d.totalApplied ?? '—';
+    $('live-cost').textContent    = '$' + (d.estimatedCostUsd ?? 0).toFixed(4);
+    $('last-updated').textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-BR');
+  } catch {
+    $('kpi-scanned').textContent = 'offline';
+    $('status-label').textContent = 'API Offline';
+    $('status-dot').style.background = '#ef4444';
+  }
+}
+
+// ══ APPLICATIONS TABLE ════════════════════════════════════════════════════════
+let debounceTimer;
+function debounceSearch() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(loadApplications, 400);
+}
+
+let _allAppRows = [];
+const APPS_PAGE_SIZE = 10;
+
+function renderAppRows(rows) {
+  return rows.map(row => `
+    <tr>
+      <td class="text-gray-500 text-xs font-mono whitespace-nowrap">${fmtDate(row.updated_at)}</td>
+      <td class="text-white font-semibold max-w-[140px] truncate">${esc(row.company)}</td>
+      <td class="text-gray-300 max-w-[200px] truncate text-xs">${esc(row.job_title)}</td>
+      <td>${platformBadge(row.platform)}</td>
+      <td>${modalityBadge(row.modality)}</td>
+      <td>${scoreBadge(row.score_total)}</td>
+      <td>${statusBadge(row.status)}</td>
+      <td style="white-space:nowrap;display:flex;gap:4px;align-items:center;">
+        ${row.linkedin_url
+          ? `<a href="${esc(row.linkedin_url)}" target="_blank" class="btn btn-ghost text-xs px-3 py-1.5">Ver ↗</a>`
+          : ''
+        }
+        <button onclick="openAudit('${esc(row.id)}','${esc(row.company)}','${esc(row.job_title)}')" class="btn btn-ghost text-xs px-2 py-1.5" title="Auditoria Truth Engine" style="color:#a78bfa;">🔍</button>
+        <button onclick="openExplain('${esc(row.id)}','${esc(row.company)}','${esc(row.job_title)}')" class="btn btn-ghost text-xs px-2 py-1.5" title="Por que esta decisão?">❓</button>
+        <button onclick="openATS('${esc(row.id)}','${esc(row.job_title)}')" class="btn btn-ghost text-xs px-2 py-1.5" title="Analisar ATS">📊</button>
+        <button onclick="openResume('${esc(row.id)}','${esc(row.company)}','${esc(row.job_title)}')" class="btn btn-ghost text-xs px-2 py-1.5" title="Gerar CV adaptado">📄</button>
+        <button onclick="openInterview('${esc(row.id)}','${esc(row.company)}','${esc(row.job_title)}')" class="btn btn-ghost text-xs px-2 py-1.5" title="Treinar entrevista">🎓</button>
+        <button onclick="openSalary('${esc(row.id)}','${esc(row.company)}','${esc(row.job_title)}')" class="btn btn-ghost text-xs px-2 py-1.5" title="Conselho salarial">💰</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function showAllApps() {
+  $('apps-tbody').innerHTML = renderAppRows(_allAppRows);
+  $('show-all-wrapper').style.display = 'none';
+  lucide.createIcons();
+}
+
+async function loadApplications() {
+  const tbody = $('apps-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" class="empty-state py-8"><span class="spinner"></span></td></tr>';
+  $('show-all-wrapper').style.display = 'none';
+
+  const status   = $('f-status').value;
+  const platform = $('f-platform').value;
+  const modality = $('f-modality').value;
+  const period   = $('f-period').value;
+  const search   = $('f-search').value;
+
+  const params = new URLSearchParams();
+  if (status   !== 'all') params.set('status', status);
+  if (platform !== 'all') params.set('platform', platform);
+  if (modality !== 'all') params.set('modality', modality);
+  if (period   !== 'all') params.set('period', period);
+  if (search)              params.set('search', search);
+
+  try {
+    const r = await fetch(`${API}/api/work/applications?${params}`);
+    const rows = await r.json();
+    _allAppRows = rows;
+    $('table-count').textContent = `(${rows.length})`;
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state py-10 text-sm">Nenhuma candidatura encontrada</td></tr>`;
+      return;
+    }
+
+    const visible = rows.slice(0, APPS_PAGE_SIZE);
+    tbody.innerHTML = renderAppRows(visible);
+
+    if (rows.length > APPS_PAGE_SIZE) {
+      const remaining = rows.length - APPS_PAGE_SIZE;
+      $('btn-show-all-label').textContent = `Ver todas as ${rows.length} candidaturas (+${remaining} ocultas)`;
+      $('show-all-wrapper').style.display = 'block';
+      lucide.createIcons();
+    }
+  } catch {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state py-8 text-red-400">Erro ao carregar candidaturas</td></tr>`;
+  }
+}
+
+// ══ CHARTS ═══════════════════════════════════════════════════════════════════
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+async function loadCharts() {
+  await loadDailyChart();
+  await loadStatusChart();
+  await loadCompaniesChart();
+}
+
+async function loadDailyChart() {
+  destroyChart('daily');
+  destroyChart('cumulative');
+  try {
+    const r = await fetch(`${API}/api/work/chart/daily`);
+    const d = await r.json();
+
+    charts['daily'] = new Chart($('chart-daily'), {
+      type: 'bar',
+      data: {
+        labels: d.labels,
+        datasets: [
+          {
+            label: 'Escaneadas',
+            data: d.scanned,
+            backgroundColor: 'rgba(59,130,246,.3)',
+            borderColor: '#3b82f6',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+          {
+            label: 'Aplicadas',
+            data: d.applied,
+            backgroundColor: 'rgba(34,197,94,.4)',
+            borderColor: '#22c55e',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { boxWidth: 10, padding: 12, color: '#9ca3af' } } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', maxRotation: 45 } },
+          y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', stepSize: 1 } },
+        },
+      },
+    });
+
+    charts['cumulative'] = new Chart($('chart-cumulative'), {
+      type: 'line',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          label: 'Acumuladas',
+          data: d.cumulative,
+          borderColor: '#a78bfa',
+          backgroundColor: 'rgba(167,139,250,.08)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#a78bfa',
+          fill: true,
+          tension: 0.4,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', maxRotation: 45 } },
+          y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', stepSize: 1 } },
+        },
+      },
+    });
+  } catch (e) {
+    console.warn('chart daily error', e);
+  }
+}
+
+async function loadStatusChart() {
+  destroyChart('status');
+  try {
+    const r = await fetch(`${API}/api/work/stats`);
+    const d = await r.json();
+    const byStatus = d.byStatus ?? {};
+    const keys = Object.keys(byStatus);
+    const vals = keys.map(k => byStatus[k]);
+
+    const PALETTE = {
+      applied:              '#22c55e',
+      queued:               '#3b82f6',
+      review:               '#f59e0b',
+      filtered_out:         '#6b7280',
+      error:                '#ef4444',
+      interview:            '#8b5cf6',
+      applying:             '#22d3ee',
+      scanned:              '#475569',
+      questionnaire_pending:'#fbbf24',
+      questionnaire_done:   '#4ade80',
+      rejected:             '#f87171',
+    };
+    const colors = keys.map(k => PALETTE[k] ?? '#60a5fa');
+
+    charts['status'] = new Chart($('chart-status'), {
+      type: 'doughnut',
+      data: {
+        labels: keys,
+        datasets: [{
+          data: vals,
+          backgroundColor: colors.map(c => c + '60'),
+          borderColor: colors,
+          borderWidth: 2,
+          hoverOffset: 6,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { boxWidth: 10, padding: 10, color: '#9ca3af', font: { size: 10 } },
+          },
+        },
+        cutout: '65%',
+      },
+    });
+  } catch (e) {
+    console.warn('chart status error', e);
+  }
+}
+
+async function loadCompaniesChart() {
+  destroyChart('companies');
+  try {
+    const r = await fetch(`${API}/api/work/chart/companies`);
+    const d = await r.json();
+    if (!d.labels?.length) return;
+
+    charts['companies'] = new Chart($('chart-companies'), {
+      type: 'bar',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          label: 'Vagas',
+          data: d.counts,
+          backgroundColor: 'rgba(96,165,250,.3)',
+          borderColor: '#60a5fa',
+          borderWidth: 1,
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', stepSize: 1 } },
+          y: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10 } } },
+        },
+      },
+    });
+  } catch (e) {
+    console.warn('chart companies error', e);
+  }
+}
+
+// ══ QUESTIONNAIRE LOG ═════════════════════════════════════════════════════════
+let qDebounceTimer = null;
+function debounceQSearch() {
+  clearTimeout(qDebounceTimer);
+  qDebounceTimer = setTimeout(loadQuestionnaire, 350);
+}
+
+const FAST_TYPES = new Set(['FAST_YESNO','FAST_NUMERIC','FAST_SALARY']);
+
+let _allQGroups = [];
+const Q_PAGE_SIZE = 10;
+
+function renderQGroups(groups) {
+  const BASIC_PATTERNS = /^(first.?name|last.?name|nome|sobrenome|email|e-mail|telefone|phone|c[oó]digo.?do.?pa[ií]s|selecionar.?idioma|language|color|colour|opacity|website|linkedin|twitter|github|portfolio|endere[cç]o|address|cidade|city|pa[ií]s|country|estado|state|cep|zip)[\s*]*/i;
+  const hideBasic = document.getElementById('q-hide-basic')?.checked ?? true;
+
+  return groups.map((g, gi) => {
+    const jobUrl  = g.entries?.[0]?.job_url ?? '';
+    const ts      = g.entries?.[0]?.timestamp ?? '';
+    const isFirst = gi === 0;
+
+    const allEntries   = g.entries ?? [];
+    const realEntries  = allEntries.filter(e => !BASIC_PATTERNS.test(e.pergunta ?? ''));
+    const basicEntries = allEntries.filter(e =>  BASIC_PATTERNS.test(e.pergunta ?? ''));
+    const shownEntries = hideBasic ? realEntries : allEntries;
+    const hiddenCount  = hideBasic ? basicEntries.length : 0;
+
+    const cards = shownEntries.map((e) => {
+      const isFast     = FAST_TYPES.has(e.tipo_detectado);
+      const isAtsField = e.tipo_detectado === 'ATS_FIELD';
+      const chunks     = e.chunks_consultados ?? [];
+
+      const answerColor     = isAtsField ? 'rgba(251,146,60,.08)' : isFast ? 'rgba(34,211,238,.07)' : 'rgba(34,197,94,.08)';
+      const answerBorder    = isAtsField ? '#fb923c' : isFast ? '#22d3ee' : '#22c55e';
+      const answerTextColor = isAtsField ? '#fdba74' : isFast ? '#67e8f9' : '#86efac';
+
+      const ragHtml = isAtsField
+        ? ''
+        : isFast
+          ? '<span style="font-size:10px;color:#22d3ee;font-family:monospace">⚡ FAST — sem chamada LLM</span>'
+          : chunks.length
+            ? chunks.map(c => `<span style="font-size:10px;color:#4b5563;font-family:monospace">📄 ${esc(c)}</span>`).join(' · ')
+            : '';
+
+      return `
+        <div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.04);">
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
+            <span style="flex-shrink:0;margin-top:1px;">${typeBadge(e.tipo_detectado)}</span>
+            <span style="font-size:13px;color:#e5e7eb;font-weight:500;line-height:1.4;">${esc(e.pergunta)}</span>
+          </div>
+          <div style="padding:10px 14px;background:${answerColor};border-left:3px solid ${answerBorder};border-radius:0 8px 8px 0;margin-bottom:6px;">
+            <div style="font-size:12px;color:#9ca3af;font-family:monospace;margin-bottom:3px;">RESPOSTA GERADA</div>
+            <div style="font-size:13px;color:${answerTextColor};line-height:1.6;white-space:pre-wrap;">${esc(e.resposta_gerada)}</div>
+          </div>
+          ${ragHtml ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${ragHtml}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    const headerSourceBadge = atsBadge(allEntries[0]?.ats_source);
+    const realCount = realEntries.length;
+
+    return `
+      <div class="glass rounded-xl mb-3 overflow-hidden">
+        <div class="accordion-header" onclick="toggleAccordion('q${gi}')">
+          <div class="flex items-center gap-3">
+            <div style="width:32px;height:32px;background:rgba(244,114,182,.12);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i data-lucide="message-circle" style="width:14px;height:14px;color:#f472b6"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-white text-sm font-semibold">${esc(g.company)} — ${esc(g.job_title)}</span>
+                ${isFirst ? '<span class="badge badge-green" style="font-size:9px">MAIS RECENTE</span>' : ''}
+                ${headerSourceBadge}
+                ${realCount > 0 ? `<span style="font-size:9px;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:4px;padding:1px 6px;">${realCount} pergunta${realCount>1?'s':''} reais</span>` : ''}
+              </div>
+              <div class="text-gray-500 font-mono" style="font-size:11px;">
+                ${allEntries.length} item(ns) total
+                ${hiddenCount > 0 ? ` · <span style="color:#374151">${hiddenCount} básico(s) oculto(s)</span>` : ''}
+                ${ts ? ' · ' + new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''}
+                ${jobUrl ? ` · <a href="${esc(jobUrl)}" target="_blank" onclick="event.stopPropagation()" class="text-blue-400 hover:text-blue-300">ver vaga ↗</a>` : ''}
+              </div>
+            </div>
+          </div>
+          <i data-lucide="chevron-down" id="acc-icon-q${gi}" style="width:16px;height:16px;color:#4b5563;transition:transform .3s;${isFirst?'transform:rotate(180deg)':''}"></i>
+        </div>
+        <div class="accordion-body${isFirst ? ' open' : ''}" id="acc-body-q${gi}">
+          ${shownEntries.length === 0
+            ? `<div style="padding:20px 18px;color:#374151;font-size:12px;font-family:monospace;border-top:1px solid rgba(255,255,255,.05);">
+                ${hiddenCount > 0
+                  ? `Apenas ${hiddenCount} campo(s) básico(s) (email, nome, país…) — desmarque "Ocultar campos básicos" para ver.`
+                  : 'Nenhuma pergunta registrada nesta candidatura.'}
+              </div>`
+            : `<div style="border-top:1px solid rgba(255,255,255,.05);">${cards}</div>`
+          }
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function showAllQuestionnaire() {
+  $('questionnaire-container').innerHTML = renderQGroups(_allQGroups);
+  $('q-show-all-wrapper').style.display = 'none';
+  lucide.createIcons();
+}
+
+async function loadQuestionnaire() {
+  try {
+    let groups;
+
+    // 1ª tentativa: API ao vivo (local / tunnel)
+    try {
+      const r = await fetch(`${API}/api/work/questionnaire-log`,
+        { signal: AbortSignal.timeout(4000) });
+      if (!r.ok) throw new Error('api');
+      groups = await r.json();
+    } catch {
+      // Fallback: snapshot estático gerado no último deploy
+      const r = await fetch('/questionnaire-data.json',
+        { signal: AbortSignal.timeout(3000) });
+      if (!r.ok) throw new Error('snapshot not found');
+      groups = await r.json();
+    }
+    const container = $('questionnaire-container');
+
+    // Mais recente primeiro
+    groups = groups.slice().reverse();
+
+    // Filtros
+    const filterType   = $('q-filter-type')?.value   ?? 'all';
+    const filterSource = $('q-filter-source')?.value ?? 'all';
+    const qSearch      = ($('q-search')?.value ?? '').toLowerCase();
+
+    // Aplica filtros nas entradas de cada grupo
+    groups = groups.map(g => {
+      let entries = g.entries ?? [];
+      if (filterType   !== 'all')            entries = entries.filter(e => e.tipo_detectado === filterType);
+      if (filterSource === 'fast')           entries = entries.filter(e => FAST_TYPES.has(e.tipo_detectado));
+      if (filterSource === 'llm')            entries = entries.filter(e => !FAST_TYPES.has(e.tipo_detectado));
+      if (filterSource === 'greenhouse')     entries = entries.filter(e => e.ats_source === 'greenhouse');
+      if (filterSource === 'easy_apply')     entries = entries.filter(e => !e.ats_source || e.ats_source === 'easy_apply');
+      if (filterSource === 'ats_field')      entries = entries.filter(e => e.tipo_detectado === 'ATS_FIELD');
+      if (qSearch) entries = entries.filter(e =>
+        (e.pergunta ?? '').toLowerCase().includes(qSearch) ||
+        (e.resposta_gerada ?? '').toLowerCase().includes(qSearch)
+      );
+      return { ...g, entries };
+    }).filter(g => g.entries.length > 0 || (filterType === 'all' && filterSource === 'all' && !qSearch));
+
+    // Totais para o badge
+    const totalQ = groups.reduce((s, g) => s + (g.entries?.length ?? 0), 0);
+    const totalJobs = groups.length;
+    const fastCount = groups.reduce((s,g) => s + (g.entries ?? []).filter(e => FAST_TYPES.has(e.tipo_detectado)).length, 0);
+    const llmCount  = totalQ - fastCount;
+    $('q-count').textContent = `(${totalJobs} vagas · ${totalQ} perguntas · ${fastCount} FAST · ${llmCount} LLM)`;
+
+    if (!groups.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <p class="text-sm text-gray-600">Nenhum questionário encontrado. Execute o hunt com <code class="text-xs text-blue-400">--log-questions</code></p>
+        </div>`;
+      $('q-show-all-wrapper').style.display = 'none';
+      return;
+    }
+
+    // Armazena todos os grupos filtrados e renderiza só os 10 mais recentes
+    _allQGroups = groups;
+    const visible = groups.slice(0, Q_PAGE_SIZE);
+    container.innerHTML = renderQGroups(visible);
+
+    if (groups.length > Q_PAGE_SIZE) {
+      const remaining = groups.length - Q_PAGE_SIZE;
+      $('q-show-all-label').textContent = `Ver todos os ${groups.length} questionários (+${remaining} ocultos)`;
+      $('q-show-all-wrapper').style.display = 'block';
+    } else {
+      $('q-show-all-wrapper').style.display = 'none';
+    }
+
+    lucide.createIcons();
+  } catch (e) {
+    console.warn('questionnaire load error', e);
+  }
+}
+
+function toggleAccordion(idx) {
+  const body = $(`acc-body-${idx}`);
+  const icon = $(`acc-icon-${idx}`);
+  if (!body) return;
+  body.classList.toggle('open');
+  if (icon) icon.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+// ══ HUNT MODE ════════════════════════════════════════════════════════════════
+function setPlatform(p) {
+  selectedPlatform = p;
+  ['linkedin', 'gupy', 'all'].forEach(v => {
+    const btn = $(`btn-${v}`);
+    if (!btn) return;
+    if (v === p) {
+      btn.classList.remove('btn-ghost');
+      if (v === 'linkedin') { btn.style.background='rgba(14,165,233,.2)'; btn.style.borderColor='rgba(14,165,233,.4)'; }
+      else { btn.classList.add('btn-secondary'); }
+    } else {
+      btn.classList.add('btn-ghost');
+      btn.classList.remove('btn-secondary');
+      btn.style.background = '';
+      btn.style.borderColor = '';
+    }
+  });
+  updateCliPreview();
+}
+
+function updateCliPreview() {
+  const limit  = $('hunt-limit')?.value ?? 10;
+  const dryRun = $('opt-dryrun')?.checked;
+  const logQ   = $('opt-logq')?.checked;
+  let cmd = `npx tsx src/cli/hunt.ts --platform ${selectedPlatform} --limit ${limit}`;
+  if (dryRun) cmd += ' --dry-run';
+  if (logQ)   cmd += ' --log-questions';
+  const el = $('cli-preview');
+  if (el) el.textContent = cmd;
+}
+
+['hunt-limit','opt-dryrun','opt-headless','opt-logq'].forEach(id => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = $(id);
+    if (el) el.addEventListener('change', updateCliPreview);
+  });
+});
+
+async function startHunt() {
+  const dryRun      = $('opt-dryrun')?.checked ?? true;
+  const logQuestions = $('opt-logq')?.checked ?? false;
+  const limit       = parseInt($('hunt-limit')?.value ?? '10', 10);
+
+  const payload = { platform: selectedPlatform, dryRun, limit, logQuestions };
+
+  try {
+    const r = await fetch(`${API}/api/work/hunt/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (r.status === 409) {
+      appendTerminal('[WARN] Hunt já em execução. PID: ' + d.pid);
+      return;
+    }
+    appendTerminal('[START] Hunt iniciado. PID: ' + d.pid);
+    appendTerminal('[CMD] ' + d.command);
+    setHuntRunning(true, d.pid);
+    startHuntPolling();
+  } catch (e) {
+    appendTerminal('[ERR] Falha ao iniciar: ' + e.message);
+  }
+}
+
+async function stopHunt() {
+  try {
+    const r = await fetch(`${API}/api/work/hunt/stop`, { method: 'POST' });
+    const d = await r.json();
+    appendTerminal(d.stopped ? '[STOP] Hunt interrompido.' : '[INFO] ' + d.reason);
+    setHuntRunning(false, null);
+    stopHuntPolling();
+    setTimeout(refreshAll, 1500);
+  } catch (e) {
+    appendTerminal('[ERR] ' + e.message);
+  }
+}
+
+function setHuntRunning(running, pid) {
+  const pill = $('hunt-pill');
+  const big  = $('hunt-status-big');
+  const dot  = $('hunt-dot-big');
+  const dotS = document.querySelector('#hunt-pill .live-dot');
+  const pidEl = $('hunt-pid');
+  const startBtn = $('btn-start-hunt');
+  const stopBtn  = $('btn-stop-hunt');
+
+  if (running) {
+    if (pill) { pill.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono hunt-running'; }
+    if (big)  { big.className  = 'px-4 py-2 rounded-full text-sm font-mono font-semibold hunt-running flex items-center gap-2'; }
+    if (dot)  { dot.style.background = '#22d3ee'; dot.style.boxShadow = '0 0 6px rgba(34,211,238,.7)'; }
+    if (dotS) { dotS.style.background = '#22d3ee'; dotS.style.boxShadow = '0 0 6px rgba(34,211,238,.7)'; }
+    $('hunt-status-label').textContent = 'Executando';
+    $('hunt-status-big-label').textContent = 'Executando';
+    if (pidEl) pidEl.textContent = pid ? `PID ${pid}` : '';
+    if (startBtn) startBtn.style.display = 'none';
+    if (stopBtn)  stopBtn.style.display  = '';
+  } else {
+    if (pill) { pill.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono hunt-idle'; }
+    if (big)  { big.className  = 'px-4 py-2 rounded-full text-sm font-mono font-semibold hunt-idle flex items-center gap-2'; }
+    if (dot)  { dot.style.background = '#6b7280'; dot.style.boxShadow = 'none'; }
+    if (dotS) { dotS.style.background = '#6b7280'; dotS.style.boxShadow = 'none'; }
+    $('hunt-status-label').textContent = 'Aguardando';
+    $('hunt-status-big-label').textContent = 'Aguardando';
+    if (pidEl) pidEl.textContent = '';
+    if (startBtn) startBtn.style.display = '';
+    if (stopBtn)  stopBtn.style.display  = 'none';
+  }
+}
+
+function appendTerminal(line) {
+  const term = $('hunt-terminal');
+  if (!term) return;
+  const color = line.startsWith('[ERR]') ? '#f87171'
+    : line.startsWith('[STOP]') ? '#fbbf24'
+    : line.startsWith('[START]') ? '#4ade80'
+    : line.startsWith('[CMD]') ? '#93c5fd'
+    : '#9ca3af';
+  const d = document.createElement('div');
+  d.style.color = color;
+  d.textContent = line;
+  term.appendChild(d);
+  term.scrollTop = term.scrollHeight;
+}
+
+function startHuntPolling() {
+  if (huntPolling) clearInterval(huntPolling);
+  huntPolling = setInterval(async () => {
+    try {
+      const r = await fetch(`${API}/api/work/hunt/status`);
+      const d = await r.json();
+      if (!d.running) {
+        setHuntRunning(false, null);
+        appendTerminal('[DONE] Hunt finalizado.');
+        stopHuntPolling();
+        setTimeout(refreshAll, 2000);
+      }
+    } catch {}
+  }, 3000);
+}
+
+function stopHuntPolling() {
+  if (huntPolling) { clearInterval(huntPolling); huntPolling = null; }
+}
+
+// ══ CONNECTION PANEL ═════════════════════════════════════════════════════════
+function toggleConfig() {
+  const drawer = $('api-config-drawer');
+  if (!drawer) return;
+  const isHidden = drawer.style.display === 'none';
+  drawer.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    const inp = $('api-url-input');
+    if (inp) inp.value = localStorage.getItem('vraxia_api_url') ?? '';
+  }
+}
+
+function saveApiUrl() {
+  const inp = $('api-url-input');
+  const url = (inp?.value ?? '').trim().replace(/\/$/, '');
+  if (url) {
+    localStorage.setItem('vraxia_api_url', url);
+    window.location.reload();
+  } else {
+    clearApiUrl();
+  }
+}
+
+function clearApiUrl() {
+  localStorage.removeItem('vraxia_api_url');
+  window.location.reload();
+}
+
+async function checkConnection() {
+  const dot  = $('conn-dot');
+  const text = $('conn-text');
+  const apiBase = API || 'http://localhost:3001';
+  try {
+    const r = await fetch(`${apiBase}/api/work/health`, { signal: AbortSignal.timeout(4000) });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      if (dot)  dot.style.background = '#22c55e';
+      if (text) text.textContent = API ? 'Remoto' : 'Local';
+      return true;
+    }
+  } catch { /* offline */ }
+  if (dot)  dot.style.background = '#ef4444';
+  if (text) text.textContent = 'API offline';
+  return false;
+}
+
+// ══ MAIN REFRESH ═════════════════════════════════════════════════════════════
+async function refreshAll() {
+  await refreshStats();
+  await loadApplications();
+  await loadCharts();
+  await loadQuestionnaire();
+  await loadTruth();
+}
+
+// ══ INIT ═════════════════════════════════════════════════════════════════════
+async function init() {
+  lucide.createIcons();
+  updateCliPreview();
+
+  // Wire up option listeners
+  ['hunt-limit','opt-dryrun','opt-headless','opt-logq'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('change', updateCliPreview);
+  });
+
+  // Auto-descoberta do túnel (salva no localStorage para próximos acessos Vercel)
+  await autoDiscoverTunnel();
+
+  // Check API connectivity first
+  const online = await checkConnection();
+  if (!online) {
+    // Show config drawer automatically if API is offline and we have no saved URL
+    const saved = localStorage.getItem('vraxia_api_url');
+    if (!saved) {
+      const drawer = $('api-config-drawer');
+      if (drawer) drawer.style.display = 'block';
+    }
+  }
+
+  // Check hunt status on load
+  try {
+    const r = await fetch(`${API}/api/work/hunt/status`);
+    const d = await r.json();
+    if (d.running) { setHuntRunning(true, d.pid); startHuntPolling(); }
+  } catch {}
+
+  await refreshAll();
+  await Promise.allSettled([loadHome(), loadHomeEnriched(), loadAnalytics(), loadAnalyticsFull(), loadTruth(), loadLearning(), loadCRM(), loadMarketplace()]);
+
+  // IntersectionObserver — atualiza nav ativo ao rolar dentro de #main
+  const mainEl = document.getElementById('main');
+  if (mainEl && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      // Pega a seção mais visível
+      const visible = entries.filter(e => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible.length) setNavActive(visible[0].target.id);
+    }, { root: mainEl, threshold: 0.25 });
+
+    Object.keys(SEC_TO_NAV).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  }
+
+  // Auto-refresh
+  setInterval(refreshStats, 60_000);
+  setInterval(loadApplications, 90_000);
+  setInterval(loadQuestionnaire, 60_000);
+  setInterval(checkConnection, 30_000);
+
+  // Polling adaptativo por db-mtime — detecta mudanças no DB e atualiza em ≤5s
+  let _lastMtime = 0;
+  let _lastJsonlMtime = 0;
+  async function checkDbMtime() {
+    try {
+      const r = await fetch(`${API}/api/work/db-mtime`, { signal: AbortSignal.timeout(3000) });
+      const d = await r.json();
+      const huntActive = !!d.huntPid;
+
+      // Atualiza pill de status do hunt quando detectado via PID externo
+      if (huntActive && !huntPolling) {
+        setHuntRunning(true, d.huntPid);
+        startHuntPolling();
+      } else if (!huntActive && huntPolling && !(huntProcess)) {
+        setHuntRunning(false, null);
+        stopHuntPolling();
+      }
+
+      // Refresh parcial quando DB mudou
+      if (d.dbMtime > _lastMtime) {
+        _lastMtime = d.dbMtime;
+        await Promise.allSettled([refreshStats(), loadApplications(), loadTruth()]);
+        const charts = document.getElementById('sec-charts');
+        if (charts && charts.getBoundingClientRect().top < window.innerHeight) loadCharts();
+      }
+      // Refresh questionnaire quando JSONL mudou
+      if (d.jsonlMtime > _lastJsonlMtime) {
+        _lastJsonlMtime = d.jsonlMtime;
+        loadQuestionnaire();
+      }
+    } catch {}
+  }
+  setInterval(checkDbMtime, 5_000);
+  checkDbMtime(); // roda imediatamente no load
+}
+
+// ══ HOME SECTION ═════════════════════════════════════════════════════════════
+async function loadHome() {
+  $('home-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+  try {
+    const r = await fetch(`${API}/api/work/stats`);
+    const d = await r.json();
+    const applied = d.totalApplied ?? 0;
+    const queued  = (d.byStatus?.queued) ?? (d.totalScanned - applied) ?? 0;
+    $('home-applied').textContent = applied;
+    $('home-queue').textContent   = queued;
+    $('home-match').textContent   = '—';
+    $('home-summary').textContent = `Você já enviou ${applied} candidatura${applied !== 1 ? 's' : ''} · ${queued} vagas aguardando revisão · custo total $${(d.estimatedCostUsd ?? 0).toFixed(3)}`;
+  } catch {
+    $('home-summary').textContent = 'API offline — dados não disponíveis';
+  }
+}
+
+// ══ EXPLAIN MODAL ════════════════════════════════════════════════════════════
+async function openExplain(jobId, company, title) {
+  const modal = $('explain-modal');
+  modal.classList.add('open');
+  $('explain-title').textContent = `${esc(company)} — ${esc(title)}`;
+  $('explain-content').innerHTML = '<div class="empty-state py-4"><span class="spinner"></span></div>';
+
+  try {
+    const r = await fetch(`${API}/api/work/applications?search=${encodeURIComponent(company)}&status=all`);
+    const rows = await r.json();
+    const row = rows.find(x => x.id === jobId) || rows[0];
+    if (!row) { $('explain-content').innerHTML = '<p class="text-gray-500 text-sm">Candidatura não encontrada.</p>'; return; }
+
+    const sections = [];
+    if (row.score_reason) sections.push({ label: '⚡ Score: ' + (row.score_total ?? 0) + '/100', text: row.score_reason });
+    if (row.reason_apply)  sections.push({ label: '✅ Por que aplicou', text: row.reason_apply });
+    if (row.reason_filter) sections.push({ label: '⛔ Por que não aplicou', text: row.reason_filter });
+    if (row.reason_score)  sections.push({ label: '📊 Detalhes do score', text: row.reason_score });
+
+    if (!sections.length) {
+      sections.push({ label: '📋 Status', text: `${row.status} — Score: ${row.score_total ?? 0}` });
+      if (row.score_reason) sections.push({ label: '📝 Motivo', text: row.score_reason });
+    }
+
+    $('explain-content').innerHTML = sections.map(s => `
+      <div class="explain-label">${s.label}</div>
+      <div class="explain-reason">${esc(s.text)}</div>
+    `).join('');
+  } catch {
+    $('explain-content').innerHTML = '<p class="text-red-400 text-sm">Erro ao carregar dados.</p>';
+  }
+}
+
+function closeExplain() {
+  $('explain-modal').classList.remove('open');
+}
+
+// ══ ANALYTICS ════════════════════════════════════════════════════════════════
+async function loadAnalytics() {
+  try {
+    const [statsR, appsR] = await Promise.all([
+      fetch(`${API}/api/work/stats`),
+      fetch(`${API}/api/work/applications?status=all`),
+    ]);
+    const stats = await statsR.json();
+    const apps  = await appsR.json();
+
+    // Funil
+    const total    = stats.totalScanned ?? 0;
+    const applied  = stats.totalApplied ?? 0;
+    const queued   = apps.filter(a => a.status === 'queued').length;
+    const interview= apps.filter(a => a.status === 'interview').length;
+    const funnelEl = $('analytics-funnel');
+    const steps = [
+      { label: 'Vagas Escaneadas', val: total,     color: '#60a5fa' },
+      { label: 'Candidaturas',     val: applied,   color: '#22c55e' },
+      { label: 'Fila de Revisão',  val: queued,    color: '#fbbf24' },
+      { label: 'Entrevistas',      val: interview, color: '#a78bfa' },
+    ];
+    funnelEl.innerHTML = steps.map(s => {
+      const pct = total ? Math.round((s.val / total) * 100) : 0;
+      return `<div class="funnel-step">
+        <div style="min-width:140px;font-size:12px;color:#9ca3af;">${s.label}</div>
+        <div class="funnel-bar"><div class="funnel-fill" style="width:${pct}%;background:${s.color};"></div></div>
+        <div class="funnel-num">${s.val}</div>
+        <div style="font-size:10px;color:#4b5563;min-width:36px;text-align:right;">${pct}%</div>
+      </div>`;
+    }).join('');
+
+    // Score distribution
+    const scoreBuckets = { 'Skip (0-49)': 0, 'Review (50-74)': 0, 'Apply (75-100)': 0 };
+    apps.forEach(a => {
+      const s = a.score_total ?? 0;
+      if (s >= 75) scoreBuckets['Apply (75-100)']++;
+      else if (s >= 50) scoreBuckets['Review (50-74)']++;
+      else scoreBuckets['Skip (0-49)']++;
+    });
+    destroyChart('score-dist');
+    charts['score-dist'] = new Chart($('chart-score-dist'), {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(scoreBuckets),
+        datasets: [{ data: Object.values(scoreBuckets), backgroundColor: ['rgba(239,68,68,.6)','rgba(251,191,36,.6)','rgba(34,197,94,.6)'], borderWidth: 0 }],
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } } } },
+    });
+
+    // Platform chart
+    const platforms = {};
+    apps.forEach(a => { platforms[a.platform ?? 'Outro'] = (platforms[a.platform ?? 'Outro'] || 0) + 1; });
+    destroyChart('platform');
+    charts['platform'] = new Chart($('chart-platform'), {
+      type: 'pie',
+      data: {
+        labels: Object.keys(platforms),
+        datasets: [{ data: Object.values(platforms), backgroundColor: ['rgba(14,165,233,.7)','rgba(251,146,60,.7)','rgba(167,139,250,.7)'], borderWidth: 0 }],
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } } } },
+    });
+
+    // Top companies
+    const compCount = {};
+    apps.filter(a => a.status === 'applied').forEach(a => { compCount[a.company] = (compCount[a.company] || 0) + 1; });
+    const topComps = Object.entries(compCount).sort((a,b) => b[1]-a[1]).slice(0, 8);
+    $('analytics-companies').innerHTML = topComps.length ? topComps.map(([c, n]) => `
+      <div class="funnel-step">
+        <div style="flex:1;font-size:12px;color:#d1d5db;truncate;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${esc(c)}</div>
+        <div class="funnel-num" style="font-size:12px;">${n}</div>
+      </div>
+    `).join('') : '<div class="empty-state py-2 text-xs">Nenhuma candidatura ainda</div>';
+
+    // Insights
+    const convRate = total ? ((applied / total) * 100).toFixed(1) : 0;
+    const topPlatform = Object.entries(platforms).sort((a,b)=>b[1]-a[1])[0];
+    $('analytics-insights').innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-green-400 font-mono">${convRate}%</div>
+          <div class="text-xs text-gray-500 mt-1">Taxa de Conversão</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-blue-400 font-mono">${topPlatform ? esc(topPlatform[0]) : '—'}</div>
+          <div class="text-xs text-gray-500 mt-1">Plataforma Principal</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-purple-400 font-mono">${apps.filter(a=>a.status==='applied').length}</div>
+          <div class="text-xs text-gray-500 mt-1">Candidaturas Enviadas</div>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    $('analytics-funnel').innerHTML = '<div class="text-red-400 text-xs p-4">Erro ao carregar analytics — API offline</div>';
+  }
+}
+
+// ══ CHAT ═════════════════════════════════════════════════════════════════════
+let chatVisible = false;
+
+async function sendChat() {
+  const input = $('chat-input');
+  const msg   = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const bubble  = $('chat-bubble');
+  const history = $('chat-history');
+
+  bubble.style.display = 'block';
+  chatVisible = true;
+
+  history.innerHTML += `<div class="chat-msg-user">💬 ${esc(msg)}</div>`;
+  history.innerHTML += `<div class="chat-msg-ai" id="chat-thinking"><span class="spinner"></span> Processando...</div>`;
+  bubble.scrollTop = bubble.scrollHeight;
+
+  try {
+    const r = await fetch(`${API}/api/work/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg }),
+    });
+    const d = await r.json();
+    const thinking = $('chat-thinking');
+    if (thinking) thinking.remove();
+    history.innerHTML += `
+      <div class="chat-msg-ai">${esc(d.reply || 'Sem resposta')}</div>
+      ${d.actions?.length ? `<div class="chat-actions">${d.actions.slice(0,4).map(a =>
+        `<button class="chat-action-btn" onclick="handleChatAction('${esc(a.action)}')">${esc(a.label)}</button>`
+      ).join('')}</div>` : ''}
+    `;
+  } catch {
+    const thinking = $('chat-thinking');
+    if (thinking) thinking.remove();
+    history.innerHTML += `<div class="chat-msg-ai" style="color:#fca5a5;">⚠️ API offline — Chat não disponível no modo estático.</div>`;
+  }
+  bubble.scrollTop = bubble.scrollHeight;
+}
+
+function handleChatAction(action) {
+  if (action.startsWith('nav:')) { navTo('sec-' + action.split(':')[1]); return; }
+  if (action.startsWith('hunt:run:')) { startHunt(parseInt(action.split(':')[2]) || 5); return; }
+  if (action === 'hunt:dry-run') { startHunt(10, true); return; }
+  if (action === 'nav:analytics') { navTo('sec-analytics'); return; }
+  if (action === 'nav:queue') { navTo('sec-table'); document.getElementById('f-status').value='queued'; loadApplications(); return; }
+}
+
+// ══ MARKETPLACE ══════════════════════════════════════════════════════════════
+let _mktCatalog = [];
+let _mktFilter  = 'all';
+
+async function loadMarketplace() {
+  try {
+    const r = await fetch(`${API}/api/work/marketplace`);
+    _mktCatalog = await r.json();
+    renderMarketplace();
+  } catch {
+    $('mkt-grid').innerHTML = '<div class="empty-state col-span-3 py-8 text-xs">API offline — inicie o servidor local para usar o Marketplace</div>';
+  }
+}
+
+function filterMarketplace(cat) {
+  _mktFilter = cat;
+  document.querySelectorAll('.mkt-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cat === cat);
+  });
+  renderMarketplace();
+}
+
+function renderMarketplace() {
+  const list = _mktFilter === 'all' ? _mktCatalog : _mktCatalog.filter(p => p.category === _mktFilter);
+  const installed = _mktCatalog.filter(p => p.installed);
+
+  // Installed strip
+  const strip = $('mkt-installed-strip');
+  if (installed.length) {
+    strip.classList.remove('hidden');
+    $('mkt-installed-list').innerHTML = installed.map(p => `
+      <div class="flex items-center gap-1 text-xs px-3 py-1 rounded-full" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#86efac;">
+        ${p.iconEmoji} ${esc(p.name)}
+        <button onclick="runPlugin('${esc(p.id)}','${esc(p.name)}')" class="ml-1 text-green-300 hover:text-white" title="Executar">▶</button>
+      </div>
+    `).join('');
+  } else {
+    strip.classList.add('hidden');
+  }
+
+  if (!list.length) {
+    $('mkt-grid').innerHTML = '<div class="empty-state col-span-3 py-8 text-xs">Nenhum agente nesta categoria</div>';
+    return;
+  }
+
+  $('mkt-grid').innerHTML = list.map(p => `
+    <div class="mkt-card ${p.installed ? 'installed' : ''}" id="mkt-card-${p.id}">
+      <div class="mkt-card-header">
+        <div class="mkt-icon">${p.iconEmoji}</div>
+        <div>
+          <div class="mkt-name">${esc(p.name)} ${p.installed ? '<span style="font-size:9px;color:#34d399;font-weight:400;">● instalado</span>' : ''}</div>
+          <div class="mkt-author">por ${esc(p.author)} · v${esc(p.version)}</div>
+        </div>
+      </div>
+      <div class="mkt-desc">${esc(p.description)}</div>
+      <div class="text-xs text-gray-500 leading-relaxed">${esc(p.longDescription)}</div>
+      <div class="mkt-tags">${(p.tags||[]).map(t => `<span class="mkt-tag">${esc(t)}</span>`).join('')}</div>
+      <div class="mkt-footer">
+        <div>
+          <div class="mkt-price">${p.price === 'free' ? '🟢 Grátis' : `R$ ${p.price}/mês`}</div>
+          <div class="mkt-cat">${esc(p.categoryLabel)}</div>
+        </div>
+        <div class="flex gap-2">
+          ${p.installed ? `
+            <button onclick="runPlugin('${esc(p.id)}','${esc(p.name)}')" class="btn btn-primary text-xs px-3 py-1.5">▶ Executar</button>
+            <button onclick="uninstallPlugin('${esc(p.id)}')" class="btn btn-ghost text-xs px-2 py-1.5" title="Desinstalar">✕</button>
+          ` : `
+            <button onclick="installPlugin('${esc(p.id)}')" class="btn btn-secondary text-xs px-3 py-1.5">+ Instalar</button>
+          `}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function installPlugin(id) {
+  try {
+    await fetch(`${API}/api/work/marketplace/${id}/install`, { method: 'POST' });
+    await loadMarketplace();
+  } catch { alert('Erro ao instalar — API offline?'); }
+}
+
+async function uninstallPlugin(id) {
+  if (!confirm('Desinstalar este agente?')) return;
+  try {
+    await fetch(`${API}/api/work/marketplace/${id}/uninstall`, { method: 'POST' });
+    await loadMarketplace();
+  } catch { alert('Erro ao desinstalar — API offline?'); }
+}
+
+function closeMktModal() { $('mkt-run-modal').style.display = 'none'; }
+
+async function runPlugin(id, name, jobId = '') {
+  $('mkt-run-title').textContent = `${name} — Executando...`;
+  $('mkt-run-body').textContent  = '';
+  $('mkt-run-actions').innerHTML = '<span class="spinner"></span>';
+  $('mkt-run-modal').style.display = 'block';
+
+  try {
+    const r = await fetch(`${API}/api/work/marketplace/${id}/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId, input: '', intent: 'HUNT' }),
+    });
+    const d = await r.json();
+    $('mkt-run-title').textContent = `${name}`;
+    $('mkt-run-body').textContent  = d.reply ?? d.error ?? '—';
+    $('mkt-run-actions').innerHTML = (d.actions || []).map(a =>
+      `<button class="btn btn-secondary text-xs" onclick="handleChatAction('${esc(a.action)}')">${esc(a.label)}</button>`
+    ).join('') || '';
+  } catch {
+    $('mkt-run-body').textContent = 'Erro — API offline?';
+    $('mkt-run-actions').innerHTML = '';
+  }
+}
+
+// ══ HOME STATS (enriquecido) ══════════════════════════════════════════════════
+async function loadHomeEnriched() {
+  try {
+    const r = await fetch(`${API}/api/work/home/stats`);
+    const d = await r.json();
+    $('home-match').textContent  = d.highMatch ?? '—';
+    $('home-streak').textContent = d.streak > 0 ? `🔥 ${d.streak} dia${d.streak !== 1 ? 's' : ''} consecutivo${d.streak !== 1 ? 's' : ''}` : '';
+    if (d.totalApplied !== undefined) $('home-applied').textContent = d.totalApplied;
+  } catch { /* silently ignore */ }
+}
+
+// ══ ANALYTICS FULL ════════════════════════════════════════════════════════════
+async function loadAnalyticsFull() {
+  try {
+    const r = await fetch(`${API}/api/work/analytics/full`);
+    const d = await r.json();
+
+    // Top keywords
+    const kwEl = $('analytics-keywords');
+    if (d.topKeywords?.length) {
+      const maxDemand = d.topKeywords[0].aparicoes || 1;
+      kwEl.innerHTML = d.topKeywords.slice(0, 12).map(kw => `
+        <div class="funnel-step">
+          <div style="min-width:100px;font-size:11px;color:#d1d5db;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${esc(kw.keyword)}</div>
+          <div class="funnel-bar"><div class="funnel-fill" style="width:${Math.round((kw.aparicoes/maxDemand)*100)}%;background:#60a5fa;"></div></div>
+          <div class="funnel-num text-xs">${kw.aparicoes}</div>
+        </div>
+      `).join('');
+    } else {
+      kwEl.innerHTML = '<div class="empty-state py-2 text-xs">Sem dados — rode o hunt para popular</div>';
+    }
+
+    // Skills map
+    const smEl = $('analytics-skills-map');
+    if (d.skillsMap?.length) {
+      smEl.innerHTML = d.skillsMap.slice(0, 15).map(s => `
+        <div class="flex items-center gap-2 text-xs">
+          <span style="width:8px;height:8px;border-radius:50%;background:${s.hasIt ? '#22c55e' : '#ef4444'};flex-shrink:0;"></span>
+          <span style="flex:1;color:${s.hasIt ? '#86efac' : '#fca5a5'};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${esc(s.skill)}</span>
+          <span style="color:#4b5563;font-size:10px;">${s.hasIt ? '✓ tenho' : `✗ aprender`}</span>
+          <span style="color:#374151;font-size:10px;">${s.marketDemand}x</span>
+        </div>
+      `).join('');
+    } else {
+      smEl.innerHTML = '<div class="empty-state py-2 text-xs">Sem dados de mercado ainda</div>';
+    }
+
+    // Rejection reasons
+    const rjEl = $('analytics-rejection');
+    if (d.rejectionReasons?.length) {
+      const maxC = d.rejectionReasons[0].count || 1;
+      rjEl.innerHTML = d.rejectionReasons.map(r => `
+        <div class="funnel-step">
+          <div style="min-width:110px;font-size:11px;color:#fca5a5;">${esc(r.category)}</div>
+          <div class="funnel-bar"><div class="funnel-fill" style="width:${Math.round((r.count/maxC)*100)}%;background:#ef4444;"></div></div>
+          <div class="funnel-num text-xs">${r.count}</div>
+        </div>
+      `).join('');
+    } else {
+      rjEl.innerHTML = '<div class="empty-state py-2 text-xs">Sem dados suficientes</div>';
+    }
+
+    // Hire probability
+    const hp = d.hireProbability ?? 0;
+    const hpEl = $('analytics-hire-prob');
+    hpEl.textContent = `${hp}%`;
+    hpEl.style.color = hp >= 70 ? '#22c55e' : hp >= 40 ? '#fbbf24' : '#ef4444';
+    $('analytics-hire-label').textContent = hp > 0
+      ? `Confiança ${hp >= 60 ? 'alta' : hp >= 30 ? 'média' : 'baixa'} — baseado em ${d.topKeywords?.length ?? 0} vars`
+      : 'Acumule candidaturas para ver a probabilidade';
+
+    // KPI insights row
+    const insEl = $('analytics-insights');
+    insEl.innerHTML = `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-blue-400 font-mono">${d.topKeywords?.filter(k => !k.hasIt)?.length ?? 0}</div>
+          <div class="text-xs text-gray-500 mt-1">Skills a Aprender</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-green-400 font-mono">${d.skillsMap?.filter(s => s.hasIt)?.length ?? 0}</div>
+          <div class="text-xs text-gray-500 mt-1">Skills que Tenho</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-red-400 font-mono">${d.rejectionReasons?.reduce((s, r) => s + r.count, 0) ?? 0}</div>
+          <div class="text-xs text-gray-500 mt-1">Filtradas</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-purple-400 font-mono">${hp}%</div>
+          <div class="text-xs text-gray-500 mt-1">Prob. Hire</div>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    console.error('[Analytics Full]', e);
+  }
+}
+
+// ══ TRUTH ENGINE ══════════════════════════════════════════════════════════════
+
+const TRUTH_COLORS = {
+  VERIFIED:  '#22c55e',
+  PROBABLE:  '#f59e0b',
+  REJECTED:  '#ef4444',
+  UNKNOWN:   '#6b7280',
+  PENDING:   '#6b7280',  // alias de UNKNOWN — sem avaliação ainda
+  EXPIRED:   '#4b5563',
+};
+
+const ERROR_LABELS = {
+  TIMEOUT_ERROR:   '⏱ Timeout',
+  DOM_ERROR:       '🔲 DOM',
+  CAPTCHA_ERROR:   '🤖 CAPTCHA',
+  LOGIN_ERROR:     '🔑 Login',
+  RATE_LIMIT_ERROR:'🚦 Rate Limit',
+  UPLOAD_ERROR:    '📎 Upload',
+  SUBMIT_ERROR:    '📤 Submit',
+  ATS_ERROR:       '🏢 ATS',
+  NAVIGATION_ERROR:'🗺 Navegação',
+  LLM_ERROR:       '🤖 LLM',
+  OAUTH_ERROR:     '🔐 OAuth',
+  SESSION_ERROR:   '🔒 Sessão',
+  TOKEN_ERROR:     '🪙 Token',
+  DATABASE_ERROR:  '🗄 Banco',
+  API_ERROR:       '🌐 API',
+  ANTI_BOT_ERROR:  '🛡 Anti-bot',
+  UNKNOWN_ERROR:   '❓ Desconhecido',
+};
+
+// Formata um percentual float para exibição (ex: 1.22 → "1.2%", 0.0 → "0.0%")
+// NUNCA usa Math.round() aqui — isso zeraria taxas pequenas como 0.3%
+function fmtRate(value) {
+  if (value == null || isNaN(value)) return '—';
+  const n = parseFloat(String(value));
+  if (n === 0) return '0.0%';
+  if (n < 0.1) return n.toFixed(2) + '%';
+  return n.toFixed(1) + '%';
+}
+
+async function loadTruth() {
+  try {
+    const [statsRes, funnelRes, wfRes] = await Promise.all([
+      fetch(`${API}/api/work/truth-stats`),
+      fetch(`${API}/api/work/funnel`),
+      fetch(`${API}/api/work/workflow-stats`),
+    ]);
+    const stats  = await statsRes.json();
+    const funnel = await funnelRes.json();
+    const wf     = await wfRes.json();
+
+    // ── BLOCO A: Workflow Status KPIs ───────────────────────────────────────
+    $('wf-queued').textContent    = wf.queued    ?? 0;
+    $('wf-running').textContent   = wf.running   ?? 0;
+    $('wf-submitted').textContent = wf.submitted ?? 0;
+    $('wf-failed').textContent    = wf.failed    ?? 0;
+    $('wf-cancelled').textContent = wf.cancelled ?? 0;
+    $('wf-blocked').textContent   = wf.blocked   ?? 0;
+
+    // ── BLOCO B: Truth Status KPIs ─────────────────────────────────────────
+    // truthRate já vem como float do servidor (ex: 1.22)
+    $('truth-rate').textContent          = fmtRate(stats.truthRate);
+    $('truth-verified-count').textContent = stats.verified          ?? 0;
+    $('truth-probable-count').textContent = stats.probable          ?? 0;
+    $('truth-rejected-count').textContent = stats.rejected          ?? 0;
+    $('truth-pending-count').textContent  = stats.pending ?? stats.unknown ?? 0;  // UNKNOWN truth records
+    $('truth-portal-rate').textContent   = fmtRate(stats.portalConfirmationRate);
+
+    // ── BLOCO C: Funil Workflow ─────────────────────────────────────────────
+    const funnelEl = $('truth-funnel');
+    const funnelSteps = funnel?.funnel ?? [];
+    const maxCount = Math.max(...funnelSteps.map(s => s.count ?? 0), 1);
+
+    // Labels amigáveis para os estados de workflow
+    const WORKFLOW_LABELS = {
+      discovered:          'Descoberta',
+      queued:              'Queued',
+      starting:            'Iniciando',
+      opening_job:         'Abrindo vaga',
+      opening_easy_apply:  'Easy Apply',
+      uploading_resume:    'Upload CV',
+      filling_questions:   'Preenchendo',
+      reviewing:           'Revisando',
+      submitting:          'Submetendo',
+      submitted:           'Submitted',   // robô submeteu (não é Truth VERIFIED)
+      already_applied:     'Já candidatou',
+      failed:              'Failed',
+      cancelled:           'Cancelled',
+      blocked:             'Blocked',
+      timeout:             'Timeout',
+      retrying:            'Retrying',
+      rejected:            'Rejected (RH)',
+      interview:           'Entrevista',
+      offer:               'Oferta',
+      hired:               'Contratado',
+    };
+
+    const FUNNEL_COLORS = {
+      discovered:'#6b7280', queued:'#3b82f6', starting:'#22d3ee',
+      opening_job:'#60a5fa', opening_easy_apply:'#a78bfa',
+      uploading_resume:'#fb923c', filling_questions:'#f59e0b',
+      reviewing:'#fbbf24', submitting:'#10b981',
+      submitted:'#34d399',     // Submitted (workflow) — verde-esmeralda
+      already_applied:'#6b7280', failed:'#ef4444',
+      blocked:'#f87171', timeout:'#fca5a5', retrying:'#fb923c',
+      cancelled:'#4b5563', rejected:'#f87171',
+      interview:'#a78bfa', offer:'#818cf8', hired:'#4ade80',
+    };
+
+    if (funnelSteps.length) {
+      funnelEl.innerHTML = funnelSteps.map(s => {
+        const label = WORKFLOW_LABELS[s.state] ?? s.state?.replace(/_/g, ' ');
+        const barPct = Math.round((s.count / maxCount) * 100);
+        const color  = FUNNEL_COLORS[s.state] ?? '#60a5fa';
+        const pctTxt = s.pctOfTotal != null ? `${s.pctOfTotal}%` : '';
+        return `
+          <div class="funnel-step">
+            <div style="min-width:130px;font-size:11px;color:#d1d5db;">${esc(label)}</div>
+            <div class="funnel-bar" style="flex:1;">
+              <div class="funnel-fill" style="width:${barPct}%;background:${color};"></div>
+            </div>
+            <div class="funnel-num text-xs">${s.count}</div>
+            ${pctTxt ? `<div style="min-width:40px;text-align:right;font-size:10px;color:#4b5563;">${pctTxt}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    } else {
+      funnelEl.innerHTML = '<div class="empty-state py-4 text-xs">Sem dados de funil ainda</div>';
+    }
+
+    // ── Error classification ────────────────────────────────────────────────
+    const errorEl = $('truth-errors');
+    const errorsObj = stats.byErrorCategory ?? {};
+    const errorEntries = Object.entries(errorsObj).sort((a, b) => b[1] - a[1]);
+    const maxErr = Math.max(...errorEntries.map(e => e[1]), 1);
+    if (errorEntries.length) {
+      errorEl.innerHTML = errorEntries.map(([cat, count]) => `
+        <div class="error-cat-row">
+          <div style="font-size:11px;color:#e5e7eb;min-width:140px;">${esc(ERROR_LABELS[cat] ?? cat)}</div>
+          <div class="funnel-bar" style="flex:1;margin:0 10px;">
+            <div class="funnel-fill" style="width:${Math.round((count/maxErr)*100)}%;background:#fb923c;"></div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#fdba74;min-width:24px;text-align:right;">${count}</div>
+        </div>
+      `).join('');
+    } else {
+      errorEl.innerHTML = '<div class="empty-state py-4 text-xs text-green-400">Nenhum erro classificado — sistema saudável!</div>';
+    }
+
+    // ── Proof types ────────────────────────────────────────────────────────
+    const proofsEl = $('truth-proofs');
+    const proofData = stats.proofTypeSummary ?? {};
+    const PROOF_INFO = {
+      network_submit_200:  { label: 'POST 2xx (rede)',      weight: 50, color: '#22c55e' },
+      ats_confirmation:    { label: 'ATS Confirmado',       weight: 45, color: '#4ade80' },
+      my_jobs_applied:     { label: 'My Jobs / Applied',    weight: 40, color: '#86efac' },
+      confirmation_text:   { label: 'Texto de confirmação', weight: 25, color: '#fbbf24' },
+      url_redirect:        { label: 'Redirect pós-apply',   weight: 20, color: '#fb923c' },
+      health_check_passed: { label: 'Health Check ≥ 80',    weight: 10, color: '#60a5fa' },
+      screenshot_exists:   { label: 'Screenshots',          weight: 5,  color: '#a78bfa' },
+      trace_complete:      { label: 'Trace completo',       weight: 5,  color: '#67e8f9' },
+    };
+    proofsEl.innerHTML = Object.entries(PROOF_INFO).map(([key, info]) => {
+      const count = proofData[key] ?? 0;
+      return `
+        <div class="funnel-step">
+          <div style="min-width:150px;font-size:11px;color:#d1d5db;">${esc(info.label)}</div>
+          <div style="font-size:9px;color:#4b5563;min-width:30px;text-align:center;">w=${info.weight}</div>
+          <div class="truth-meter-bar" style="flex:1;margin:0 8px;">
+            <div class="truth-meter-fill" style="width:${count > 0 ? '100%' : '0%'};background:${info.color};"></div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${info.color};min-width:24px;text-align:right;">${count}</div>
+        </div>
+      `;
+    }).join('');
+
+    // ── Truth Status distribution chart ───────────────────────────────────
+    destroyChart('confidence');
+    const confData = [
+      stats.verified  ?? 0,
+      stats.probable  ?? 0,
+      stats.rejected  ?? 0,
+      stats.unknown   ?? 0,
+    ];
+    if (confData.some(v => v > 0)) {
+      charts['confidence'] = new Chart($('chart-confidence'), {
+        type: 'doughnut',
+        data: {
+          labels: ['VERIFIED', 'PROBABLE', 'REJECTED', 'UNKNOWN'],
+          datasets: [{
+            data: confData,
+            backgroundColor: [
+              'rgba(34,197,94,.4)',
+              'rgba(245,158,11,.4)',
+              'rgba(239,68,68,.4)',
+              'rgba(107,114,128,.4)',
+            ],
+            borderColor: ['#22c55e', '#f59e0b', '#ef4444', '#6b7280'],
+            borderWidth: 2,
+            hoverOffset: 6,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { boxWidth: 10, padding: 12, color: '#9ca3af', font: { size: 10 } },
+            },
+          },
+          cutout: '60%',
+        },
+      });
+    } else {
+      const canvasParent = $('chart-confidence')?.parentElement;
+      if (canvasParent) canvasParent.innerHTML =
+        '<div class="empty-state py-10 text-xs">Aguardando candidaturas para gerar gráfico</div>';
+    }
+  } catch (e) {
+    console.error('[TruthEngine]', e);
+    ['truth-funnel', 'truth-errors', 'truth-proofs'].forEach(id => {
+      const el = $(id);
+      if (el) el.innerHTML = '<div class="empty-state py-4 text-red-400 text-xs">Erro ao carregar dados — API offline?</div>';
+    });
+  }
+}
+
+// ══ AGENT MODAL (ATS / CV / ENTREVISTA / SALÁRIO) ════════════════════════════
+function closeAgentModal() { $('agent-modal').style.display = 'none'; }
+
+function openAgentModal(title) {
+  $('agent-modal-title').textContent = title;
+  $('agent-modal-content').innerHTML = '<div class="empty-state py-8"><span class="spinner"></span> Processando com IA...</div>';
+  $('agent-modal').style.display = 'block';
+}
+
+async function openATS(jobId, jobTitle) {
+  openAgentModal(`📊 Análise ATS — ${esc(jobTitle)}`);
+  try {
+    const r = await fetch(`${API}/api/work/ats/${jobId}`, { method: 'POST' });
+    const d = await r.json();
+    if (d.error) { $('agent-modal-content').innerHTML = `<p class="text-red-400 text-sm">${esc(d.error)}</p>`; return; }
+    $('agent-modal-content').innerHTML = `
+      <div class="text-center mb-5">
+        <div class="text-5xl font-black font-mono" style="color:${d.atsScore>=70?'#22c55e':d.atsScore>=50?'#fbbf24':'#ef4444'}">${d.atsScore}</div>
+        <div class="text-xs text-gray-500 mt-1">ATS Score / 100</div>
+      </div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">✅ Keywords Presentes</div>
+      <div class="flex flex-wrap gap-1 mb-4">${(d.presentKeywords||[]).map(k=>`<span class="badge" style="background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3);">${esc(k)}</span>`).join('')}</div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">⚠️ Keywords Faltando</div>
+      <div class="flex flex-wrap gap-1 mb-4">${(d.missingKeywords||[]).map(k=>`<span class="badge" style="background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3);">${esc(k)}</span>`).join('')}</div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">💡 Sugestão de Melhoria</div>
+      <div class="bg-white/5 rounded-lg p-3 text-xs text-gray-300 leading-relaxed mb-3">${esc(d.improvementParagraph||'—')}</div>
+      <div class="text-xs text-blue-300">${esc(d.recommendation||'')}</div>
+    `;
+  } catch { $('agent-modal-content').innerHTML = '<p class="text-red-400 text-sm">Erro — API offline?</p>'; }
+}
+
+async function openResume(jobId, company, jobTitle) {
+  openAgentModal(`📄 CV Adaptado — ${esc(company)}`);
+  try {
+    const r = await fetch(`${API}/api/work/resume/${jobId}`, { method: 'POST' });
+    const d = await r.json();
+    if (d.error) { $('agent-modal-content').innerHTML = `<p class="text-red-400 text-sm">${esc(d.error)}</p>`; return; }
+    $('agent-modal-content').innerHTML = `
+      <div class="text-xs text-green-400 font-semibold mb-3">✅ CV gerado com sucesso!</div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Resumo</div>
+      <div class="bg-white/5 rounded-lg p-3 text-xs text-gray-300 leading-relaxed mb-4">${esc(d.summary||'—')}</div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Mudanças Realizadas</div>
+      <ul class="space-y-1">${(d.keyChanges||[]).map(c=>`<li class="text-xs text-gray-300 flex gap-2"><span class="text-blue-400">→</span> ${esc(c)}</li>`).join('')}</ul>
+      <div class="mt-4 text-xs text-gray-500">Arquivo salvo em: <code class="text-purple-300">${esc(d.filePath||'')}</code></div>
+    `;
+  } catch { $('agent-modal-content').innerHTML = '<p class="text-red-400 text-sm">Erro — API offline?</p>'; }
+}
+
+let interviewSession = null;
+async function openInterview(jobId, company, jobTitle) {
+  openAgentModal(`🎓 Treinar Entrevista — ${esc(company)}`);
+  try {
+    const r = await fetch(`${API}/api/work/interview/prepare`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId, company, role: jobTitle, description: '' }),
+    });
+    const d = await r.json();
+    if (d.error) { $('agent-modal-content').innerHTML = `<p class="text-red-400 text-sm">${esc(d.error)}</p>`; return; }
+    interviewSession = d;
+    renderInterviewSession(d);
+  } catch { $('agent-modal-content').innerHTML = '<p class="text-red-400 text-sm">Erro — API offline?</p>'; }
+}
+
+function renderInterviewSession(session) {
+  $('agent-modal-content').innerHTML = `
+    <div class="text-xs text-gray-500 mb-4">${session.questions?.length ?? 0} perguntas geradas para <strong class="text-white">${esc(session.company)}</strong></div>
+    <div class="space-y-3">
+      ${(session.questions||[]).map((q, i) => `
+        <div class="glass rounded-xl p-4 border border-white/5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs px-2 py-0.5 rounded-full font-semibold" style="background:rgba(96,165,250,.15);color:#93c5fd;">${q.category}</span>
+            <span class="text-xs text-gray-500">#${i+1}</span>
+          </div>
+          <div class="text-sm text-white mb-3 font-medium">${esc(q.question)}</div>
+          <details class="text-xs text-gray-400">
+            <summary class="cursor-pointer text-blue-400 hover:text-blue-300 mb-2">Ver resposta modelo</summary>
+            <div class="bg-white/5 rounded p-3 leading-relaxed mt-2">${esc(q.modelAnswer)}</div>
+            ${q.tips?.length ? `<div class="mt-2 text-yellow-400">💡 ${q.tips.join(' · ')}</div>` : ''}
+          </details>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function openSalary(jobId, company, jobTitle) {
+  openAgentModal(`💰 Conselho Salarial — ${esc(company)}`);
+  try {
+    const r = await fetch(`${API}/api/work/salary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId, company, jobTitle, description: '' }),
+    });
+    const d = await r.json();
+    if (d.error) { $('agent-modal-content').innerHTML = `<p class="text-red-400 text-sm">${esc(d.error)}</p>`; return; }
+    const fmt = n => n ? `R$ ${Number(n).toLocaleString('pt-BR')}` : '—';
+    $('agent-modal-content').innerHTML = `
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold font-mono text-green-400">${fmt(d.recommendedSalary)}</div>
+          <div class="text-xs text-gray-500 mt-1">Salário Recomendado</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-lg font-bold font-mono text-blue-400">${fmt(d.negotiationRange?.min)}</div>
+          <div class="text-xs text-gray-500 mt-1">Mínimo</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-lg font-bold font-mono text-purple-400">${fmt(d.negotiationRange?.max)}</div>
+          <div class="text-xs text-gray-500 mt-1">Máximo</div>
+        </div>
+      </div>
+      <div class="text-center mb-4">
+        <span class="text-xs text-gray-400">Você está no </span>
+        <span class="text-xl font-black font-mono text-yellow-400">${d.marketPercentile ?? 50}º</span>
+        <span class="text-xs text-gray-400"> percentil do mercado</span>
+      </div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">🎯 Melhor momento para negociar</div>
+      <div class="text-xs text-white mb-4">${esc(d.bestMomentToNegotiate||'—')}</div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">💬 Script sugerido</div>
+      <div class="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-sm text-green-300 italic mb-4">"${esc(d.scriptSuggestion||'—')}"</div>
+      <div class="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">📋 Dicas de negociação</div>
+      <ul class="space-y-1">${(d.negotiationTips||[]).map(t=>`<li class="text-xs text-gray-300 flex gap-2"><span class="text-yellow-400">•</span> ${esc(t)}</li>`).join('')}</ul>
+    `;
+  } catch { $('agent-modal-content').innerHTML = '<p class="text-red-400 text-sm">Erro — API offline?</p>'; }
+}
+
+// ══ AUDIT MODAL (Truth Engine per-application) ═══════════════════════════════
+function closeAuditModal() { $('audit-modal').style.display = 'none'; }
+
+async function openAudit(jobId, company, jobTitle) {
+  $('audit-modal-title').textContent = `🔍 Auditoria — ${esc(company)}`;
+  $('audit-modal-subtitle').textContent = esc(jobTitle);
+  $('audit-modal-content').innerHTML = '<div class="empty-state py-8"><span class="spinner"></span> Carregando auditoria...</div>';
+  $('audit-modal').style.display = 'block';
+
+  try {
+    const r = await fetch(`${API}/api/work/applications/${encodeURIComponent(jobId)}/analytics`);
+    const d = await r.json();
+    if (d.error) {
+      $('audit-modal-content').innerHTML = `<p class="text-red-400 text-sm">${esc(d.error)}</p>`;
+      return;
+    }
+
+    const app   = d.application ?? {};
+    const truth = d.truth ?? null;
+    const health = d.health ?? null;
+    const shots  = d.screenshots ?? [];
+
+    // Workflow Status
+    const wfState    = app.application_state ?? app.status ?? '—';
+    // Truth Status
+    const rawConf    = truth?.confidence ?? app.confidence ?? 'UNKNOWN';
+    const confidence = rawConf === 'FAILED' ? 'REJECTED' : rawConf === 'CONFIRMED' ? 'VERIFIED' : rawConf;
+    const confColor  = TRUTH_COLORS[confidence] ?? '#6b7280';
+    const score      = truth?.validationScore ?? app.validation_score ?? 0;
+    const proofs     = truth?.proofs ?? [];
+
+    // Workflow state color
+    const wfColorMap = {
+      submitted:'#34d399', validating:'#34d399', confirmed:'#34d399',
+      failed:'#ef4444', timeout:'#ef4444', blocked:'#f87171', cancelled:'#6b7280',
+      starting:'#22d3ee', opening_job:'#60a5fa',
+    };
+    const wfColor = wfColorMap[wfState] ?? '#9ca3af';
+
+    $('audit-modal-content').innerHTML = `
+      <!-- Row 1: Status cards -->
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="glass rounded-xl p-4 text-center" style="border:1px solid rgba(255,255,255,.08)">
+          <div class="text-xs text-gray-500 mb-1">Workflow Status</div>
+          <div class="text-base font-bold font-mono" style="color:${wfColor}">${esc(wfState.replace(/_/g,' ').toUpperCase())}</div>
+          <div class="text-xs text-gray-600 mt-1">estado do robô</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center" style="border:1px solid ${confColor}40">
+          <div class="text-xs text-gray-500 mb-1">Truth Status</div>
+          <div class="text-base font-bold font-mono" style="color:${confColor}">${esc(confidence)}</div>
+          <div class="text-xs text-gray-600 mt-1">evidência objetiva</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center" style="border:1px solid rgba(255,255,255,.08)">
+          <div class="text-xs text-gray-500 mb-1">Confidence Score</div>
+          <div class="text-2xl font-black font-mono" style="color:${score>=80?'#22c55e':score>=40?'#f59e0b':'#ef4444'}">${score}</div>
+          <div class="text-xs text-gray-600 mt-1">/ 100</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Summary -->
+      ${truth?.summary ? `
+      <div class="bg-white/5 rounded-lg p-3 text-xs text-gray-300 leading-relaxed mb-4">
+        ${esc(truth.summary)}
+      </div>` : ''}
+
+      <!-- Row 3: Proofs -->
+      <div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">Evidências coletadas (${proofs.length})</div>
+      ${proofs.length ? `
+      <div class="space-y-2 mb-4">
+        ${proofs.map(p => `
+          <div class="flex items-start gap-3 bg-white/5 rounded-lg p-3">
+            <div class="text-green-400 font-bold text-xs font-mono min-w-[36px]">+${p.weight}</div>
+            <div class="flex-1">
+              <div class="text-xs font-semibold text-gray-200">${esc(p.type)}</div>
+              <div class="text-xs text-gray-500 mt-0.5">${esc(p.description ?? '')}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>` : `<div class="text-xs text-gray-600 mb-4 italic">Nenhuma prova coletada.</div>`}
+
+      <!-- Row 4: Health -->
+      ${health ? `
+      <div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">Health Report</div>
+      <div class="flex items-center gap-4 bg-white/5 rounded-lg p-3 mb-4">
+        <div class="text-3xl font-black font-mono" style="color:${(health.score??0)>=80?'#22c55e':(health.score??0)>=50?'#f59e0b':'#ef4444'}">${health.score ?? '—'}</div>
+        <div class="text-xs text-gray-400">${esc(health.summary ?? '')}</div>
+      </div>` : ''}
+
+      <!-- Row 5: Screenshots -->
+      ${shots.length ? `
+      <div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">Screenshots (${shots.length})</div>
+      <div class="flex flex-wrap gap-1 mb-4">
+        ${shots.slice(0,8).map(s => `<span class="badge badge-gray text-xs">${esc(s)}</span>`).join('')}
+        ${shots.length > 8 ? `<span class="badge badge-gray">+${shots.length-8} mais</span>` : ''}
+      </div>` : ''}
+
+      <!-- Row 6: Application metadata -->
+      <div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">Metadata</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-white/5 rounded-lg p-2 text-xs"><span class="text-gray-500">Plataforma:</span> <span class="text-gray-300">${esc(app.platform ?? '—')}</span></div>
+        <div class="bg-white/5 rounded-lg p-2 text-xs"><span class="text-gray-500">Data:</span> <span class="text-gray-300">${fmtDate(app.applied_at ?? app.updated_at)}</span></div>
+        <div class="bg-white/5 rounded-lg p-2 text-xs"><span class="text-gray-500">Duração:</span> <span class="text-gray-300">${app.total_duration_ms ? Math.round(app.total_duration_ms/1000)+'s' : '—'}</span></div>
+        <div class="bg-white/5 rounded-lg p-2 text-xs"><span class="text-gray-500">Retries:</span> <span class="text-gray-300">${app.retry_count ?? 0}</span></div>
+        <div class="bg-white/5 rounded-lg p-2 text-xs"><span class="text-gray-500">Trace ID:</span> <span class="font-mono text-purple-300 text-xs">${esc((app.trace_id ?? '—').slice(0,16))}</span></div>
+        <div class="bg-white/5 rounded-lg p-2 text-xs"><span class="text-gray-500">Validação:</span> <span class="text-gray-300">${esc(app.validation_method ?? '—')}</span></div>
+      </div>
+      ${app.error_rca ? `
+      <div class="mt-3 bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-xs text-red-300">
+        <span class="font-semibold">RCA:</span> ${esc(app.error_rca)}
+      </div>` : ''}
+    `;
+  } catch (e) {
+    $('audit-modal-content').innerHTML = `<p class="text-red-400 text-sm">Erro: ${esc(String(e))}</p>`;
+  }
+}
+
+// ══ LEARNING ══════════════════════════════════════════════════════════════════
+async function loadLearning(forceApi = false) {
+  if (forceApi) {
+    $('learning-top-gap-text').textContent = '⏳ Gerando com IA...';
+    $('learning-immediate').innerHTML = '<span class="spinner"></span>';
+  }
+  try {
+    const r = await fetch(`${API}/api/work/learning`);
+    const d = await r.json();
+    if (d.error) { $('learning-top-gap-text').textContent = 'API offline'; return; }
+
+    $('learning-top-gap-text').textContent = d.topGapByImpact || '—';
+    $('learning-weekly').textContent = `Meta semanal: ${d.weeklyGoal || '—'}`;
+
+    const listHtml = items => items?.length
+      ? items.map(s => `<div class="text-sm text-gray-300 flex gap-2 items-start"><span class="text-blue-400 mt-0.5">›</span> ${esc(s)}</div>`).join('')
+      : '<div class="text-gray-600 text-xs">—</div>';
+
+    $('learning-immediate').innerHTML = listHtml(d.immediate);
+    $('learning-midterm').innerHTML   = listHtml(d.midTerm);
+    $('learning-longterm').innerHTML  = listHtml(d.longTerm);
+
+    // Skills map in learning section
+    const smEl = $('learning-skills-map');
+    if (d.gaps?.length) {
+      smEl.innerHTML = d.gaps.slice(0,20).map(g => `
+        <div class="flex items-center gap-2 py-1 border-b border-white/5 text-xs">
+          <span class="font-medium" style="width:120px;color:${g.priority==='alta'?'#fca5a5':g.priority==='media'?'#fbbf24':'#9ca3af'};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${esc(g.skill)}</span>
+          <span class="px-2 py-0.5 rounded-full text-xs" style="background:rgba(239,68,68,${g.priority==='alta'?'.2':g.priority==='media'?'.1':'.05'});color:${g.priority==='alta'?'#fca5a5':g.priority==='media'?'#fbbf24':'#6b7280'};">${g.priority}</span>
+          <span class="text-gray-600">${g.marketDemand}x pedido</span>
+          <span class="flex-1 text-gray-600 truncate hidden md:block">${esc(g.studyResource)}</span>
+        </div>
+      `).join('');
+    } else {
+      smEl.innerHTML = '<div class="empty-state py-4 text-xs">Rode o hunt para popular o mapa de habilidades</div>';
+    }
+  } catch { $('learning-top-gap-text').textContent = 'API offline'; }
+}
+
+// ══ NETWORKING / CRM ══════════════════════════════════════════════════════════
+function openNetworkForm()  { $('network-form-modal').style.display = 'block'; }
+function closeNetworkForm() { $('network-form-modal').style.display = 'none'; }
+
+async function loadCRM() {
+  try {
+    const r    = await fetch(`${API}/api/work/networking/crm`);
+    const list = await r.json();
+    const tbody = $('crm-tbody');
+    if (!list?.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state py-6 text-center text-xs">Nenhum recrutador cadastrado</td></tr>'; return; }
+    const STATUS_COLOR = { ativo:'#22c55e', inativo:'#6b7280', convertido:'#60a5fa', rejeitado:'#ef4444' };
+    tbody.innerHTML = list.map(rec => `
+      <tr class="border-b border-white/5 hover:bg-white/3 transition-colors">
+        <td class="px-4 py-3">
+          <div class="text-xs font-medium text-white">${esc(rec.name)}</div>
+          ${rec.email ? `<div class="text-xs text-gray-500">${esc(rec.email)}</div>` : ''}
+        </td>
+        <td class="px-4 py-3 text-xs text-gray-300">${esc(rec.company)}</td>
+        <td class="px-4 py-3 text-xs text-gray-400">${rec.lastContact ? rec.lastContact.slice(0,10) : '—'}</td>
+        <td class="px-4 py-3">
+          <span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="color:${STATUS_COLOR[rec.status]||'#9ca3af'};background:${STATUS_COLOR[rec.status]||'#9ca3af'}22;">${rec.status}</span>
+        </td>
+        <td class="px-4 py-3 flex gap-1">
+          ${rec.linkedinUrl ? `<a href="${esc(rec.linkedinUrl)}" target="_blank" class="btn btn-ghost text-xs px-2 py-1">↗ LinkedIn</a>` : ''}
+          <button onclick="generateFollowUp('${esc(rec.id)}','${esc(rec.name)}','${esc(rec.company)}')" class="btn btn-ghost text-xs px-2 py-1" title="Gerar follow-up">📩</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch { $('crm-tbody').innerHTML = '<tr><td colspan="5" class="text-red-400 text-xs px-4 py-3">API offline</td></tr>'; }
+}
+
+async function saveRecruiter() {
+  const name    = $('nf-name').value.trim();
+  const company = $('nf-company').value.trim();
+  if (!name || !company) { alert('Nome e empresa são obrigatórios'); return; }
+  try {
+    await fetch(`${API}/api/work/networking/crm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, company,
+        linkedinUrl: $('nf-linkedin').value.trim(),
+        email: $('nf-email').value.trim(),
+        role: $('nf-role').value.trim(),
+        notes: $('nf-notes').value.trim(),
+        interactions: [],
+        status: 'ativo',
+        lastContact: new Date().toISOString(),
+      }),
+    });
+    closeNetworkForm();
+    ['nf-name','nf-company','nf-linkedin','nf-email','nf-role','nf-notes'].forEach(id => { if ($(id)) $(id).value = ''; });
+    await loadCRM();
+  } catch { alert('Erro ao salvar — API offline?'); }
+}
+
+async function generateNetMessage() {
+  const recruiterName = $('net-recruiter-name').value.trim();
+  const company       = $('net-company').value.trim();
+  const jobTitle      = $('net-job-title').value.trim();
+  if (!recruiterName) { alert('Informe o nome do recrutador'); return; }
+  const res = $('net-message-result');
+  res.classList.remove('hidden');
+  res.textContent = '⏳ Gerando mensagem...';
+  try {
+    const r = await fetch(`${API}/api/work/networking/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recruiterName, company, jobTitle }),
+    });
+    const d = await r.json();
+    res.textContent = d.message || 'Erro ao gerar';
+  } catch { res.textContent = 'API offline — mensagem não gerada'; }
+}
+
+async function generateFollowUp(id, name, company) {
+  const msg = await fetch(`${API}/api/work/networking/message`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recruiterName: name, company, jobTitle: 'follow-up' }),
+  }).then(r => r.json()).catch(() => ({ message: '' }));
+  if (msg.message) {
+    prompt(`Follow-up gerado para ${name} @ ${company}:\n\n(Copie a mensagem abaixo)`, msg.message);
+  }
+}
+
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

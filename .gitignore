@@ -1,0 +1,128 @@
+# ==========================================
+# Environment — NEVER commit secrets
+# ==========================================
+.env
+.env.local
+.env.*
+.env.*.local
+
+# Claude local settings
+.claude/settings.local.json
+
+# ==========================================
+# Dependencies
+# ==========================================
+node_modules/
+
+# ==========================================
+# Build / Coverage
+# ==========================================
+dist/
+coverage/
+
+# ==========================================
+# Logs — generated at runtime
+# ==========================================
+logs/
+*.log
+
+# Runtime logs
+memory/logs/
+
+# ==========================================
+# Lead data — NEVER commit real leads
+# ==========================================
+data/leads/*.json
+data/leads/*.csv
+data/leads/validated/
+data/leads/futurecom/
+
+# ==========================================
+# Generated outreach artifacts
+# ==========================================
+data/outreach/
+
+# ==========================================
+# Dashboard / Runtime Metrics
+# ==========================================
+dashboard/metrics.json
+
+# Analytics runtime
+memory/analytics/
+
+# ==========================================
+# Lightweight RAG Runtime Memory
+# ==========================================
+memory/prompts/
+memory/outbound/
+memory/campaigns/
+memory/companies/
+
+# ==========================================
+# SQLite Operational Memory
+# ==========================================
+memory/cache/
+*.sqlite
+*.sqlite-journal
+
+# ==========================================
+# Cache / Exports
+# ==========================================
+cache/
+exports/
+
+# ==========================================
+# Python virtualenv
+# ==========================================
+.venv/
+
+# ==========================================
+# Large binary assets
+# ==========================================
+assets/pdfs/
+assets/leads/
+*.pdf
+
+# ==========================================
+# Backups — local only
+# ==========================================
+backups/
+
+# ==========================================
+# Private usage reports and analytics
+# ==========================================
+usage/
+metrics/
+
+# ==========================================
+# Temp restore artifacts
+# ==========================================
+.pg_restore_tmp.sql
+.git_commit_msg.txt
+
+# ==========================================
+# Temp / OS
+# ==========================================
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+*.txt
+
+# ==========================================
+# LinkedIn session — cookies sensíveis, nunca commitar
+# ==========================================
+vault/imprensa/session/
+.linkedin-profile/
+
+# ==========================================
+# Work runtime data — DB, sessões, binários locais
+# ==========================================
+.vraxia-work/
+packages/work/.vraxia-work/
+
+# ==========================================
+# IDE
+# ==========================================
+.vscode/
+.idea/
