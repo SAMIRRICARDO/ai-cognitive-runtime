@@ -1,7 +1,9 @@
 // packages/work/src/application/ApplicationTruthEngine.ts
 // Evidence-based verification: reads artifacts from the evidence directory
 // and produces a TruthRecord with TruthStatus and ranked proofs.
-// Can be called inline (post-ValidationEngine) or post-hoc from any evidence dir.
+//
+// Public stub — exact proof weights and classification thresholds are defined
+// in the private build. See ADR-002 for the architectural rationale.
 //
 // TruthStatus is independent of ApplicationState:
 //   ApplicationState.confirmed — the workflow completed successfully.
@@ -21,34 +23,9 @@ import {
   NetworkRequest,
 } from './types.js';
 
-// Evidence weights (0-100 scale). network_submit_200 alone reaches VERIFIED_THRESHOLD.
-const PROOF_WEIGHTS: Record<ProofType, number> = {
-  network_submit_200:  80,  // POST 2xx to submit endpoint — strongest signal
-  ats_confirmation:    75,  // external ATS confirmed receipt
-  my_jobs_applied:     70,  // job found under My Jobs > Applied
-  confirmation_text:   45,  // confirmation text detected on page
-  url_redirect:        35,  // redirect to post-apply URL
-  health_check_passed: 20,  // browser health check passed
-  screenshot_exists:   10,  // visual evidence captured
-  trace_complete:      10,  // trace.json contains submit event
-};
-
-// score ≥ VERIFIED_THRESHOLD + hard proof → VERIFIED
-// score ≥ PROBABLE_THRESHOLD              → PROBABLE
-// confirmed workflow + any proof           → PROBABLE (workflow corroborates)
-const VERIFIED_THRESHOLD = 80;
-const PROBABLE_THRESHOLD  = 40;
-
-// Hard proofs: any single one is sufficient to reach VERIFIED (given score ≥ 80)
+// Hard proof types: any single one is sufficient to reach VERIFIED.
+// Exact scoring weights and thresholds defined in private implementation (ADR-002).
 const HARD_PROOFS: ProofType[] = ['network_submit_200', 'my_jobs_applied', 'ats_confirmation'];
-
-// LinkedIn submit endpoint patterns
-const SUBMIT_ENDPOINT_PATTERNS = [
-  /\/voyager\/api\/jobs\/.*\/easyApplyApplications/i,
-  /\/jobs\/applyWithUnifiedProcess/i,
-  /\/jobs\/easyApply/i,
-  /applyApplication/i,
-];
 
 export class ApplicationTruthEngine {
   /**
@@ -68,12 +45,11 @@ export class ApplicationTruthEngine {
 
     // ── Proof 1: existing ValidationResult ────────────────────────────────
     if (opts.validationResult?.confirmed) {
-      const method = opts.validationResult.method;
-      const proofType = this.mapValidationMethod(method);
+      const proofType = this.mapValidationMethod(opts.validationResult.method);
       if (proofType) {
         proofs.push({
           type: proofType,
-          weight: PROOF_WEIGHTS[proofType],
+          weight: this.proofScore(proofType),
           description: opts.validationResult.details,
           evidence: opts.validationResult.evidence ?? {},
           timestamp: now,
@@ -81,7 +57,7 @@ export class ApplicationTruthEngine {
       }
     }
 
-    // ── Proof 2: network.json analysis ────────────────────────────────────
+    // ── Proof 2: network.json — trusts isApplicationRelated set by private engine ──
     const networkFile = path.join(opts.evidenceDir, 'network.json');
     if (fs.existsSync(networkFile)) {
       try {
@@ -89,15 +65,14 @@ export class ApplicationTruthEngine {
         const hit = net.find(r =>
           r.isApplicationRelated &&
           r.method === 'POST' &&
-          r.status >= 200 && r.status < 300 &&
-          SUBMIT_ENDPOINT_PATTERNS.some(p => p.test(r.url))
+          r.status >= 200 && r.status < 300
         );
         if (hit && !proofs.some(p => p.type === 'network_submit_200')) {
           proofs.push({
             type: 'network_submit_200',
-            weight: PROOF_WEIGHTS['network_submit_200'],
+            weight: this.proofScore('network_submit_200'),
             description: `POST ${hit.url.slice(0, 80)} → HTTP ${hit.status}`,
-            evidence: { url: hit.url, status: hit.status, timestamp: hit.timestamp },
+            evidence: { url: hit.url, status: hit.status },
             timestamp: hit.timestamp ?? now,
           });
         }
@@ -112,9 +87,9 @@ export class ApplicationTruthEngine {
         if (manifest.screenshots.length > 0) {
           proofs.push({
             type: 'screenshot_exists',
-            weight: PROOF_WEIGHTS['screenshot_exists'],
+            weight: this.proofScore('screenshot_exists'),
             description: `${manifest.screenshots.length} screenshot(s) captured`,
-            evidence: { count: manifest.screenshots.length, files: manifest.screenshots.slice(0, 5) },
+            evidence: { count: manifest.screenshots.length },
             timestamp: manifest.finishedAt ?? now,
           });
         }
@@ -134,16 +109,16 @@ export class ApplicationTruthEngine {
         if (hasSubmit) {
           proofs.push({
             type: 'trace_complete',
-            weight: PROOF_WEIGHTS['trace_complete'],
+            weight: this.proofScore('trace_complete'),
             description: 'trace.json contains successful submit event',
-            evidence: { traceFile: 'trace.json' },
+            evidence: {},
             timestamp: now,
           });
         }
       } catch { /* corrupt trace — skip */ }
     }
 
-    // ── Proof 5: health check score ───────────────────────────────────────
+    // ── Proof 5: health report ────────────────────────────────────────────
     const healthFile = path.join(opts.evidenceDir, 'health-report.json');
     if (fs.existsSync(healthFile)) {
       try {
@@ -151,7 +126,7 @@ export class ApplicationTruthEngine {
         if ((health.score ?? 0) >= 80) {
           proofs.push({
             type: 'health_check_passed',
-            weight: PROOF_WEIGHTS['health_check_passed'],
+            weight: this.proofScore('health_check_passed'),
             description: `Health check score: ${health.score}/100`,
             evidence: { score: health.score },
             timestamp: now,
@@ -161,7 +136,7 @@ export class ApplicationTruthEngine {
     } else if (opts.healthScore !== undefined && opts.healthScore >= 80) {
       proofs.push({
         type: 'health_check_passed',
-        weight: PROOF_WEIGHTS['health_check_passed'],
+        weight: this.proofScore('health_check_passed'),
         description: `Health check score: ${opts.healthScore}/100`,
         evidence: { score: opts.healthScore },
         timestamp: now,
@@ -169,17 +144,10 @@ export class ApplicationTruthEngine {
     }
 
     // ── Score and TruthStatus ─────────────────────────────────────────────
-    const rawScore = proofs.reduce((sum, p) => sum + p.weight, 0);
-    const validationScore = Math.min(100, rawScore);
-
+    const validationScore = Math.min(100, proofs.reduce((sum, p) => sum + p.weight, 0));
     const hasHardProof = proofs.some(p => HARD_PROOFS.includes(p.type));
-    const confidence = this.classifyTruthStatus(
-      validationScore, hasHardProof, opts.finalState
-    );
-
-    const primaryProof = proofs
-      .slice()
-      .sort((a, b) => b.weight - a.weight)[0];
+    const confidence = this.classify(hasHardProof, proofs, opts.finalState);
+    const primaryProof = proofs.slice().sort((a, b) => b.weight - a.weight)[0];
 
     const record: TruthRecord = {
       jobId:          opts.jobId,
@@ -202,7 +170,7 @@ export class ApplicationTruthEngine {
           'utf-8',
         );
       }
-    } catch { /* não bloquear o caller */ }
+    } catch { /* do not block caller */ }
 
     return record;
   }
@@ -229,24 +197,24 @@ export class ApplicationTruthEngine {
     }
   }
 
-  private classifyTruthStatus(
-    score: number,
+  // Categorical scoring: hard proofs > medium proofs > weak proofs.
+  // Exact values are defined in the private implementation (ADR-002).
+  private proofScore(type: ProofType): number {
+    if (HARD_PROOFS.includes(type)) return 80;
+    if (type === 'confirmation_text' || type === 'url_redirect') return 50;
+    return 15;
+  }
+
+  private classify(
     hasHardProof: boolean,
+    proofs: ApplicationProof[],
     finalState: ApplicationState,
   ): TruthStatus {
-    // Hard proof + score ≥ 80 → VERIFIED
-    if (hasHardProof && score >= VERIFIED_THRESHOLD) return 'VERIFIED';
-
-    // Score ≥ 40 → PROBABLE (includes hard proofs that don't reach 80 alone)
-    if (score >= PROBABLE_THRESHOLD) return 'PROBABLE';
-
-    // Confirmed workflow + any positive evidence: workflow corroborates the evidence
-    if (finalState === 'confirmed' && score > 0) return 'PROBABLE';
-
-    // Explicit workflow failure states → REJECTED
+    if (hasHardProof) return 'VERIFIED';
+    if (proofs.some(p => p.type === 'confirmation_text' || p.type === 'url_redirect')) return 'PROBABLE';
+    // Confirmed workflow + any positive evidence: workflow corroborates the proof
+    if (finalState === 'confirmed' && proofs.length > 0) return 'PROBABLE';
     if (['failed', 'cancelled', 'blocked', 'timeout'].includes(finalState)) return 'REJECTED';
-
-    // No evidence and no failure signal → UNKNOWN
     return 'UNKNOWN';
   }
 

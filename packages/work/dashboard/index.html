@@ -2167,9 +2167,9 @@ async function init() {
   }
 
   // Auto-refresh
-  setInterval(refreshStats, 60_000);
-  setInterval(loadApplications, 90_000);
-  setInterval(loadQuestionnaire, 60_000);
+  setInterval(refreshStats, 45_000);
+  setInterval(loadApplications, 45_000);
+  setInterval(loadQuestionnaire, 45_000);
   setInterval(checkConnection, 30_000);
 
   // Polling adaptativo por db-mtime — detecta mudanças no DB e atualiza em ≤5s
@@ -2204,8 +2204,14 @@ async function init() {
       }
     } catch {}
   }
-  setInterval(checkDbMtime, 5_000);
-  checkDbMtime(); // roda imediatamente no load
+  // Poll rápido (5s) durante hunt ativo, lento (30s) em repouso
+  let _dbMtimeTimer = null;
+  function scheduleDbMtime() {
+    if (_dbMtimeTimer) clearTimeout(_dbMtimeTimer);
+    const interval = huntPolling ? 5_000 : 30_000;
+    _dbMtimeTimer = setTimeout(async () => { await checkDbMtime(); scheduleDbMtime(); }, interval);
+  }
+  checkDbMtime().then(scheduleDbMtime); // roda imediatamente no load
 }
 
 // ══ HOME SECTION ═════════════════════════════════════════════════════════════
