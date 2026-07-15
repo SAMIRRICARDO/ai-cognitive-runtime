@@ -1499,6 +1499,18 @@ let API = window.VRAXIA_API_URL
   || localStorage.getItem('vraxia_api_url')
   || '';  // empty = same origin (local mode)
 
+// Patch global fetch: injeta ngrok-skip-browser-warning quando a URL é ngrok
+;(function() {
+  const _fetch = window.fetch;
+  window.fetch = function(url, opts) {
+    if (typeof url === 'string' && url.includes('ngrok')) {
+      opts = opts ?? {};
+      opts.headers = Object.assign({ 'ngrok-skip-browser-warning': '1' }, opts.headers ?? {});
+    }
+    return _fetch.call(this, url, opts);
+  };
+})();
+
 async function autoDiscoverTunnel() {
   // Se já tem URL configurada e está funcionando, não faz nada
   if (API) {
