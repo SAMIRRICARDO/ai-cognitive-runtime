@@ -147,8 +147,8 @@ export interface CvVersion {
 
 // ── HIE Config ────────────────────────────────────────────────────────────────
 
-export const HIRE_THRESHOLD  = 90;   // minimum HireScore to trigger application
-export const REVIEW_THRESHOLD = 75;  // show in dashboard for manual review
+export const HIRE_THRESHOLD  = 75;   // minimum interviewProbability to trigger application
+export const REVIEW_THRESHOLD = 60;  // show in dashboard for manual review
 
 export const HIE_SCORE_WEIGHTS = {
   technicalFit:    0.35,
