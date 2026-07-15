@@ -1778,10 +1778,12 @@ function showAllApps() {
   lucide.createIcons();
 }
 
-async function loadApplications() {
+async function loadApplications(silent = false) {
   const tbody = $('apps-tbody');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty-state py-8"><span class="spinner"></span></td></tr>';
-  $('show-all-wrapper').style.display = 'none';
+  if (!silent) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state py-8"><span class="spinner"></span></td></tr>';
+    $('show-all-wrapper').style.display = 'none';
+  }
 
   const status   = $('f-status').value;
   const platform = $('f-platform').value;
@@ -2094,7 +2096,7 @@ function showAllQuestionnaire() {
   lucide.createIcons();
 }
 
-async function loadQuestionnaire() {
+async function loadQuestionnaire(silent = false) {
   try {
     let groups;
 
@@ -2453,10 +2455,7 @@ async function init() {
     });
   }
 
-  // Auto-refresh
-  setInterval(refreshStats, 45_000);
-  setInterval(loadApplications, 45_000);
-  setInterval(loadQuestionnaire, 45_000);
+  // Connection health check only — data refreshes handled by checkDbMtime below
   setInterval(checkConnection, 30_000);
 
   // Polling adaptativo por db-mtime — detecta mudanças no DB e atualiza em ≤5s
@@ -2477,10 +2476,10 @@ async function init() {
         stopHuntPolling();
       }
 
-      // Refresh parcial quando DB mudou
+      // Refresh parcial quando DB mudou — silent=true evita flash do spinner
       if (d.dbMtime > _lastMtime) {
         _lastMtime = d.dbMtime;
-        await Promise.allSettled([refreshHireScoreMap(), refreshStats(), loadApplications(), loadTruth()]);
+        await Promise.allSettled([refreshHireScoreMap(), refreshStats(), loadApplications(true), loadTruth()]);
         loadOpportunityRadar();
         loadTopOpportunities();
         loadOpportunityFeed();
@@ -2490,15 +2489,15 @@ async function init() {
       // Refresh questionnaire quando JSONL mudou
       if (d.jsonlMtime > _lastJsonlMtime) {
         _lastJsonlMtime = d.jsonlMtime;
-        loadQuestionnaire();
+        loadQuestionnaire(true);
       }
     } catch {}
   }
-  // Poll rápido (5s) durante hunt ativo, lento (30s) em repouso
+  // Poll rápido (8s) durante hunt ativo, lento (60s) em repouso
   let _dbMtimeTimer = null;
   function scheduleDbMtime() {
     if (_dbMtimeTimer) clearTimeout(_dbMtimeTimer);
-    const interval = huntPolling ? 5_000 : 30_000;
+    const interval = huntPolling ? 8_000 : 60_000;
     _dbMtimeTimer = setTimeout(async () => { await checkDbMtime(); scheduleDbMtime(); }, interval);
   }
   checkDbMtime().then(scheduleDbMtime); // roda imediatamente no load

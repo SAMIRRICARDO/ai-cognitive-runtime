@@ -48,7 +48,7 @@ function resolveCloudflared(): string {
   process.exit(1);
 }
 
-async function startTunnel(): Promise<void> {
+async function startTunnel(restartCount = 0): Promise<void> {
   loadEnv();
   const bin = resolveCloudflared();
   fs.mkdirSync(path.dirname(TUNNEL_URL_FILE), { recursive: true });
@@ -86,21 +86,27 @@ async function startTunnel(): Promise<void> {
   let shutdownRequested = false;
 
   proc.on('exit', (code) => {
-    // Cloudflared no Windows pode sair com código 255 (-1) em desconexões de rede.
-    // Propagar esse código via process.exit(code) causa exit code 255 no concurrently,
-    // derrubando toda a stack start:full. Em vez disso, auto-reiniciar o túnel.
     if (shutdownRequested) {
       process.exit(0);
       return;
     }
-    console.log(`\n[Tunnel] cloudflared encerrou (code ${code ?? 'null'}) — reiniciando em 5s...`);
+    const attempt = (restartCount ?? 0) + 1;
+    const maxRetries = 5;
+    if (attempt > maxRetries) {
+      console.error(`[Tunnel] ${maxRetries} tentativas falharam — encerrando. Reinicie manualmente.`);
+      process.exit(1);
+      return;
+    }
+    // Exponential backoff: 5s, 10s, 20s, 40s, 80s
+    const delay = Math.min(5000 * Math.pow(2, attempt - 1), 120_000);
+    console.log(`\n[Tunnel] cloudflared encerrou (code ${code ?? 'null'}) — tentativa ${attempt}/${maxRetries}, aguardando ${delay / 1000}s...`);
     try { fs.writeFileSync(TUNNEL_URL_FILE, ''); } catch {}
     setTimeout(() => {
-      startTunnel().catch(err => {
+      startTunnel(attempt).catch(err => {
         console.error('[Tunnel] Falha ao reiniciar:', err);
         process.exit(1);
       });
-    }, 5000);
+    }, delay);
   });
 
   process.on('SIGINT', () => {
