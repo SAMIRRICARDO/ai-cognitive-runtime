@@ -331,6 +331,12 @@
       <div class="nav-item" id="nav-feed" onclick="navTo('sec-feed')">
         <i data-lucide="zap" style="width:15px;height:15px"></i> Opportunity Feed
       </div>
+      <div class="nav-item" id="nav-intelligence" onclick="navTo('sec-intelligence')">
+        <i data-lucide="brain" style="width:15px;height:15px"></i> Career Intelligence
+      </div>
+      <div class="nav-item" id="nav-prediction" onclick="navTo('sec-prediction')">
+        <i data-lucide="target" style="width:15px;height:15px"></i> Prediction
+      </div>
 
       <div class="px-4 mt-4 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Dashboard</div>
 
@@ -724,6 +730,126 @@
 
       <div id="feed-list">
         <div class="empty-state py-10"><span class="spinner"></span> Carregando feed...</div>
+      </div>
+    </div>
+
+    <!-- ── SECTION: CAREER INTELLIGENCE ────────────────────────────────────── -->
+    <div id="sec-intelligence" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="live-dot" style="background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Career Intelligence — IR por Dimensão</span>
+        <button onclick="loadCareerIntelligence()" class="ml-auto text-xs text-gray-600 hover:text-gray-400 transition">↻</button>
+      </div>
+      <p class="text-xs text-gray-600 mb-5">Interview Rate real por Twin, Stack, Plataforma e Timing. Gerado a partir de candidaturas + outcomes registrados.</p>
+
+      <div id="intel-uninitialized" class="hidden">
+        <div class="glass rounded-2xl p-8 text-center">
+          <div style="font-size:32px;margin-bottom:12px;">🧠</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Nenhum outcome registrado ainda</div>
+          <div style="font-size:12px;color:#6b7280;max-width:380px;margin:0 auto 16px;">
+            Execute o Hunt e registre resultados das candidaturas com <code style="font-size:11px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;">record-outcome.ts</code> para gerar inteligência de carreira.
+          </div>
+          <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+            <code style="font-size:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:4px 8px;border-radius:4px;color:#a78bfa;">tsx src/cli/record-outcome.ts --list</code>
+            <code style="font-size:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:4px 8px;border-radius:4px;color:#22c55e;">tsx src/cli/record-outcome.ts --job-id X --outcome interview</code>
+          </div>
+        </div>
+      </div>
+
+      <div id="intel-content">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+          <!-- Twins -->
+          <div class="glass rounded-2xl p-5">
+            <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              🧬 Interview Rate por Twin
+            </div>
+            <div id="intel-twins"><div class="empty-state py-4 text-xs">Sem dados</div></div>
+          </div>
+          <!-- Stacks -->
+          <div class="glass rounded-2xl p-5">
+            <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              ⚙️ Interview Rate por Stack
+            </div>
+            <div id="intel-stacks"><div class="empty-state py-4 text-xs">Sem dados</div></div>
+          </div>
+          <!-- Platforms -->
+          <div class="glass rounded-2xl p-5">
+            <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              🌐 Interview Rate por Plataforma
+            </div>
+            <div id="intel-platforms"><div class="empty-state py-4 text-xs">Sem dados</div></div>
+          </div>
+          <!-- Timing -->
+          <div class="glass rounded-2xl p-5">
+            <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+              ⏱ IR por Timing de Aplicação
+            </div>
+            <div id="intel-timing"><div class="empty-state py-4 text-xs">Sem dados</div></div>
+          </div>
+        </div>
+        <!-- Summary bar -->
+        <div id="intel-summary" class="glass rounded-2xl p-5">
+          <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">
+            📊 Resumo Geral
+          </div>
+          <div class="empty-state py-2 text-xs">Carregando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION: PREDICTION VALIDATION ──────────────────────────────────── -->
+    <div id="sec-prediction" class="px-8 py-6 border-b border-white/5">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="live-dot" style="background:#ec4899;box-shadow:0 0 6px rgba(236,72,153,.7)"></span>
+        <span class="text-xs font-mono text-gray-400 uppercase tracking-widest">Prediction Validation — Acurácia do Modelo</span>
+        <button onclick="loadPredictionStats()" class="ml-auto text-xs text-gray-600 hover:text-gray-400 transition">↻</button>
+      </div>
+      <p class="text-xs text-gray-600 mb-5">Compara o IP predito pelo HireScore Engine com os outcomes reais. Valida a qualidade do modelo de decisão.</p>
+
+      <div id="pred-uninitialized" class="hidden">
+        <div class="glass rounded-2xl p-8 text-center">
+          <div style="font-size:32px;margin-bottom:12px;">🎯</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Nenhum resultado registrado ainda</div>
+          <div style="font-size:12px;color:#6b7280;">Registre outcomes das candidaturas para calibrar o modelo de predição.</div>
+        </div>
+      </div>
+
+      <div id="pred-content">
+        <!-- Accuracy gauge + confusion matrix -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+          <div class="glass rounded-2xl p-5 text-center">
+            <div id="pred-accuracy" style="font-size:32px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#22c55e;">—</div>
+            <div style="font-size:10px;color:#6b7280;margin-top:4px;text-transform:uppercase;letter-spacing:.06em;">Acurácia</div>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center">
+            <div id="pred-fp" style="font-size:28px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#f87171;">—</div>
+            <div style="font-size:10px;color:#6b7280;margin-top:4px;">False Positives</div>
+            <div style="font-size:9px;color:#4b5563;">(predito entrevista, não veio)</div>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center">
+            <div id="pred-fn" style="font-size:28px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#fbbf24;">—</div>
+            <div style="font-size:10px;color:#6b7280;margin-top:4px;">False Negatives</div>
+            <div style="font-size:9px;color:#4b5563;">(não predito, mas veio)</div>
+          </div>
+          <div class="glass rounded-2xl p-5 text-center">
+            <div id="pred-total" style="font-size:28px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#93c5fd;">—</div>
+            <div style="font-size:10px;color:#6b7280;margin-top:4px;">Total Avaliados</div>
+          </div>
+        </div>
+        <!-- IP buckets -->
+        <div class="glass rounded-2xl p-5 mb-5">
+          <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+            IR Real por Faixa de IP Predito
+          </div>
+          <div id="pred-buckets"><div class="empty-state py-4 text-xs">Carregando...</div></div>
+        </div>
+        <!-- Recent predictions -->
+        <div class="glass rounded-2xl p-5">
+          <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">
+            Predições Recentes
+          </div>
+          <div id="pred-recent"><div class="empty-state py-4 text-xs">Carregando...</div></div>
+        </div>
       </div>
     </div>
 
@@ -1538,6 +1664,8 @@ function closeSidebar() {
 const SEC_TO_NAV = {
   'sec-radar':         'nav-radar',
   'sec-feed':          'nav-feed',
+  'sec-intelligence':  'nav-intelligence',
+  'sec-prediction':    'nav-prediction',
   'sec-home':          'nav-home',
   'sec-kpis':          'nav-kpis',
   'sec-table':         'nav-table',
@@ -2269,7 +2397,9 @@ async function refreshAll() {
   await loadTruth();
   await loadOpportunityRadar();
   await loadTopOpportunities();
-  loadOpportunityFeed(); // non-blocking — reads only from _hireScoreMap
+  loadOpportunityFeed();      // non-blocking — reads only from _hireScoreMap
+  loadCareerIntelligence();   // non-blocking — shows empty state if no outcomes
+  loadPredictionStats();      // non-blocking — shows empty state if no outcomes
 }
 
 // ══ INIT ═════════════════════════════════════════════════════════════════════
@@ -2372,6 +2502,207 @@ async function init() {
     _dbMtimeTimer = setTimeout(async () => { await checkDbMtime(); scheduleDbMtime(); }, interval);
   }
   checkDbMtime().then(scheduleDbMtime); // roda imediatamente no load
+}
+
+// ══ CAREER INTELLIGENCE ══════════════════════════════════════════════════════
+function renderIRRows(rows, keyField) {
+  if (!rows.length) return '<div class="empty-state py-4 text-xs">Sem dados suficientes</div>';
+  const maxIR = Math.max(...rows.map(r => (r['interview_rate'] ?? 0) * 100), 1);
+  return rows.slice(0, 8).map(r => {
+    const ir    = Math.round((r['interview_rate'] ?? 0) * 100);
+    const apps  = r['total_applications'] ?? 0;
+    const ivs   = r['interviews']         ?? 0;
+    const col   = ir >= 20 ? '#22c55e' : ir >= 10 ? '#fbbf24' : '#ef4444';
+    const pct   = Math.round((ir / maxIR) * 100);
+    const label = String(r[keyField] ?? '—').replace('twin_', '').replace('_', ' ');
+    return `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="min-width:110px;font-size:11px;color:#9ca3af;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;" title="${esc(label)}">${esc(label)}</div>
+        <div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;">
+          <div style="width:${pct}%;height:100%;background:${col};border-radius:3px;transition:width .5s;"></div>
+        </div>
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:${col};min-width:34px;text-align:right;">${ir}%</div>
+        <div style="font-size:10px;color:#4b5563;min-width:52px;text-align:right;">${ivs}/${apps}</div>
+      </div>`;
+  }).join('');
+}
+
+async function loadCareerIntelligence() {
+  const contentEl  = $('intel-content');
+  const uninitEl   = $('intel-uninitialized');
+  if (!contentEl) return;
+
+  try {
+    const r    = await fetch(`${API}/api/work/career-intelligence`, { signal: AbortSignal.timeout(6000) });
+    const data = await r.json();
+
+    if (!data.initialized) {
+      if (uninitEl)   uninitEl.classList.remove('hidden');
+      if (contentEl)  contentEl.classList.add('hidden');
+      return;
+    }
+    if (uninitEl)  uninitEl.classList.add('hidden');
+    contentEl.classList.remove('hidden');
+
+    $('intel-twins').innerHTML     = renderIRRows(data.twins     ?? [], 'pattern_key');
+    $('intel-stacks').innerHTML    = renderIRRows(data.stacks    ?? [], 'pattern_key');
+    $('intel-platforms').innerHTML = renderIRRows(data.platforms ?? [], 'pattern_key');
+
+    // Timing (buckets from hire_scores)
+    const timing = data.timing ?? [];
+    if (timing.length) {
+      const maxT = Math.max(...timing.map(t => Number(t['total'] ?? 0)), 1);
+      $('intel-timing').innerHTML = timing.map(t => {
+        const ir  = Math.round(Number(t['interview_rate'] ?? 0));
+        const tot = Number(t['total'] ?? 0);
+        const col = ir >= 25 ? '#22c55e' : ir >= 12 ? '#fbbf24' : '#ef4444';
+        const pct = Math.round((tot / maxT) * 100);
+        return `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="min-width:90px;font-size:11px;color:#9ca3af;">${esc(String(t['bucket'] ?? ''))}</div>
+            <div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;">
+              <div style="width:${pct}%;height:100%;background:${col};border-radius:3px;"></div>
+            </div>
+            <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:${col};min-width:34px;text-align:right;">${ir}%</div>
+            <div style="font-size:10px;color:#4b5563;min-width:38px;text-align:right;">n=${tot}</div>
+          </div>`;
+      }).join('');
+    } else {
+      $('intel-timing').innerHTML = '<div class="empty-state py-4 text-xs">Sem dados de timing</div>';
+    }
+
+    // Summary
+    const s  = data.summary ?? {};
+    const ir = s.overallIR ?? 0;
+    const irCol = ir >= 20 ? '#22c55e' : ir >= 10 ? '#fbbf24' : '#ef4444';
+    $('intel-summary').innerHTML = `
+      <div style="font-size:10px;color:#6b7280;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">
+        📊 Resumo Geral
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="text-align:center;min-width:80px;">
+          <div style="font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;color:${irCol};">${ir}%</div>
+          <div style="font-size:10px;color:#6b7280;margin-top:2px;">IR Geral</div>
+        </div>
+        <div style="text-align:center;min-width:80px;">
+          <div style="font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#93c5fd;">${s.totalApplied ?? 0}</div>
+          <div style="font-size:10px;color:#6b7280;margin-top:2px;">Aplicadas</div>
+        </div>
+        <div style="text-align:center;min-width:80px;">
+          <div style="font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;color:#4ade80;">${s.totalInterviews ?? 0}</div>
+          <div style="font-size:10px;color:#6b7280;margin-top:2px;">Entrevistas</div>
+        </div>
+        <div style="flex:1;min-width:200px;align-self:center;">
+          <div style="font-size:11px;color:#6b7280;line-height:1.6;">
+            ${ir >= 20 ? '✅ Excelente IR — modelo bem calibrado para seu perfil.' :
+              ir >= 10 ? '⚡ IR médio — registre mais outcomes para calibrar melhor.' :
+              ir >  0  ? '⚠️ IR abaixo do esperado — revise twins e targeting.' :
+                         '📊 Registre outcomes de candidaturas para gerar dados.'}
+          </div>
+        </div>
+      </div>`;
+  } catch (e) {
+    if (contentEl) contentEl.innerHTML = '<div class="empty-state text-red-400 py-4 text-xs">Erro ao carregar inteligência</div>';
+  }
+}
+
+// ══ PREDICTION STATS ══════════════════════════════════════════════════════════
+async function loadPredictionStats() {
+  const contentEl = $('pred-content');
+  const uninitEl  = $('pred-uninitialized');
+  if (!contentEl) return;
+
+  try {
+    const r    = await fetch(`${API}/api/work/prediction-stats`, { signal: AbortSignal.timeout(6000) });
+    const data = await r.json();
+
+    if (!data.initialized) {
+      if (uninitEl)  uninitEl.classList.remove('hidden');
+      contentEl.classList.add('hidden');
+      return;
+    }
+    if (uninitEl) uninitEl.classList.add('hidden');
+    contentEl.classList.remove('hidden');
+
+    // Header stats
+    const acc    = data.accuracy ?? 0;
+    const accCol = acc >= 80 ? '#22c55e' : acc >= 60 ? '#fbbf24' : '#ef4444';
+    const fpRate = data.falsePositiveRate ?? 0;
+    const fnRate = data.falseNegativeRate ?? 0;
+
+    const accEl = $('pred-accuracy'); if (accEl) { accEl.textContent = acc + '%'; accEl.style.color = accCol; }
+    const fpEl  = $('pred-fp');       if (fpEl)  { fpEl.textContent  = fpRate + '%'; }
+    const fnEl  = $('pred-fn');       if (fnEl)  { fnEl.textContent  = fnRate + '%'; }
+    const totEl = $('pred-total');    if (totEl) { totEl.textContent = String(data.total ?? 0); }
+
+    // Buckets
+    const bucketsEl = $('pred-buckets');
+    if (bucketsEl) {
+      const buckets = data.buckets ?? [];
+      if (buckets.length) {
+        bucketsEl.innerHTML = `
+          <div style="display:grid;grid-template-columns:80px 1fr 50px 60px 60px;gap:6px;font-size:9px;color:#4b5563;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding:0 2px;">
+            <div>Faixa IP</div><div>IR Real (barra)</div><div style="text-align:right">IR%</div><div style="text-align:right">N</div><div style="text-align:right">Entrevistas</div>
+          </div>
+          ${buckets.map(b => {
+            const ir  = b.actualIR ?? 0;
+            const col = ir >= 25 ? '#22c55e' : ir >= 10 ? '#fbbf24' : '#ef4444';
+            return `
+              <div style="display:grid;grid-template-columns:80px 1fr 50px 60px 60px;gap:6px;align-items:center;margin-bottom:7px;">
+                <div style="font-size:11px;color:#9ca3af;font-family:'JetBrains Mono',monospace;">${esc(b.range)}</div>
+                <div style="height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;">
+                  <div style="width:${ir}%;height:100%;background:${col};border-radius:3px;max-width:100%;"></div>
+                </div>
+                <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:${col};text-align:right;">${ir}%</div>
+                <div style="font-size:11px;color:#4b5563;text-align:right;">${b.count ?? 0}</div>
+                <div style="font-size:11px;color:#4ade80;text-align:right;">${b.interviews ?? 0}</div>
+              </div>`;
+          }).join('')}`;
+      } else {
+        bucketsEl.innerHTML = '<div class="empty-state py-4 text-xs">Sem dados</div>';
+      }
+    }
+
+    // Recent predictions table
+    const recentEl = $('pred-recent');
+    if (recentEl) {
+      const recent = data.recent ?? [];
+      if (recent.length) {
+        recentEl.innerHTML = `
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead>
+              <tr style="color:#4b5563;font-size:9px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid rgba(255,255,255,.06);">
+                <th style="text-align:left;padding:4px 6px;">Empresa</th>
+                <th style="text-align:left;padding:4px 6px;">Vaga</th>
+                <th style="text-align:center;padding:4px 6px;">IP Pred.</th>
+                <th style="text-align:center;padding:4px 6px;">Outcome</th>
+                <th style="text-align:center;padding:4px 6px;">Correto?</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recent.map(p => {
+                const correct  = (p.predictedInterview && p.gotInterview) || (!p.predictedInterview && !p.gotInterview);
+                const ipCol    = p.prediction >= 90 ? '#22c55e' : p.prediction >= 75 ? '#fbbf24' : '#9ca3af';
+                const outcome  = String(p.outcome ?? '');
+                const outCol   = ['interview','offer','hired'].includes(outcome) ? '#4ade80' : '#6b7280';
+                return `
+                  <tr style="border-bottom:1px solid rgba(255,255,255,.03);">
+                    <td style="padding:5px 6px;color:#9ca3af;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.company ?? '')}</td>
+                    <td style="padding:5px 6px;color:#d1d5db;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.jobTitle ?? '')}</td>
+                    <td style="padding:5px 6px;text-align:center;font-family:'JetBrains Mono',monospace;color:${ipCol};">${p.prediction}%</td>
+                    <td style="padding:5px 6px;text-align:center;color:${outCol};">${esc(outcome)}</td>
+                    <td style="padding:5px 6px;text-align:center;">${correct ? '<span style="color:#22c55e">✓</span>' : '<span style="color:#ef4444">✗</span>'}</td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>`;
+      } else {
+        recentEl.innerHTML = '<div class="empty-state py-4 text-xs">Nenhuma predição registrada</div>';
+      }
+    }
+  } catch (e) {
+    if (contentEl) contentEl.innerHTML = '<div class="empty-state text-red-400 py-4 text-xs">Erro ao carregar predições</div>';
+  }
 }
 
 // ══ OPPORTUNITY RADAR ════════════════════════════════════════════════════════

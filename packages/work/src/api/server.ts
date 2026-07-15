@@ -1397,7 +1397,18 @@ app.get('/api/work/opportunity-scores', async (req: Request, res: Response) => {
 // Aggregates learning_patterns for Career Intelligence page.
 // Returns interview rates by twin / stack / platform / role, plus timing from hire_scores.
 app.get('/api/work/career-intelligence', async (_req: Request, res: Response) => {
+  const empty = { twins: [], stacks: [], platforms: [], roles: [], timing: [],
+    summary: { totalApplied: 0, totalInterviews: 0, overallIR: 0 }, initialized: false };
   try {
+    // Gracefully handle missing tables (tables created on first hunt run)
+    const tableExists = await withDb(db => {
+      try {
+        dbQuery(db, `SELECT 1 FROM learning_patterns LIMIT 1`);
+        return true;
+      } catch { return false; }
+    });
+    if (!tableExists) { res.json(empty); return; }
+
     const patterns = await withDb(db => dbQuery(db, `
       SELECT pattern_type, pattern_key, total_applications, interviews,
              rejections, no_response, offers, interview_rate, avg_hire_score, last_updated
@@ -1412,29 +1423,33 @@ app.get('/api/work/career-intelligence', async (_req: Request, res: Response) =>
     }
 
     // Timing buckets from hire_scores × interview_outcomes
-    const timing = await withDb(db => dbQuery(db, `
-      SELECT
-        CASE
-          WHEN hs.publication_age_days < 1   THEN '< 24h'
-          WHEN hs.publication_age_days <= 3  THEN '1-3 dias'
-          WHEN hs.publication_age_days <= 7  THEN '3-7 dias'
-          WHEN hs.publication_age_days <= 14 THEN '1-2 semanas'
-          ELSE '> 2 semanas'
-        END AS bucket,
-        COUNT(*) AS total,
-        SUM(CASE WHEN io.outcome IN ('interview','offer','hired') THEN 1 ELSE 0 END) AS interviews,
-        AVG(CASE WHEN io.outcome IN ('interview','offer','hired') THEN 100.0 ELSE 0 END) AS interview_rate,
-        MIN(hs.publication_age_days) AS min_age
-      FROM hire_scores hs
-      LEFT JOIN interview_outcomes io ON hs.job_id = io.job_id
-      WHERE hs.publication_age_days IS NOT NULL
-      GROUP BY bucket
-      ORDER BY min_age
-    `)) ?? [];
+    const timing = await withDb(db => {
+      try {
+        return dbQuery(db, `
+          SELECT
+            CASE
+              WHEN hs.publication_age_days < 1   THEN '< 24h'
+              WHEN hs.publication_age_days <= 3  THEN '1-3 dias'
+              WHEN hs.publication_age_days <= 7  THEN '3-7 dias'
+              WHEN hs.publication_age_days <= 14 THEN '1-2 semanas'
+              ELSE '> 2 semanas'
+            END AS bucket,
+            COUNT(*) AS total,
+            SUM(CASE WHEN io.outcome IN ('interview','offer','hired') THEN 1 ELSE 0 END) AS interviews,
+            AVG(CASE WHEN io.outcome IN ('interview','offer','hired') THEN 100.0 ELSE 0 END) AS interview_rate,
+            MIN(hs.publication_age_days) AS min_age
+          FROM hire_scores hs
+          LEFT JOIN interview_outcomes io ON hs.job_id = io.job_id
+          WHERE hs.publication_age_days IS NOT NULL
+          GROUP BY bucket
+          ORDER BY min_age
+        `);
+      } catch { return []; }
+    }) ?? [];
 
     const [totalApplied, totalInterviews] = await withDb(db => {
       const a = dbQuery(db, `SELECT COUNT(*) as c FROM job_applications WHERE status='applied'`);
-      const i = dbQuery(db, `SELECT COUNT(*) as c FROM interview_outcomes WHERE outcome IN ('interview','offer','hired')`);
+      const i = (() => { try { return dbQuery(db, `SELECT COUNT(*) as c FROM interview_outcomes WHERE outcome IN ('interview','offer','hired')`); } catch { return [{c:0}]; } })();
       return [(a[0]?.['c'] as number) ?? 0, (i[0]?.['c'] as number) ?? 0];
     }) ?? [0, 0];
 
@@ -1447,9 +1462,10 @@ app.get('/api/work/career-intelligence', async (_req: Request, res: Response) =>
       roles:     byType['role']     ?? [],
       timing,
       summary: { totalApplied, totalInterviews, overallIR },
+      initialized: true,
     });
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    res.json(empty); // never 500 — return empty so dashboard shows "run hunt first"
   }
 });
 
@@ -1476,7 +1492,18 @@ app.get('/api/work/decisions', (req: Request, res: Response) => {
 // Prediction Validation: compares predicted IP vs actual outcomes.
 // Prediction correct if (IP>=75 && got interview) or (IP<75 && no interview).
 app.get('/api/work/prediction-stats', async (_req: Request, res: Response) => {
+  const emptyResponse = {
+    total: 0, correct: 0, falsePositives: 0, falseNegatives: 0, trueNegatives: 0,
+    accuracy: 0, falsePositiveRate: 0, falseNegativeRate: 0,
+    recent: [], buckets: [], initialized: false,
+  };
   try {
+    const tableExists = await withDb(db => {
+      try { dbQuery(db, `SELECT 1 FROM interview_outcomes LIMIT 1`); return true; }
+      catch { return false; }
+    });
+    if (!tableExists) { res.json(emptyResponse); return; }
+
     const outcomes = await withDb(db => dbQuery(db, `
       SELECT outcome, interview_probability_at_apply, hire_score_at_apply,
              response_time_days, twin_id, company, job_title, created_at
@@ -1538,9 +1565,10 @@ app.get('/api/work/prediction-stats', async (_req: Request, res: Response) => {
       falseNegativeRate: total > 0 ? Math.round((falseNeg / total) * 100) : 0,
       recent,
       buckets,
+      initialized: total > 0,
     });
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    res.json(emptyResponse); // never 500
   }
 });
 
