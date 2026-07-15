@@ -59,7 +59,7 @@ export interface HireScore {
 
   interviewProbability: number;  // 0–100 — primary KPI
   hireScore: number;             // 0–100 — composite gate score
-  action: ApplyAction;           // APPLY if hireScore >= HIRE_THRESHOLD
+  action: ApplyAction;           // APPLY if interviewProbability >= HIRE_THRESHOLD
   reasoning: string;
   keyStrengths: string[];
   keyWeaknesses: string[];

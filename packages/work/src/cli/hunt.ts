@@ -455,16 +455,19 @@ async function processJob(
     id: job.id,
     job,
     score: toJobScore(hireScore) as unknown as JobScore,
-    status: (hireScore.action === 'SKIP' ? 'filtered_out' : 'queued') as ApplicationStatus,
+    // REVIEW and SKIP both resolve to 'filtered_out': no automatic submission for either.
+    // score_action retains 'REVIEW' or 'SKIP' so the dashboard can distinguish them.
+    status: 'filtered_out' as ApplicationStatus,
   });
 
   if (hireScore.action !== 'APPLY') {
     printWhyNot(hireScore);
     if (hireScore.action === 'REVIEW') printHowToWin(hireScore);
-    if (hireScore.action === 'SKIP') {
-      tracker.updateState(job.id, 'cancelled', { notes: hireScore.reasoning });
-    }
-    console.log(`  ${hireScore.action === 'SKIP' ? 'Pulando.' : 'Marcado para revisao manual.'}`);
+    tracker.updateState(job.id, 'cancelled', {
+      notes: hireScore.reasoning,
+      reasonFilter: hireScore.reasoning,
+    });
+    console.log(`  ${hireScore.action === 'SKIP' ? 'Pulando.' : 'Marcado para revisao manual (score_action=REVIEW).'}`);
     return false;
   }
 
@@ -711,22 +714,23 @@ async function main() {
       const hireScore = await scoreViaHIE(job, agents);
 
       // Upsert is safe here: job was not terminal (checked above via alreadyApplied).
+      // REVIEW and SKIP both map to 'filtered_out': neither will receive an automatic submission.
+      // score_action is stored as 'REVIEW'|'SKIP'|'APPLY' so dashboard can filter correctly.
       tracker.upsert({
         id: job.id,
         job,
         score: toJobScore(hireScore) as unknown as JobScore,
-        status: hireScore.action === 'SKIP' ? 'filtered_out' : 'queued',
+        status: hireScore.action === 'APPLY' ? 'queued' : 'filtered_out',
       });
 
       if (hireScore.action !== 'APPLY') {
         printWhyNot(hireScore);
         if (hireScore.action === 'REVIEW') printHowToWin(hireScore);
-        tracker.updateState(job.id, hireScore.action === 'SKIP' ? 'cancelled' : 'queued', {
+        tracker.updateState(job.id, 'cancelled', {
           notes: hireScore.reasoning,
-          reasonApply: undefined,
-          reasonFilter: hireScore.action === 'SKIP' ? hireScore.reasoning : undefined,
+          reasonFilter: hireScore.reasoning,
         });
-        console.log(`  ${hireScore.action === 'SKIP' ? 'Pulando.' : 'Marcado para revisao manual.'}`);
+        console.log(`  ${hireScore.action === 'SKIP' ? 'Pulando.' : 'Marcado para revisao manual (score_action=REVIEW).'}`);
         continue;
       }
 

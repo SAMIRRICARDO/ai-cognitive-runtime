@@ -116,9 +116,9 @@ Return ONLY this JSON:
 
       return {
         technicalFit:    this.clamp(parsed.technicalFit, 0, 100),
-        salaryFit:       this.clamp(parsed.salaryFit ?? 75, 0, 100),
+        salaryFit:       this.clamp(parsed.salaryFit ?? 50, 0, 100),   // 50=neutral when unknown
         seniorityFit:    this.clamp(parsed.seniorityFit, 0, 100),
-        locationFit:     this.clamp(parsed.locationFit ?? 80, 0, 100),
+        locationFit:     this.clamp(parsed.locationFit ?? 50, 0, 100), // 50=neutral when unknown
         atsProbability:  this.clamp(parsed.atsProbability, 0, 100),
         competitionLevel: this.validCompetition(parsed.competitionLevel),
         publicationAgeDays: pubAge,
@@ -205,7 +205,7 @@ Return ONLY this JSON:
   // ── Historical scoring ────────────────────────────────────────────────────
 
   private computeHistoricalScore(patterns: LearningPattern[], twin: ProfessionalTwin): number {
-    if (!patterns.length) return 50; // neutral when no history
+    if (!patterns.length) return 30; // conservative when no learning history yet
 
     // Weight patterns: twin-specific patterns are most informative
     const twinPattern = patterns.find(p => p.patternType === 'twin' && p.patternKey === twin.id);
@@ -227,7 +227,7 @@ Return ONLY this JSON:
   // ── Utilities ─────────────────────────────────────────────────────────────
 
   private estimatePublicationAge(postedAt?: string): number {
-    if (!postedAt) return 3;
+    if (!postedAt) return 5; // conservative: unknown age = neutral (0 pubPenalty), not a bonus
     try {
       const ms = Date.now() - new Date(postedAt).getTime();
       return Math.max(0, Math.round(ms / 86_400_000));
@@ -246,18 +246,19 @@ Return ONLY this JSON:
   private fallbackRaw(job: Job, twin: ProfessionalTwin, pubAge: number): HireScoreRaw {
     const desc = `${job.title} ${job.description}`.toLowerCase();
     const hits = twin.atsKeywords.filter(k => desc.includes(k.toLowerCase())).length;
-    const atsPct = Math.min(100, Math.round((hits / Math.max(1, twin.atsKeywords.length)) * 200));
+    // Linear scaling ×100: 50% coverage = 50 score (conservative fallback, not inflated)
+    const atsPct = Math.min(100, Math.round((hits / Math.max(1, twin.atsKeywords.length)) * 100));
 
     const techHit = twin.primaryStack.filter(s => desc.includes(s.toLowerCase())).length;
-    const techFit = Math.min(100, Math.round((techHit / Math.max(1, twin.primaryStack.length)) * 140));
+    const techFit = Math.min(100, Math.round((techHit / Math.max(1, twin.primaryStack.length)) * 100));
 
     return {
       technicalFit:     techFit,
-      salaryFit:        75,
+      salaryFit:        50,  // neutral when LLM unavailable
       seniorityFit:     70,
-      locationFit:      80,
+      locationFit:      50,  // neutral when LLM unavailable
       atsProbability:   atsPct,
-      competitionLevel: 'medium',
+      competitionLevel: 'high', // conservative: assume high competition in BR tech market
       publicationAgeDays: pubAge,
       reasoning: 'Scored via keyword matching fallback (LLM unavailable)',
       keyStrengths: twin.primaryStack.slice(0, 3),
