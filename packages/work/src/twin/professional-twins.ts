@@ -27,16 +27,30 @@ Deep expertise in TypeScript/Node.js + Python for AI infrastructure.`,
       'LangChain', 'pgvector', 'Redis', 'PostgreSQL', 'Docker',
       'RAG pipelines', 'multi-agent orchestration', 'prompt engineering',
       'vector embeddings', 'semantic search', 'token optimization',
+      'PyTorch', 'TensorFlow', 'scikit-learn', 'Hugging Face', 'MLOps',
+      'machine learning', 'deep learning', 'model deployment', 'MLflow',
+      'data science', 'LLM fine-tuning', 'inference optimization',
     ],
     atsKeywords: [
+      // LLM / GenAI
       'LLM', 'RAG', 'multi-agent', 'Claude', 'OpenAI', 'GPT', 'embeddings',
       'vector database', 'pgvector', 'generative AI', 'NLP', 'transformer',
       'AI Engineer', 'LLM Engineer', 'AI infrastructure', 'Anthropic',
       'prompt engineering', 'AI systems', 'agent', 'agentic', 'fine-tuning',
+      'GenAI', 'AI developer', 'AI lead', 'applied AI', 'AI product',
+      // ML tradicional
+      'machine learning', 'deep learning', 'neural network', 'PyTorch', 'TensorFlow',
+      'scikit-learn', 'MLOps', 'Databricks', 'Hugging Face', 'Keras', 'MLflow',
+      'Vertex AI', 'SageMaker', 'feature engineering', 'model training',
+      'model inference', 'model deployment', 'computer vision', 'data science',
+      'ML Engineer', 'AI researcher', 'inteligência artificial',
+      'artificial intelligence', 'AI', 'IA',
     ],
     targetRoles: [
       'AI Engineer', 'LLM Engineer', 'GenAI Engineer', 'ML Engineer',
       'AI Developer', 'AI Infrastructure Engineer', 'Applied AI Engineer',
+      'Machine Learning Engineer', 'AI Researcher', 'AI Lead',
+      'AI Architect', 'Data Scientist', 'MLOps Engineer',
     ],
     targetSeniority: 'senior',
     targetSalary: 14000,
@@ -313,6 +327,38 @@ export class ProfessionalTwinsStore {
     };
     addIOCol('outcome_state    TEXT',   'DEFAULT NULL');
     addIOCol('current_state    TEXT',   'DEFAULT NULL');
+
+    // ── 2026-07: Expand twin_ai_engineer to cover ML/traditional AI ecosystem ──
+    // Only runs when PyTorch is not yet in ats_keywords (idempotent)
+    try {
+      const expandedKeywords = JSON.stringify([
+        'LLM', 'RAG', 'multi-agent', 'Claude', 'OpenAI', 'GPT', 'embeddings',
+        'vector database', 'pgvector', 'generative AI', 'NLP', 'transformer',
+        'AI Engineer', 'LLM Engineer', 'AI infrastructure', 'Anthropic',
+        'prompt engineering', 'AI systems', 'agent', 'agentic', 'fine-tuning',
+        'GenAI', 'AI developer', 'AI lead', 'applied AI', 'AI product',
+        'machine learning', 'deep learning', 'neural network', 'PyTorch', 'TensorFlow',
+        'scikit-learn', 'MLOps', 'Databricks', 'Hugging Face', 'Keras', 'MLflow',
+        'Vertex AI', 'SageMaker', 'feature engineering', 'model training',
+        'model inference', 'model deployment', 'computer vision', 'data science',
+        'ML Engineer', 'AI researcher', 'inteligência artificial',
+        'artificial intelligence', 'AI', 'IA',
+      ]);
+      const expandedSkills = JSON.stringify([
+        'TypeScript', 'Node.js', 'Python', 'Anthropic SDK', 'OpenAI API',
+        'LangChain', 'pgvector', 'Redis', 'PostgreSQL', 'Docker',
+        'RAG pipelines', 'multi-agent orchestration', 'prompt engineering',
+        'vector embeddings', 'semantic search', 'token optimization',
+        'PyTorch', 'TensorFlow', 'scikit-learn', 'Hugging Face', 'MLOps',
+        'machine learning', 'deep learning', 'model deployment', 'MLflow',
+        'data science', 'LLM fine-tuning', 'inference optimization',
+      ]);
+      this.db.run(
+        `UPDATE professional_twins SET ats_keywords = ?, skills = ?, updated_at = ?
+         WHERE id = 'twin_ai_engineer' AND ats_keywords NOT LIKE '%PyTorch%'`,
+        [expandedKeywords, expandedSkills, new Date().toISOString()],
+      );
+    } catch { /* silently skip if table not created yet */ }
 
     this.persist();
   }

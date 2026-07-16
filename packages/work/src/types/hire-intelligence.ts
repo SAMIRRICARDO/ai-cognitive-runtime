@@ -196,9 +196,10 @@ export const HIE_SCORE_WEIGHTS = {
 } as const;
 
 // Competition penalty applied to interviewProbability (not hireScore)
+// Reduzido em 2026-07: penalidade high era -12, derrubava vagas de IA abaixo do threshold
 export const COMPETITION_PENALTY: Record<CompetitionLevel, number> = {
   low:       0,
-  medium:   -5,
-  high:    -12,
-  very_high: -20,
+  medium:   -3,
+  high:     -6,
+  very_high: -10,
 };

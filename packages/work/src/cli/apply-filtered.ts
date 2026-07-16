@@ -47,7 +47,52 @@ const DECISIONS  = path.join(WORK_DIR, 'decisions.jsonl');
 const RESUME_PATH = process.env.RESUME_PATH ?? path.resolve(process.cwd(), 'resume.pdf');
 
 // Vagas excluídas por razões éticas/elegibilidade — não candidatar
-const EXCLUDED_TITLES = ['apenas mulheres', 'only women', 'exclusivo pcd', 'exclusivo para pcd', 'exclusivo para pessoas com tea'];
+const EXCLUDED_TITLES = [
+  'apenas mulheres', 'only women', 'exclusivo pcd', 'exclusivo para pcd',
+  'exclusivo para pessoas com tea', 'estagiário', 'estagiaria', 'estágio',
+  'estagio', 'trainee', 'bolsista',
+];
+
+// Vagas de IA sempre passam — ignoram o threshold de IP
+// Nota: "\bia\b" detecta "IA" como palavra isolada sem falso positivo em "engenharia"
+const AI_FORCE_PATTERNS = [
+  /\bia\b/,
+  /intelig[eê]ncia artificial/,
+  /artificial intelligence/,
+  /ai engineer/,
+  /ai developer/,
+  /ai lead/,
+  /ai architect/,
+  /ai researcher/,
+  /ai product/,
+  /applied ai/,
+  /ai software/,
+  /ai systems/,
+  /ai infrastructure/,
+  /machine learning/,
+  /\bml engineer/,
+  /\bmlops\b/,
+  /ml researcher/,
+  /deep learning/,
+  /\bllm\b/,
+  /genai/,
+  /generative ai/,
+  /\bnlp\b/,
+  /computer vision/,
+  /data scientist/,
+  /data science/,
+  /engenheiro de ia/,
+  /desenvolvedor de ia/,
+  /desenvolvedor ia/,
+  /especialista em ia/,
+  /foco em ia/,
+  /especialista ia/,
+];
+
+function isAIJob(title: string): boolean {
+  const t = title.toLowerCase();
+  return AI_FORCE_PATTERNS.some(re => re.test(t));
+}
 
 interface DecisionRecord {
   jobId: string;
@@ -74,13 +119,21 @@ function loadQualified(minIp: number): DecisionRecord[] {
 
   return [...byId.values()]
     .filter(d => {
-      if (d.action === 'APPLY') return false; // já foi aprovado antes
-      if (d.interviewProbability < minIp && d.hireScore < minIp) return false;
+      if (d.action === 'APPLY') return false; // já foi aplicado
       const titleLower = d.jobTitle.toLowerCase();
       if (EXCLUDED_TITLES.some(ex => titleLower.includes(ex))) return false;
+      // Vagas de IA passam sempre — independente do score
+      if (isAIJob(d.jobTitle)) return true;
+      if (d.interviewProbability < minIp && d.hireScore < minIp) return false;
       return true;
     })
-    .sort((a, b) => b.interviewProbability - a.interviewProbability);
+    .sort((a, b) => {
+      // Vagas de IA ficam no topo da fila
+      const aAI = isAIJob(a.jobTitle) ? 1 : 0;
+      const bAI = isAIJob(b.jobTitle) ? 1 : 0;
+      if (bAI !== aAI) return bAI - aAI;
+      return b.interviewProbability - a.interviewProbability;
+    });
 }
 
 // ── Reset de estado no DB ──────────────────────────────────────────────────────
@@ -221,7 +274,8 @@ async function main() {
       if (totalApplied >= maxApply) break;
 
       const isLinkedIn = !d.jobId.startsWith('catho_');
-      console.log(`\n[${isLinkedIn ? 'LI' : 'CATHO'}] IP=${d.interviewProbability} HS=${d.hireScore} | ${d.jobTitle} @ ${d.company}`);
+      const aiForced   = isAIJob(d.jobTitle);
+      console.log(`\n[${isLinkedIn ? 'LI' : 'CATHO'}] IP=${d.interviewProbability} HS=${d.hireScore}${aiForced ? ' 🤖 AI-FORCE' : ''} | ${d.jobTitle} @ ${d.company}`);
 
       // Reset estado no DB + recupera dados
       const dbData = await resetJobState(d.jobId);
