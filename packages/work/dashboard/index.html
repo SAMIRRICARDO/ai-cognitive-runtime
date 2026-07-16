@@ -426,61 +426,102 @@
 
     <!-- ── SECTION 0: HOME ──────────────────────────────────────────────────── -->
     <div id="sec-home" class="sec-page px-8 py-6 border-b border-white/5" style="background:linear-gradient(135deg,rgba(34,197,94,.04) 0%,transparent 60%);">
+      <!-- Header -->
       <div class="flex items-start justify-between gap-4 mb-5">
         <div>
-          <div class="text-xs text-gray-600 font-mono uppercase tracking-widest mb-1">Career OS — Bem-vindo</div>
+          <div class="text-xs text-gray-600 font-mono uppercase tracking-widest mb-1">Career OS — Resumo Geral</div>
           <h2 class="text-xl font-bold text-white mb-1">Olá, Samir 👋</h2>
           <p class="text-gray-400 text-sm" id="home-summary">Carregando resumo do dia...</p>
         </div>
         <div style="text-align:right;flex-shrink:0;">
           <div class="text-xs text-gray-600 font-mono" id="home-date"></div>
           <div class="text-xs text-green-400 font-mono mt-1" id="home-streak"></div>
+          <div class="text-xs text-gray-600 font-mono mt-1" id="home-lastrun"></div>
         </div>
       </div>
 
-      <!-- Quick stats -->
-      <div class="grid grid-cols-3 gap-3 mb-5">
+      <!-- KPI Row 1 — Candidaturas -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
         <div class="glass rounded-xl p-4 text-center">
           <div class="text-2xl font-bold text-green-400 font-mono" id="home-applied">—</div>
-          <div class="text-xs text-gray-500 mt-1">Candidaturas Hoje</div>
+          <div class="text-xs text-gray-500 mt-1">Candidaturas</div>
         </div>
         <div class="glass rounded-xl p-4 text-center">
-          <div class="text-2xl font-bold text-blue-400 font-mono" id="home-queue">—</div>
-          <div class="text-xs text-gray-500 mt-1">Na Fila de Revisão</div>
+          <div class="text-2xl font-bold text-yellow-400 font-mono" id="home-queue">—</div>
+          <div class="text-xs text-gray-500 mt-1">Na Fila</div>
         </div>
         <div class="glass rounded-xl p-4 text-center">
-          <div class="text-2xl font-bold text-purple-400 font-mono" id="home-match">—</div>
-          <div class="text-xs text-gray-500 mt-1">Vagas IP ≥ 90%</div>
+          <div class="text-2xl font-bold text-cyan-400 font-mono" id="home-match">—</div>
+          <div class="text-xs text-gray-500 mt-1">IP ≥ 90%</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-orange-400 font-mono" id="home-streak-val">0</div>
+          <div class="text-xs text-gray-500 mt-1">Dias Streak 🔥</div>
+        </div>
+      </div>
+
+      <!-- KPI Row 2 — Pipeline -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-blue-400 font-mono" id="home-scanned">—</div>
+          <div class="text-xs text-gray-500 mt-1">Escaneadas</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-purple-400 font-mono" id="home-rate">—</div>
+          <div class="text-xs text-gray-500 mt-1">Taxa de Seleção</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-teal-400 font-mono" id="home-remote">—</div>
+          <div class="text-xs text-gray-500 mt-1">Vagas Remotas</div>
+        </div>
+        <div class="glass rounded-xl p-4 text-center">
+          <div class="text-xl font-bold text-gray-400 font-mono" id="home-cost">—</div>
+          <div class="text-xs text-gray-500 mt-1">Custo Total</div>
         </div>
       </div>
 
       <!-- Action buttons -->
-      <div class="flex flex-wrap gap-3">
+      <div class="flex flex-wrap gap-3 mb-6">
         <button onclick="startHunt(5)" class="btn btn-primary">
           <i data-lucide="play" style="width:14px;height:14px"></i> Candidatar 5 vagas
         </button>
         <button onclick="startHunt(0,true)" class="btn btn-secondary">
-          <i data-lucide="eye" style="width:14px;height:14px"></i> Dry-run (só filtrar)
+          <i data-lucide="eye" style="width:14px;height:14px"></i> Dry-run
         </button>
         <button onclick="navTo('sec-table');document.getElementById('f-status').value='queued';loadApplications()" class="btn btn-ghost">
           <i data-lucide="list" style="width:14px;height:14px"></i> Revisar fila
         </button>
         <button onclick="navTo('sec-analytics')" class="btn btn-ghost">
-          <i data-lucide="bar-chart-2" style="width:14px;height:14px"></i> Ver analytics
+          <i data-lucide="bar-chart-2" style="width:14px;height:14px"></i> Analytics
         </button>
       </div>
 
-      <!-- Top Opportunities of the Day -->
-      <div class="mt-5 pt-5" style="border-top:1px solid rgba(255,255,255,.05);">
-        <div class="flex items-center justify-between mb-3">
-          <div class="text-xs font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
-            <i data-lucide="trending-up" style="width:12px;height:12px;color:#22c55e"></i>
-            Top Oportunidades — Alta Probabilidade
+      <!-- Bottom 2-col: Oportunidades + Últimas Candidaturas -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-xs font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <i data-lucide="trending-up" style="width:12px;height:12px;color:#22c55e"></i>
+              Top Oportunidades
+            </div>
+            <button onclick="navTo('sec-oportunidades')" class="text-xs text-blue-400 hover:text-blue-300 transition">Ver todas →</button>
           </div>
-          <button onclick="navTo('sec-feed')" class="text-xs text-blue-400 hover:text-blue-300 transition">Ver todas →</button>
+          <div id="top-ops-list">
+            <div class="empty-state py-3 text-xs"><span class="spinner"></span> Carregando...</div>
+          </div>
         </div>
-        <div id="top-ops-list">
-          <div class="empty-state py-3 text-xs"><span class="spinner"></span> Carregando...</div>
+
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-xs font-mono text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <i data-lucide="check-circle-2" style="width:12px;height:12px;color:#86efac"></i>
+              Últimas Candidaturas
+            </div>
+            <button onclick="navTo('sec-table')" class="text-xs text-blue-400 hover:text-blue-300 transition">Ver todas →</button>
+          </div>
+          <div id="home-recent-apps">
+            <div class="empty-state py-3 text-xs"><span class="spinner"></span> Carregando...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -3363,14 +3404,57 @@ async function loadHome() {
     const r = await fetch(`${API}/api/work/stats`);
     const d = await r.json();
     const applied = d.totalApplied ?? 0;
-    const queued  = (d.byStatus?.queued) ?? (d.totalScanned - applied) ?? 0;
+    const queued  = d.byStatus?.queued ?? 0;
+    const scanned = d.totalScanned ?? 0;
     $('home-applied').textContent = applied;
     $('home-queue').textContent   = queued;
-    $('home-match').textContent   = '—';
-    $('home-summary').textContent = `Você já enviou ${applied} candidatura${applied !== 1 ? 's' : ''} · ${queued} vagas aguardando revisão · custo total $${(d.estimatedCostUsd ?? 0).toFixed(3)}`;
+    $('home-scanned').textContent = scanned;
+    $('home-rate').textContent    = scanned > 0 ? ((applied / scanned) * 100).toFixed(1) + '%' : '0%';
+    $('home-remote').textContent  = d.remoteCount ?? 0;
+    $('home-cost').textContent    = '$' + (d.estimatedCostUsd ?? 0).toFixed(3);
+    if (d.lastRun) $('home-lastrun').textContent = 'Último run: ' + fmtDate(d.lastRun);
+    $('home-summary').textContent = applied > 0
+      ? `${applied} candidatura${applied !== 1 ? 's' : ''} enviada${applied !== 1 ? 's' : ''} · ${queued} na fila · custo $${(d.estimatedCostUsd ?? 0).toFixed(3)}`
+      : 'Sistema pronto — nenhuma candidatura enviada ainda';
   } catch {
     $('home-summary').textContent = 'API offline — dados não disponíveis';
   }
+
+  // Últimas candidaturas aplicadas
+  try {
+    const r2 = await fetch(`${API}/api/work/applications?status=applied&limit=5`);
+    const rows = await r2.json();
+    const el = $('home-recent-apps');
+    if (!Array.isArray(rows) || !rows.length) {
+      el.innerHTML = '<div class="empty-state py-4 text-xs">Nenhuma candidatura enviada ainda</div>';
+      return;
+    }
+    el.innerHTML = rows.slice(0, 5).map(row => {
+      const plat = row.platform || 'LinkedIn';
+      const pCol = plat === 'LinkedIn' ? '#0ea5e9' : plat === 'Gupy' ? '#a78bfa' : '#fb923c';
+      const dt = row.applied_at
+        ? new Date(row.applied_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
+        : row.created_at
+          ? new Date(row.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
+          : '—';
+      const ip = _hireScoreMap[row.id]?.interview_probability ?? row.score_total ?? null;
+      const ipHtml = ip != null
+        ? `<span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:${ip>=90?'#22d3ee':ip>=75?'#22c55e':'#fbbf24'};font-weight:700;">${ip}%</span>`
+        : '';
+      return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px;justify-content:space-between;">
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:12px;font-weight:600;color:#e5e7eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(row.company || '—')}</div>
+          <div style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(row.job_title || '—')}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          ${ipHtml}
+          <span style="font-size:10px;color:${pCol};font-weight:600;">${plat}</span>
+          <span style="font-size:10px;color:#4b5563;">${dt}</span>
+          <span style="font-size:9px;padding:1px 6px;border-radius:20px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#86efac;font-weight:700;font-family:'JetBrains Mono',monospace;">✓</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch { /* silent */ }
 }
 
 // ══ EXPLAIN MODAL ════════════════════════════════════════════════════════════
@@ -3750,8 +3834,9 @@ async function loadHomeEnriched() {
   try {
     const r = await fetch(`${API}/api/work/home/stats`);
     const d = await r.json();
-    $('home-match').textContent  = d.highMatch ?? '—';
-    $('home-streak').textContent = d.streak > 0 ? `🔥 ${d.streak} dia${d.streak !== 1 ? 's' : ''} consecutivo${d.streak !== 1 ? 's' : ''}` : '';
+    $('home-match').textContent      = d.highMatch ?? '—';
+    $('home-streak-val').textContent = d.streak ?? 0;
+    $('home-streak').textContent     = d.streak > 0 ? `🔥 ${d.streak} dia${d.streak !== 1 ? 's' : ''} consecutivo${d.streak !== 1 ? 's' : ''}` : '';
     if (d.totalApplied !== undefined) $('home-applied').textContent = d.totalApplied;
   } catch { /* silently ignore */ }
 }
