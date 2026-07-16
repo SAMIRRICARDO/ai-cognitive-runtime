@@ -2,13 +2,16 @@
 # Mantém servidor API + túnel Cloudflare sempre ativos.
 # Reinicia qualquer um que cair automaticamente.
 
-$WorkDir    = Split-Path -Parent $MyInvocation.MyCommand.Path
-$LogFile    = Join-Path $WorkDir ".vraxia-work\watchdog.log"
-$TunnelFile = Join-Path $WorkDir ".vraxia-work\tunnel-url.txt"
-$NpxCmd     = "C:\Program Files\nodejs\npx.cmd"
-$CheckEvery = 20   # segundos entre verificações
+$WorkDir      = Split-Path -Parent $MyInvocation.MyCommand.Path
+$LogFile      = Join-Path $WorkDir ".vraxia-work\watchdog.log"
+$TunnelFile   = Join-Path $WorkDir ".vraxia-work\tunnel-url.txt"
+$TunnelLock   = Join-Path $WorkDir ".vraxia-work\tunnel.lock"
+$NpxCmd       = "C:\Program Files\nodejs\npx.cmd"
+$CheckEvery   = 30   # segundos entre verificações (era 20)
+$TunnelCooldown = 120  # segundos entre restarts de tunnel
 
-$LockFile   = Join-Path $WorkDir ".vraxia-work\watchdog.lock"
+$LockFile     = Join-Path $WorkDir ".vraxia-work\watchdog.lock"
+$script:lastTunnelRestart = [DateTime]::MinValue
 
 New-Item -ItemType Directory -Force (Split-Path $LogFile) | Out-Null
 
@@ -42,6 +45,16 @@ function IsProcessAlive($pid) {
     return $null -ne (Get-Process -Id $pid -ErrorAction SilentlyContinue)
 }
 
+# Verifica se o tunnel está vivo lendo o PID real do tunnel.lock
+# (o cmd.exe wrapper do Start-Process sai rápido — não é o processo real)
+function IsTunnelAlive {
+    if (-not (Test-Path $TunnelLock)) { return $false }
+    $lockedPid = (Get-Content $TunnelLock -Raw -ErrorAction SilentlyContinue).Trim()
+    if (-not $lockedPid) { return $false }
+    try { [int]$pid_val = $lockedPid } catch { return $false }
+    return $null -ne (Get-Process -Id $pid_val -ErrorAction SilentlyContinue)
+}
+
 function KillProcess($pid) {
     if (-not $pid) { return }
     Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
@@ -62,15 +75,26 @@ function StartServer {
 
 function StartTunnel {
     Log "Iniciando túnel cloudflared..."
-    # Limpa URL antiga para detectar nova URL
+    # Limpa URL e lock antigos para detectar nova URL
     Remove-Item $TunnelFile -ErrorAction SilentlyContinue
+    Remove-Item $TunnelLock -ErrorAction SilentlyContinue
     $p = Start-Process -FilePath $NpxCmd `
         -ArgumentList "tsx","src/tunnel/start-tunnel.ts" `
         -WorkingDirectory $WorkDir `
         -RedirectStandardOutput "$WorkDir\.vraxia-work\tunnel.log" `
         -RedirectStandardError  "$WorkDir\.vraxia-work\tunnel-err.log" `
         -PassThru -WindowStyle Hidden
-    Log "Túnel iniciado (PID $($p.Id))"
+    Log "Túnel iniciado (wrapper PID $($p.Id)), aguardando lock file do processo real..."
+    # Espera até 15s pelo tunnel.lock (PID real do node.js)
+    for ($i = 0; $i -lt 15; $i++) {
+        Start-Sleep 1
+        if (Test-Path $TunnelLock) {
+            $realPid = (Get-Content $TunnelLock -Raw).Trim()
+            Log "Tunnel lock adquirido (PID real: $realPid)"
+            break
+        }
+    }
+    $script:lastTunnelRestart = [DateTime]::Now
     return $p.Id
 }
 
@@ -103,8 +127,17 @@ for ($i = 0; $i -lt 15; $i++) {
     catch { Start-Sleep 4 }
 }
 
-# ── Mata processos antigos orphans ────────────────────────────────────────────
-Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+# ── Mata processos orphans específicos (server + tunnel) da execução anterior ──
+# Mata apenas processos node com os scripts conhecidos — não mata todos os node
+$orphanScripts = @("*start-tunnel*", "*api/server*", "*api\\server*")
+foreach ($pattern in $orphanScripts) {
+    Get-WmiObject Win32_Process | Where-Object { $_.CommandLine -like $pattern } | ForEach-Object {
+        Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+}
+# Mata ngrok residual
+Get-Process -Name "ngrok" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Remove-Item $TunnelLock -ErrorAction SilentlyContinue
 Start-Sleep 2
 
 # ── Primeira subida ───────────────────────────────────────────────────────────
@@ -120,7 +153,7 @@ while ($true) {
     Start-Sleep $CheckEvery
 
     $serverOk = IsServerAlive
-    $tunnelOk = IsProcessAlive $tunnelPid
+    $tunnelOk = IsTunnelAlive  # usa tunnel.lock para rastrear PID real
 
     if (-not $serverOk) {
         Log "ALERTA: servidor morto — reiniciando servidor + tunel"
@@ -130,7 +163,7 @@ while ($true) {
         $serverPid = StartServer
         if (WaitForServer 40) {
             $tunnelPid = StartTunnel
-            WaitForTunnelUrl 45
+            WaitForTunnelUrl 60
         } else {
             Log "ERRO: servidor nao subiu apos restart"
         }
@@ -138,9 +171,14 @@ while ($true) {
     }
 
     if (-not $tunnelOk) {
+        $secondsSinceRestart = ([DateTime]::Now - $script:lastTunnelRestart).TotalSeconds
+        if ($secondsSinceRestart -lt $TunnelCooldown) {
+            Log "Tunnel morto mas cooldown ativo ($([int]($TunnelCooldown - $secondsSinceRestart))s restantes) — aguardando"
+            continue
+        }
         Log "ALERTA: tunel morto — reiniciando tunel"
         $tunnelPid = StartTunnel
-        WaitForTunnelUrl 45
+        WaitForTunnelUrl 60
         continue
     }
 }

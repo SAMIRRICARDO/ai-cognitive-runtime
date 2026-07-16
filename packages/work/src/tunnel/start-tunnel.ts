@@ -25,6 +25,36 @@ const WORK_STATE_DIR    = path.resolve(process.cwd(), '.vraxia-work');
 const TUNNEL_URL_FILE   = path.join(WORK_STATE_DIR, 'tunnel-url.txt');
 const API_CONFIG_FILE   = path.resolve(process.cwd(), 'dashboard', 'api-config.json');
 const LOCAL_CLOUDFLARED = path.join(WORK_STATE_DIR, 'cloudflared.exe');
+const LOCK_FILE         = path.join(WORK_STATE_DIR, 'tunnel.lock');
+
+// ── Singleton lock — evita múltiplas instâncias simultâneas ──────────────────
+function acquireLock(): boolean {
+  fs.mkdirSync(WORK_STATE_DIR, { recursive: true });
+  try {
+    if (fs.existsSync(LOCK_FILE)) {
+      const existingPid = parseInt(fs.readFileSync(LOCK_FILE, 'utf-8').trim(), 10);
+      if (!isNaN(existingPid) && existingPid !== process.pid) {
+        // Verifica se o PID ainda está vivo
+        try { process.kill(existingPid, 0); } catch {
+          // Processo morto — lock órfão, podemos prosseguir
+          console.log(`[Tunnel] Lock órfão (PID ${existingPid} morto) — assumindo.`);
+          fs.writeFileSync(LOCK_FILE, String(process.pid));
+          return true;
+        }
+        console.error(`[Tunnel] Outra instância já está rodando (PID ${existingPid}). Encerrando.`);
+        return false;
+      }
+    }
+    fs.writeFileSync(LOCK_FILE, String(process.pid));
+    return true;
+  } catch {
+    return true; // Se não conseguir checar, prossegue
+  }
+}
+
+function releaseLock(): void {
+  try { if (fs.existsSync(LOCK_FILE)) fs.unlinkSync(LOCK_FILE); } catch {}
+}
 
 let shutdownRequested = false;
 // Tracks last URL seen within this process run — used to suppress Telegram on internal restarts.
@@ -232,11 +262,15 @@ async function startNgrok(restartCount = 0): Promise<void> {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-process.on('SIGINT', () => { shutdownRequested = true; process.exit(0); });
-process.on('SIGTERM', () => { shutdownRequested = true; process.exit(0); });
+process.on('SIGINT', () => { shutdownRequested = true; releaseLock(); process.exit(0); });
+process.on('SIGTERM', () => { shutdownRequested = true; releaseLock(); process.exit(0); });
+process.on('exit', () => releaseLock());
 
 loadEnv();
 fs.mkdirSync(WORK_STATE_DIR, { recursive: true });
+
+if (!acquireLock()) process.exit(0);
+
 // Clear tunnel URL at startup so the first successful URL always notifies Telegram.
 // This prevents suppression when the tunnel process is restarted (new deploy, server restart).
 try { fs.writeFileSync(TUNNEL_URL_FILE, ''); } catch {}
