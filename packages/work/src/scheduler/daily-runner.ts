@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import { DEFAULT_CONFIG, pickRandomWindow, randomMinuteInWindow, SchedulerConfig } from './config.js';
 import { sendDailyReport } from '../notifications/telegram.js';
+import { deployDashboard } from '../deploy/dashboard.js';
 
 // Diretório raiz do pacote packages/work/ — independente do CWD do Task Scheduler
 // __dirname = packages/work/src/scheduler → ../../ = packages/work/
@@ -169,6 +170,9 @@ async function main(): Promise<void> {
   }
 
   console.log(`[Scheduler] Sessão concluída em ${Math.round(duration / 1000)}s (exit: ${exitCode})`);
+
+  // Deploy dashboard após sessão (garante dados atualizados no Vercel)
+  await deployDashboard();
 
   // Relatório Telegram
   try {

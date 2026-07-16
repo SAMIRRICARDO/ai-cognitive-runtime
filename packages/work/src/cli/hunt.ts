@@ -38,6 +38,7 @@ import { ATSOptimizerAgent } from '../agents/ATSOptimizerAgent.js';
 import type { ATSOptimizationResult } from '../agents/ATSOptimizerAgent.js';
 import { coverLetter } from '../marketplace/plugins/cover-letter.js';
 import { LearningEngine } from '../engine/learning-engine.js';
+import { deployDashboard } from '../deploy/dashboard.js';
 
 program
   .option('--platform <p>', 'Plataforma: linkedin | gupy | catho | all', 'all')
@@ -903,65 +904,6 @@ async function main() {
     tracker.close();
     twinsStore.close();
     memory.close();
-  }
-}
-
-// ── Deploy automático do dashboard após cada rodada ───────────────────────────
-
-async function deployDashboard(): Promise<void> {
-  const WORK_DIR  = path.resolve(process.cwd(), '.vraxia-work');
-  const DASH_DIR  = path.resolve(process.cwd(), 'dashboard');
-  const JSONL_SRC = path.join(WORK_DIR, 'questionnaire-log.jsonl');
-  const SNAP_DEST = path.join(DASH_DIR, 'questionnaire-data.json');
-
-  try {
-    // Exporta snapshot agrupado por vaga
-    if (fs.existsSync(JSONL_SRC)) {
-      type Entry = Record<string, unknown>;
-      const entries = fs.readFileSync(JSONL_SRC, 'utf-8')
-        .split('\n').filter(l => l.trim())
-        .map(l => { try { return JSON.parse(l) as Entry; } catch { return null; } })
-        .filter(Boolean) as Entry[];
-
-      const grouped: Record<string, { job_id: string; job_title: string; company: string; job_url: string; entries: Entry[] }> = {};
-      for (const e of entries) {
-        const key = (e['job_id'] as string) || 'unknown';
-        if (!grouped[key]) {
-          grouped[key] = {
-            job_id:    e['job_id'] as string,
-            job_title: e['job_title'] as string,
-            company:   e['company'] as string,
-            job_url:   (e['job_url'] as string) ?? '',
-            entries:   [],
-          };
-        }
-        grouped[key].entries.push(e);
-      }
-
-      fs.writeFileSync(SNAP_DEST, JSON.stringify(Object.values(grouped)), 'utf-8');
-      console.log('[Deploy] questionnaire-data.json exportado.');
-    }
-
-    // Injeta tunnel URL para que o dashboard funcione via Vercel (acesso remoto)
-    const tunnelUrlFile = path.join(WORK_DIR, 'tunnel-url.txt');
-    if (fs.existsSync(tunnelUrlFile)) {
-      const tunnelUrl = fs.readFileSync(tunnelUrlFile, 'utf-8').trim();
-      if (tunnelUrl.startsWith('https://')) {
-        fs.writeFileSync(
-          path.join(DASH_DIR, 'api-config.json'),
-          JSON.stringify({ apiUrl: tunnelUrl, updatedAt: new Date().toISOString() }),
-          'utf-8',
-        );
-        console.log(`[Deploy] api-config.json gerado → ${tunnelUrl}`);
-      }
-    }
-
-    console.log('[Deploy] Publicando dashboard no Vercel...');
-    const out = execSync('vercel --prod --yes 2>&1', { cwd: DASH_DIR }).toString().trim();
-    const urlMatch = out.match(/https:\/\/\S+\.vercel\.app/);
-    console.log(`[Deploy] ✅ Dashboard atualizado${urlMatch ? ': ' + urlMatch[0] : ' no Vercel'}`);
-  } catch (err) {
-    console.warn('[Deploy] Aviso — falha no deploy automático:', String(err).slice(0, 120));
   }
 }
 
