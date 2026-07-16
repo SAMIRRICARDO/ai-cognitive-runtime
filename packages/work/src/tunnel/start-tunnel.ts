@@ -27,19 +27,17 @@ const API_CONFIG_FILE   = path.resolve(process.cwd(), 'dashboard', 'api-config.j
 const LOCAL_CLOUDFLARED = path.join(WORK_STATE_DIR, 'cloudflared.exe');
 
 let shutdownRequested = false;
+// Tracks last URL seen within this process run — used to suppress Telegram on internal restarts.
+// (file is cleared at startup so the first URL of each process run always notifies)
+let _lastUrlInProcess = '';
 
 // ── Shared: notifica Telegram + persiste URL ──────────────────────────────────
-// Only send Telegram when the URL is genuinely new (changed from last known URL).
-// This prevents spam when cloudflared restarts and gets a new subdomain.
-
-function readStoredUrl(): string {
-  try { return fs.existsSync(TUNNEL_URL_FILE) ? fs.readFileSync(TUNNEL_URL_FILE, 'utf-8').trim() : ''; }
-  catch { return ''; }
-}
+// Only send Telegram when tunnel was previously DOWN (empty file at process start).
+// Internal cloudflared/ngrok restarts within the same process do NOT re-notify.
 
 function onTunnelUrl(url: string, provider: 'cloudflare' | 'ngrok'): void {
-  const previousUrl = readStoredUrl();
-  const urlChanged  = url !== previousUrl;
+  const wasDown = _lastUrlInProcess === '';
+  _lastUrlInProcess = url;
 
   fs.writeFileSync(TUNNEL_URL_FILE, url);
 
@@ -55,9 +53,6 @@ function onTunnelUrl(url: string, provider: 'cloudflare' | 'ngrok'): void {
   console.log(`\n[Tunnel] ✅ URL pública (${provider}): ${url}`);
   console.log(`[Tunnel] Dashboard: https://ai-cognitive-runtime.vercel.app\n`);
 
-  // Only send Telegram if tunnel was previously DOWN (empty URL) or if it's genuinely a first start.
-  // This prevents notification spam when cloudflared restarts and assigns a new random subdomain.
-  const wasDown = !previousUrl;
   if (wasDown) {
     sendTunnelNotification(url, provider).catch(() => {});
   } else {
@@ -121,7 +116,6 @@ async function startCloudflared(restartCount = 0): Promise<void> {
     // 429 rate limit → muda para ngrok imediatamente
     if (got429) {
       console.log('\n[Tunnel] Cloudflare rate-limit (429) — trocando para ngrok...');
-      try { fs.writeFileSync(TUNNEL_URL_FILE, ''); } catch {}
       return startNgrok(0);
     }
 
@@ -134,7 +128,6 @@ async function startCloudflared(restartCount = 0): Promise<void> {
 
     const delay = Math.min(5_000 * Math.pow(2, attempt - 1), 120_000);
     console.log(`\n[Tunnel] cloudflared encerrou (code ${code ?? 'null'}) — tentativa ${attempt}/${maxRetries}, aguardando ${delay / 1000}s...`);
-    try { fs.writeFileSync(TUNNEL_URL_FILE, ''); } catch {}
     setTimeout(() => startCloudflared(attempt).catch(err => {
       console.error('[Tunnel] Erro ao reiniciar cloudflared:', err);
       startNgrok(0);
@@ -219,7 +212,6 @@ async function startNgrok(restartCount = 0): Promise<void> {
     if (sessionErr) {
       console.log('\n[Tunnel] ngrok: limite de sessões (ERR_NGROK_108) — aguardando 30s para sessões expirarem...');
       killAllNgrok();
-      try { fs.writeFileSync(TUNNEL_URL_FILE, ''); } catch {}
       setTimeout(() => startNgrok(restartCount).catch(() => process.exit(1)), 30_000);
       return;
     }
@@ -234,7 +226,6 @@ async function startNgrok(restartCount = 0): Promise<void> {
 
     const delay = Math.min(5_000 * Math.pow(2, Math.min(attempt - 1, 4)), 60_000);
     console.log(`\n[Tunnel] ngrok encerrou (code ${code ?? 'null'}) — tentativa ${attempt}/${maxRetries}, aguardando ${delay / 1000}s...`);
-    try { fs.writeFileSync(TUNNEL_URL_FILE, ''); } catch {}
     setTimeout(() => startNgrok(attempt).catch(() => process.exit(1)), delay);
   });
 }
