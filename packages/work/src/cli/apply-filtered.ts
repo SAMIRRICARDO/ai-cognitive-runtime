@@ -106,6 +106,23 @@ async function resetJobState(jobId: string): Promise<{ title: string; company: s
   return { title: row[0], company: row[1], linkedinUrl: row[2], description: row[3] ?? '' };
 }
 
+// ── Persiste ação APPLY no decisions.jsonl ────────────────────────────────────
+// Evita que o mesmo job reapareça em runs futuros do apply-filtered.
+
+function markDecisionApplied(jobId: string): void {
+  if (!fs.existsSync(DECISIONS)) return;
+  const lines = fs.readFileSync(DECISIONS, 'utf-8').split('\n');
+  const updated = lines.map(l => {
+    if (!l.trim()) return l;
+    try {
+      const d = JSON.parse(l) as DecisionRecord;
+      if (d.jobId === jobId) return JSON.stringify({ ...d, action: 'APPLY' });
+      return l;
+    } catch { return l; }
+  });
+  fs.writeFileSync(DECISIONS, updated.join('\n'), 'utf-8');
+}
+
 // ── Monta objeto Job a partir das informações disponíveis ─────────────────────
 
 const NOW_ISO = new Date().toISOString();
@@ -226,6 +243,16 @@ async function main() {
         // Usa score original do decisions.jsonl — não re-score (LLM variance faria a decisão oscilar)
         console.log(`  [HIE cached] IP=${d.interviewProbability} HS=${d.hireScore} → APPLY (twin: ${d.twinId})`);
 
+        // Re-insere o job na DB como 'queued' após resetJobState ter deletado o registro.
+        // ApplicationService só faz UPDATE — sem registro prévio os state-transitions são perdidos.
+        tracker.upsert({
+          id: job.id,
+          job,
+          score: { jobId: job.id, titleFit: 5, stackFit: 5, companyFit: 5, dealBreaker: false, total: d.hireScore, action: 'APPLY', reason: d.reasoning ?? '' },
+          status: 'queued',
+          state: 'queued',
+        });
+
         // Obtém descrição atualizada navegando até a vaga (necessária para o questionário)
         const searchEngine = new JobSearchEngine(page);
         try {
@@ -251,14 +278,35 @@ async function main() {
 
         if (result.confirmed) {
           memory.recordApplication(job.company, []);
+          markDecisionApplied(d.jobId);
           console.log(`  ✅ Candidatura CONFIRMADA (método: ${result.validation?.method ?? '-'})`);
           totalApplied++;
           await new Promise(r => setTimeout(r, 4000 + Math.random() * 6000));
         } else if (result.finalState === 'submitted') {
+          markDecisionApplied(d.jobId);
           console.log(`  ⚠️  Submetido mas NÃO confirmado — evidências: ${result.evidenceDir}`);
           totalApplied++;
         } else {
-          console.log(`  ✗ Falha: ${result.error ?? result.finalState}`);
+          // Fallback: verifica truth-record.json para casos onde Truth=VERIFIED mas state=failed
+          const truthFile = result.evidenceDir ? path.join(result.evidenceDir, 'truth-record.json') : '';
+          if (truthFile && fs.existsSync(truthFile)) {
+            try {
+              const truth = JSON.parse(fs.readFileSync(truthFile, 'utf-8')) as { confidence?: string };
+              if (truth.confidence === 'VERIFIED') {
+                markDecisionApplied(d.jobId);
+                // Registra no DB como 'confirmed' — o upsert anterior inseriu como 'queued'
+                // mas o engine retornou 'failed', então forçamos o estado correto.
+                tracker.updateState(d.jobId, 'confirmed', { notes: 'TruthEngine VERIFIED fallback' });
+                console.log(`  ✅ Candidatura VERIFICADA via TruthEngine (state=${result.finalState})`);
+                totalApplied++;
+                await new Promise(r => setTimeout(r, 4000 + Math.random() * 6000));
+              } else {
+                console.log(`  ✗ Falha: ${result.error ?? result.finalState}`);
+              }
+            } catch { console.log(`  ✗ Falha: ${result.error ?? result.finalState}`); }
+          } else {
+            console.log(`  ✗ Falha: ${result.error ?? result.finalState}`);
+          }
         }
 
       } else {
@@ -272,6 +320,15 @@ async function main() {
         const job      = buildCathoJob(d, dbData);
         const cathoUrl = job.applicationUrl;
 
+        // Re-insere na DB como 'queued' após resetJobState ter deletado o registro
+        tracker.upsert({
+          id: job.id,
+          job: { ...job, linkedinUrl: cathoUrl, isEasyApply: false },
+          score: { jobId: job.id, titleFit: 5, stackFit: 5, companyFit: 5, dealBreaker: false, total: d.hireScore, action: 'APPLY', reason: d.reasoning ?? '' },
+          status: 'queued',
+          state: 'queued',
+        });
+
         const cathoApply = new CathoApplyEngine(page);
         questionnaire.setJob(job.id, job.title, job.company, cathoUrl);
 
@@ -284,6 +341,7 @@ async function main() {
           questionnaire.flushLog();
           if (success) {
             memory.recordApplication(job.company, []);
+            markDecisionApplied(d.jobId);
             console.log(`  ✅ Aplicado no Catho!`);
             totalApplied++;
             await new Promise(r => setTimeout(r, 45000 + Math.random() * 30000));
