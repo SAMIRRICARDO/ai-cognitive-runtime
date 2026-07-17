@@ -64,7 +64,24 @@ const KEYWORDS = [
   'Node.js Developer',
   'Backend TypeScript',
 ];
-const TITLE_BLACKLIST = ['junior', 'estagio', 'intern', 'trainee', 'jr', 'bolsista'];
+const TITLE_BLACKLIST = ['junior', 'estagio', 'estágio', 'estagiário', 'estagiaria', 'intern', 'trainee', 'jr', 'bolsista'];
+
+// Vagas de IA/ML sempre enviadas — bypassa HIRE_THRESHOLD (threshold é calibrado para generalistas)
+const AI_FORCE_PATTERNS = [
+  /\bia\b/, /intelig[eê]ncia artificial/, /artificial intelligence/i,
+  /\bai engineer/i, /\bai developer/i, /\bai lead/i, /\bai architect/i, /\bai researcher/i,
+  /\bai product/i, /applied ai/i, /\bai software/i, /\bai systems/i,
+  /machine learning/i, /\bml engineer/i, /\bmlops\b/i, /ml researcher/i,
+  /deep learning/i, /\bllm\b/i, /\bgenai\b/i, /generative ai/i, /\bnlp\b/i,
+  /computer vision/i, /data scientist/i, /data science/i,
+  /engenheiro de ia/i, /desenvolvedor de ia/i, /desenvolvedor ia/i,
+  /especialista em ia/i, /especialista ia/i, /\bhire score/i,
+];
+
+function isAIJob(title: string): boolean {
+  const t = title.toLowerCase();
+  return AI_FORCE_PATTERNS.some(re => re.test(t));
+}
 
 // Keywords mais amplos para o mercado Catho (plataforma BR — menos vagas com título em inglês)
 const CATHO_KEYWORDS = [
@@ -461,7 +478,8 @@ async function processJob(
     status: 'filtered_out' as ApplicationStatus,
   });
 
-  if (hireScore.action !== 'APPLY') {
+  const aiForce = hireScore.action !== 'APPLY' && isAIJob(job.title);
+  if (hireScore.action !== 'APPLY' && !aiForce) {
     printWhyNot(hireScore);
     if (hireScore.action === 'REVIEW') printHowToWin(hireScore);
     tracker.updateState(job.id, 'cancelled', {
@@ -470,6 +488,9 @@ async function processJob(
     });
     console.log(`  ${hireScore.action === 'SKIP' ? 'Pulando.' : 'Marcado para revisao manual (score_action=REVIEW).'}`);
     return false;
+  }
+  if (aiForce) {
+    console.log(`  🤖 AI-FORCE — bypassa threshold (IP:${hireScore.interviewProbability}% / HS:${hireScore.hireScore})`);
   }
 
   tracker.saveExplainability(job.id, hireScore.reasoning, undefined, undefined);
@@ -724,7 +745,8 @@ async function main() {
         status: hireScore.action === 'APPLY' ? 'queued' : 'filtered_out',
       });
 
-      if (hireScore.action !== 'APPLY') {
+      const aiForceLinkedIn = hireScore.action !== 'APPLY' && isAIJob(job.title);
+      if (hireScore.action !== 'APPLY' && !aiForceLinkedIn) {
         printWhyNot(hireScore);
         if (hireScore.action === 'REVIEW') printHowToWin(hireScore);
         tracker.updateState(job.id, 'cancelled', {
@@ -733,6 +755,9 @@ async function main() {
         });
         console.log(`  ${hireScore.action === 'SKIP' ? 'Pulando.' : 'Marcado para revisao manual (score_action=REVIEW).'}`);
         continue;
+      }
+      if (aiForceLinkedIn) {
+        console.log(`  🤖 AI-FORCE — bypassa threshold (IP:${hireScore.interviewProbability}% / HS:${hireScore.hireScore})`);
       }
 
       tracker.saveExplainability(job.id, hireScore.reasoning, undefined, undefined);
