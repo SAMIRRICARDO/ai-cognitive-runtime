@@ -7,6 +7,8 @@ import fs from 'fs';
 import path from 'path';
 import { sendTunnelNotification } from '../notifications/telegram.js';
 
+const DASHBOARD_DIR = path.resolve(process.cwd(), 'dashboard');
+
 function loadEnv(): void {
   const dirs = [
     path.resolve(process.cwd(), '.env'),
@@ -26,6 +28,53 @@ const TUNNEL_URL_FILE   = path.join(WORK_STATE_DIR, 'tunnel-url.txt');
 const API_CONFIG_FILE   = path.resolve(process.cwd(), 'dashboard', 'api-config.json');
 const LOCAL_CLOUDFLARED = path.join(WORK_STATE_DIR, 'cloudflared.exe');
 const LOCK_FILE         = path.join(WORK_STATE_DIR, 'tunnel.lock');
+
+// ── Auto-deploy dashboard ao Vercel quando URL do túnel muda ─────────────────
+
+let _deployPending = false;
+
+function deployDashboard(newUrl: string): void {
+  if (_deployPending) {
+    console.log('[Tunnel] Deploy Vercel já em andamento — ignorando trigger duplicado.');
+    return;
+  }
+  _deployPending = true;
+  console.log(`[Tunnel] URL mudou → disparando deploy Vercel (${newUrl})...`);
+
+  const vercelBin = (() => {
+    try { execSync('vercel --version', { stdio: 'ignore' }); return 'vercel'; } catch {}
+    const fallbacks = [
+      path.join(process.env['APPDATA'] ?? '', 'npm', 'vercel.cmd'),
+      path.join(process.env['APPDATA'] ?? '', 'npm', 'vercel'),
+    ];
+    return fallbacks.find(p => fs.existsSync(p)) ?? '';
+  })();
+
+  if (!vercelBin) {
+    console.warn('[Tunnel] vercel CLI não encontrado — deploy automático ignorado.');
+    _deployPending = false;
+    return;
+  }
+
+  const proc = spawn(vercelBin, ['--prod', '--yes', '--cwd', DASHBOARD_DIR], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: true,
+  });
+
+  let out = '';
+  proc.stdout?.on('data', (d: Buffer) => { out += d.toString(); });
+  proc.stderr?.on('data', (d: Buffer) => { out += d.toString(); });
+
+  proc.on('exit', (code) => {
+    _deployPending = false;
+    if (code === 0) {
+      const urlMatch = out.match(/https:\/\/vraxia-platform\.vercel\.app/);
+      console.log(`[Tunnel] ✅ Deploy Vercel concluído — ${urlMatch?.[0] ?? 'vraxia-platform.vercel.app'}`);
+    } else {
+      console.warn(`[Tunnel] ⚠️ Deploy Vercel falhou (exit ${code}). Logs:\n${out.slice(-500)}`);
+    }
+  });
+}
 
 // ── Singleton lock — evita múltiplas instâncias simultâneas ──────────────────
 function acquireLock(): boolean {
@@ -67,11 +116,20 @@ let _lastUrlInProcess = '';
 
 function onTunnelUrl(url: string, provider: 'cloudflare' | 'ngrok'): void {
   const wasDown = _lastUrlInProcess === '';
+
+  // Detecta se a URL mudou em relação ao que está em api-config.json no disco
+  let previousUrl = '';
+  try {
+    const existing = JSON.parse(fs.readFileSync(API_CONFIG_FILE, 'utf-8')) as { apiUrl?: string };
+    previousUrl = existing.apiUrl ?? '';
+  } catch {}
+
+  const urlChanged = url !== previousUrl;
   _lastUrlInProcess = url;
 
   fs.writeFileSync(TUNNEL_URL_FILE, url);
 
-  // Atualiza api-config.json do dashboard (Vercel lê este arquivo)
+  // Atualiza api-config.json do dashboard
   try {
     const cfg = JSON.stringify({ apiUrl: url, provider, updatedAt: new Date().toISOString() });
     fs.writeFileSync(API_CONFIG_FILE, cfg, 'utf-8');
@@ -81,7 +139,12 @@ function onTunnelUrl(url: string, provider: 'cloudflare' | 'ngrok'): void {
   }
 
   console.log(`\n[Tunnel] ✅ URL pública (${provider}): ${url}`);
-  console.log(`[Tunnel] Dashboard: https://ai-cognitive-runtime.vercel.app\n`);
+  console.log(`[Tunnel] Dashboard: https://vraxia-platform.vercel.app\n`);
+
+  // Redeploy Vercel sempre que a URL muda (novo túnel = novo api-config.json)
+  if (urlChanged) {
+    deployDashboard(url);
+  }
 
   if (wasDown) {
     sendTunnelNotification(url, provider).catch(() => {});
