@@ -11,6 +11,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env'),       override: false
 
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
+import { createServer } from 'http';
 import fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
 import initSqlJs from 'sql.js';
@@ -27,6 +28,7 @@ import { NetworkingAgent } from '../agents/NetworkingAgent.js';
 import { VaultRetriever } from '../rag/retriever.js';
 import { AgentRegistry } from '../marketplace/registry.js';
 import { sendServerStartup } from '../notifications/telegram.js';
+import { createRdaRouter, initRdaWsServer } from '../remote-dev/index.js';
 
 const modalityDetector = new ModalityDetector();
 const retriever = new VaultRetriever();
@@ -158,6 +160,9 @@ function setCors(req: Request, res: Response, next: NextFunction): void {
 const app = express();
 app.use(setCors);
 app.use(express.json());
+
+// ── Remote Dev Agent router ───────────────────────────────────────────────────
+app.use('/api/rda', createRdaRouter());
 
 // Static dashboard at /work
 app.use('/work', express.static(DASH_DIR));
@@ -1905,16 +1910,20 @@ app.get('/api/work/decision-scores', async (req: Request, res: Response) => {
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+const httpServer = createServer(app);
+initRdaWsServer(httpServer);
+
+httpServer.listen(PORT, () => {
   console.log(`\n  VRAXIA WORK — Dashboard API`);
-  console.log(`  → Dashboard: http://localhost:${PORT}/work`);
-  console.log(`  → API base:  http://localhost:${PORT}/api/work\n`);
+  console.log(`  → Dashboard:   http://localhost:${PORT}/work`);
+  console.log(`  → API base:    http://localhost:${PORT}/api/work`);
+  console.log(`  → RDA API:     http://localhost:${PORT}/api/rda`);
+  console.log(`  → RDA Agent:   ws://localhost:${PORT}/rda\n`);
   if (!fs.existsSync(DASH_DIR)) {
     console.warn(`  [WARN] Dashboard não encontrado: ${DASH_DIR}`);
   }
   if (!fs.existsSync(DB_PATH)) {
     console.warn(`  [WARN] Banco não encontrado: ${DB_PATH} (execute o hunt primeiro)`);
   }
-  // Notifica Telegram com status do servidor + link do túnel (cooldown 5 min anti-spam)
   sendServerStartup().catch(err => console.warn('[Telegram] Startup notification failed:', String(err)));
 });

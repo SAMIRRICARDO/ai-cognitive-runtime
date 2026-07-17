@@ -374,6 +374,9 @@
       <div class="nav-item" id="nav-network" onclick="navTo('sec-network')">
         <i data-lucide="users" style="width:15px;height:15px"></i> Networking
       </div>
+      <div class="nav-item" id="nav-remote-dev" onclick="navTo('sec-remote-dev')">
+        <i data-lucide="terminal" style="width:15px;height:15px"></i> Remote Dev
+      </div>
 
       <div class="px-4 mt-5 mb-2 text-xs text-gray-700 uppercase tracking-wider font-semibold">Módulo</div>
       <div class="mx-3 p-3 glass rounded-xl">
@@ -1086,6 +1089,176 @@
       </div>
     </div>
 
+    <!-- ── SECTION: REMOTE DEV ─────────────────────────────────────────────── -->
+    <div id="sec-remote-dev" class="sec-page px-8 py-6">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <span class="live-dot" id="rda-status-dot" style="background:#6b7280;box-shadow:none;animation:none"></span>
+          <h2 class="text-lg font-semibold flex items-center gap-2">
+            <i data-lucide="terminal" style="width:18px;height:18px;color:#a78bfa"></i> Remote Development Agent
+          </h2>
+          <span class="badge badge-purple" id="rda-agent-badge">Nenhum agente</span>
+        </div>
+        <button onclick="rdaRefreshAgents()" class="btn btn-ghost text-xs">
+          <i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Atualizar
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- LEFT — Command panel -->
+        <div class="lg:col-span-2 flex flex-col gap-5">
+
+          <!-- Job form -->
+          <div class="glass rounded-2xl p-5 border border-purple-500/15">
+            <div class="text-xs text-purple-400 uppercase tracking-widest mb-4 font-semibold">Nova Tarefa</div>
+
+            <!-- Prompt -->
+            <textarea id="rda-prompt" rows="4" placeholder="Descreva a tarefa... ex: Adicionar validação de CPF no formulário de cadastro"
+              class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-gray-200 outline-none transition focus:border-purple-400/50 resize-none mb-3 font-mono"
+              style="font-family:'JetBrains Mono',monospace;font-size:12px;"></textarea>
+
+            <!-- Row 2: Mode + Executor -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Modo</div>
+                <select id="rda-mode" class="filter-select w-full text-xs">
+                  <option value="chat">Conversar</option>
+                  <option value="code" selected>Programar</option>
+                  <option value="refactor">Refatorar</option>
+                  <option value="test">Testes</option>
+                  <option value="review">Code Review</option>
+                  <option value="deploy">Deploy</option>
+                  <option value="diagnose">Diagnóstico</option>
+                </select>
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Executor</div>
+                <select id="rda-executor" class="filter-select w-full text-xs">
+                  <option value="claude-code">Claude Code</option>
+                  <option value="codex" disabled>OpenAI Codex (indisponível)</option>
+                  <option value="gemini" disabled>Gemini CLI (indisponível)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Row 3: Project + Device -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Projeto</div>
+                <select id="rda-project" class="filter-select w-full text-xs">
+                  <option value="">— selecione —</option>
+                </select>
+              </div>
+              <div>
+                <div class="text-xs text-gray-500 mb-1">Agente / Máquina</div>
+                <select id="rda-device" class="filter-select w-full text-xs">
+                  <option value="">— nenhum conectado —</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Permissions -->
+            <div class="mb-4">
+              <div class="text-xs text-gray-500 mb-2">Permissões</div>
+              <div class="flex flex-wrap gap-3">
+                <label class="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                  <input type="checkbox" id="perm-edit" checked class="accent-purple-500"> Editar arquivos
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                  <input type="checkbox" id="perm-tests" checked class="accent-purple-500"> Rodar testes
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                  <input type="checkbox" id="perm-commit" class="accent-purple-500"> Git commit
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                  <input type="checkbox" id="perm-deploy" class="accent-purple-500"> Deploy
+                </label>
+                <label class="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
+                  <input type="checkbox" id="perm-terminal" class="accent-purple-500"> Terminal livre
+                </label>
+              </div>
+            </div>
+
+            <button onclick="rdaSubmitJob()" id="rda-submit-btn" class="btn w-full text-sm" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;">
+              <i data-lucide="play" style="width:14px;height:14px"></i> Executar tarefa
+            </button>
+          </div>
+
+          <!-- Stream output -->
+          <div class="glass rounded-2xl p-5 border border-white/5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Output em tempo real</div>
+              <div class="flex items-center gap-2">
+                <span id="rda-job-status-badge" class="badge badge-gray" style="display:none">—</span>
+                <button onclick="rdaClearOutput()" class="btn btn-ghost text-xs py-1 px-2">limpar</button>
+              </div>
+            </div>
+            <div id="rda-output" class="terminal" style="min-height:220px;max-height:360px;">
+              <span class="text-gray-600">Aguardando execução...</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT — Info panels -->
+        <div class="flex flex-col gap-5">
+
+          <!-- Active jobs -->
+          <div class="glass rounded-2xl p-4 border border-white/5">
+            <div class="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Jobs recentes</div>
+            <div id="rda-jobs-list" class="flex flex-col gap-2">
+              <div class="text-xs text-gray-600 text-center py-4">Nenhum job ainda</div>
+            </div>
+          </div>
+
+          <!-- Observability metrics -->
+          <div class="glass rounded-2xl p-4 border border-white/5">
+            <div class="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Métricas do job</div>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between text-gray-500">
+                <span>Tokens usados</span><span id="rda-m-tokens" class="font-mono text-purple-300">—</span>
+              </div>
+              <div class="flex justify-between text-gray-500">
+                <span>Arquivos alterados</span><span id="rda-m-files" class="font-mono text-blue-300">—</span>
+              </div>
+              <div class="flex justify-between text-gray-500">
+                <span>Duração</span><span id="rda-m-dur" class="font-mono text-green-300">—</span>
+              </div>
+              <div class="flex justify-between text-gray-500">
+                <span>Exit code</span><span id="rda-m-exit" class="font-mono text-gray-300">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connected agents -->
+          <div class="glass rounded-2xl p-4 border border-white/5">
+            <div class="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Agentes conectados</div>
+            <div id="rda-devices-list" class="space-y-2">
+              <div class="text-xs text-gray-600 text-center py-2">Nenhum</div>
+            </div>
+            <div class="mt-3 border-t border-white/5 pt-3">
+              <div class="text-xs text-gray-600 mb-2">Iniciar agente local:</div>
+              <div class="terminal" style="min-height:auto;padding:8px 10px;font-size:10px;color:#7c3aed;">
+                npx tsx src/remote-dev/agent/desktop-agent.ts --register
+              </div>
+            </div>
+          </div>
+
+          <!-- Projects discovered -->
+          <div class="glass rounded-2xl p-4 border border-white/5">
+            <div class="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Projetos descobertos</div>
+            <div id="rda-projects-list" class="space-y-1.5 max-h-48 overflow-y-auto">
+              <div class="text-xs text-gray-600 text-center py-2">Nenhum agente conectado</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <!-- ── SECTION 5: HUNT MODE ───────────────────────────────────────────── -->
     <div id="sec-hunt" class="sec-page px-8 py-6">
       <div class="flex items-center gap-2 mb-5">
@@ -1785,6 +1958,7 @@ const SEC_TO_NAV = {
   'sec-marketplace':    'nav-marketplace',
   'sec-learning':       'nav-learning',
   'sec-network':        'nav-network',
+  'sec-remote-dev':     'nav-remote-dev',
 };
 
 function setNavActive(secId) {
@@ -4712,6 +4886,308 @@ async function loadEnhancedAnalytics() {
 }
 
 window.addEventListener('load', init);
+
+// ══ REMOTE DEVELOPMENT AGENT ═════════════════════════════════════════════════
+
+let _rdaWs          = null;   // dashboard WebSocket to /rda
+let _rdaCurrentJob  = null;   // active job id
+let _rdaDevices     = {};     // deviceId → {name, projects}
+let _rdaJobs        = [];     // recent jobs
+
+function rdaLog(text, color) {
+  const out = $('rda-output');
+  if (!out) return;
+  const empty = out.querySelector('.text-gray-600');
+  if (empty && empty.textContent === 'Aguardando execução...') empty.remove();
+  const line = document.createElement('div');
+  line.style.color      = color || '#4ade80';
+  line.style.marginBottom = '2px';
+  line.textContent = text;
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
+}
+
+function rdaClearOutput() {
+  const out = $('rda-output');
+  if (out) out.innerHTML = '<span class="text-gray-600">Aguardando execução...</span>';
+  $('rda-job-status-badge').style.display = 'none';
+  $('rda-m-tokens').textContent = '—';
+  $('rda-m-files').textContent  = '—';
+  $('rda-m-dur').textContent    = '—';
+  $('rda-m-exit').textContent   = '—';
+}
+
+// ── WebSocket connection ─────────────────────────────────────────────────────
+
+function rdaConnect() {
+  if (_rdaWs && _rdaWs.readyState < 2) return;
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const wsUrl = `${proto}://${location.host}/rda`;
+
+  try {
+    _rdaWs = new WebSocket(wsUrl);
+  } catch { return; }
+
+  _rdaWs.onopen = () => {
+    const dot = $('rda-status-dot');
+    if (dot) { dot.style.background = '#22d3ee'; dot.style.boxShadow = '0 0 6px rgba(34,211,238,.7)'; dot.style.animation = 'liveInd 1.4s ease-in-out infinite'; }
+    rdaRefreshAgents();
+  };
+
+  _rdaWs.onclose = () => {
+    const dot = $('rda-status-dot');
+    if (dot) { dot.style.background = '#6b7280'; dot.style.boxShadow = 'none'; dot.style.animation = 'none'; }
+    setTimeout(rdaConnect, 5000);
+  };
+
+  _rdaWs.onerror = () => {};
+
+  _rdaWs.onmessage = (ev) => {
+    let msg;
+    try { msg = JSON.parse(ev.data); } catch { return; }
+
+    if (msg.type === 'device_status') {
+      const { deviceId, status, name } = msg.payload;
+      if (status === 'online') {
+        _rdaDevices[deviceId] = _rdaDevices[deviceId] || { name, projects: [] };
+        _rdaDevices[deviceId].name = name;
+      } else {
+        delete _rdaDevices[deviceId];
+      }
+      rdaRenderDevices();
+      rdaRenderDeviceSelect();
+      return;
+    }
+
+    if (msg.type === 'workspace_info') {
+      const { deviceId, info } = msg.payload;
+      if (!_rdaDevices[deviceId]) _rdaDevices[deviceId] = { name: deviceId, projects: [] };
+      _rdaDevices[deviceId].projects = info.projects || [];
+      rdaRenderProjects();
+      rdaRenderProjectSelect();
+      return;
+    }
+
+    if (msg.type === 'job_event') {
+      rdaHandleJobEvent(msg.payload);
+      return;
+    }
+  };
+}
+
+// ── Render helpers ───────────────────────────────────────────────────────────
+
+function rdaRenderDevices() {
+  const el = $('rda-devices-list');
+  if (!el) return;
+  const ids = Object.keys(_rdaDevices);
+  if (!ids.length) { el.innerHTML = '<div class="text-xs text-gray-600 text-center py-2">Nenhum</div>'; return; }
+  const badge = $('rda-agent-badge');
+  if (badge) { badge.textContent = `${ids.length} agente${ids.length > 1 ? 's' : ''}`; badge.className = 'badge badge-green'; }
+  el.innerHTML = ids.map(id => `
+    <div class="flex items-center gap-2 py-1">
+      <span class="live-dot" style="width:6px;height:6px;background:#22d3ee;box-shadow:0 0 4px rgba(34,211,238,.6);flex-shrink:0"></span>
+      <span class="text-xs text-gray-300 truncate">${_rdaDevices[id].name}</span>
+    </div>`).join('');
+}
+
+function rdaRenderProjects() {
+  const el = $('rda-projects-list');
+  if (!el) return;
+  const all = Object.values(_rdaDevices).flatMap(d => d.projects || []);
+  if (!all.length) { el.innerHTML = '<div class="text-xs text-gray-600 text-center py-2">Nenhum agente conectado</div>'; return; }
+  el.innerHTML = all.map(p => `
+    <div class="flex items-center gap-2 py-1 border-b border-white/4">
+      <i data-lucide="${p.framework ? 'layers' : 'folder'}" style="width:12px;height:12px;color:#7c3aed;flex-shrink:0"></i>
+      <div class="min-w-0">
+        <div class="text-xs text-gray-300 truncate">${p.name}</div>
+        <div class="text-xs text-gray-600 truncate">${p.path}</div>
+      </div>
+      ${p.git ? `<span class="badge badge-purple ml-auto" style="font-size:9px;">${p.branch || 'git'}</span>` : ''}
+    </div>`).join('');
+  lucide.createIcons();
+}
+
+function rdaRenderDeviceSelect() {
+  const sel = $('rda-device');
+  if (!sel) return;
+  const ids = Object.keys(_rdaDevices);
+  if (!ids.length) { sel.innerHTML = '<option value="">— nenhum conectado —</option>'; return; }
+  sel.innerHTML = ids.map(id => `<option value="${id}">${_rdaDevices[id].name} (${id.slice(0,8)})</option>`).join('');
+}
+
+function rdaRenderProjectSelect() {
+  const sel = $('rda-project');
+  if (!sel) return;
+  const all = Object.values(_rdaDevices).flatMap(d => d.projects || []);
+  if (!all.length) { sel.innerHTML = '<option value="">— selecione —</option>'; return; }
+  sel.innerHTML = '<option value="">— selecione —</option>' +
+    all.map(p => `<option value="${p.path}">${p.name}</option>`).join('');
+}
+
+function rdaRenderJobs() {
+  const el = $('rda-jobs-list');
+  if (!el) return;
+  if (!_rdaJobs.length) { el.innerHTML = '<div class="text-xs text-gray-600 text-center py-4">Nenhum job ainda</div>'; return; }
+  const statusColor = { queued:'gray', preparing:'cyan', analyzing:'blue', planning:'blue', editing:'purple', testing:'yellow', completed:'green', error:'red', cancelled:'gray' };
+  el.innerHTML = _rdaJobs.slice(0, 10).map(j => `
+    <div onclick="rdaSelectJob('${j.id}')" class="glass rounded-xl p-3 cursor-pointer hover:border-purple-400/30 transition border border-white/5 ${_rdaCurrentJob === j.id ? 'border-purple-400/40' : ''}">
+      <div class="flex items-center justify-between mb-1">
+        <span class="badge badge-${statusColor[j.status] || 'gray'}" style="font-size:9px;">${j.status}</span>
+        <span class="text-xs text-gray-600 font-mono">${j.id.slice(0,8)}</span>
+      </div>
+      <div class="text-xs text-gray-400 truncate">${j.prompt ? j.prompt.slice(0,50) : '—'}</div>
+    </div>`).join('');
+}
+
+// ── Job handling ─────────────────────────────────────────────────────────────
+
+function rdaHandleJobEvent({ jobId, eventType, payload }) {
+  if (jobId !== _rdaCurrentJob) return;
+
+  if (eventType === 'status_change') {
+    const { status, filesChanged, tokensUsed, durationMs, exitCode } = payload;
+    const badge = $('rda-job-status-badge');
+    if (badge) {
+      badge.style.display = '';
+      const color = { queued:'gray', preparing:'cyan', analyzing:'blue', planning:'blue', editing:'purple', testing:'yellow', completed:'green', error:'red', cancelled:'gray' };
+      badge.className = `badge badge-${color[status] || 'gray'}`;
+      badge.textContent = status;
+    }
+
+    rdaLog(`[${status.toUpperCase()}]`, status === 'completed' ? '#22d3ee' : status === 'error' ? '#f87171' : '#a78bfa');
+
+    if (filesChanged !== undefined) $('rda-m-files').textContent = String(filesChanged);
+    if (tokensUsed  !== undefined) $('rda-m-tokens').textContent = tokensUsed.toLocaleString();
+    if (durationMs  !== undefined) $('rda-m-dur').textContent   = `${(durationMs/1000).toFixed(1)}s`;
+    if (exitCode    !== undefined) $('rda-m-exit').textContent  = String(exitCode);
+
+    // Update job in list
+    const job = _rdaJobs.find(j => j.id === jobId);
+    if (job) { job.status = status; rdaRenderJobs(); }
+
+    if (status === 'completed' || status === 'error' || status === 'cancelled') {
+      const btn = $('rda-submit-btn');
+      if (btn) btn.disabled = false;
+    }
+    return;
+  }
+
+  if (eventType === 'stream_chunk') {
+    const { type, content } = payload;
+    if (type === 'output') rdaLog(content, '#4ade80');
+    else if (type === 'error') rdaLog(content, '#f87171');
+    return;
+  }
+
+  if (eventType === 'file_changed') {
+    rdaLog(`  ✎ ${payload.file}`, '#93c5fd');
+    const cur = parseInt($('rda-m-files').textContent) || 0;
+    $('rda-m-files').textContent = String(cur + 1);
+    return;
+  }
+}
+
+function rdaSelectJob(jobId) {
+  _rdaCurrentJob = jobId;
+  rdaClearOutput();
+  rdaLog(`[JOB ${jobId.slice(0,8)}] Selecionado — carregando eventos...`, '#7c3aed');
+  rdaRenderJobs();
+  // Load historical events via SSE polling
+  fetch(`${API}/api/rda/jobs/${jobId}/events`)
+    .then(r => r.json())
+    .then(events => {
+      events.forEach(ev => rdaHandleJobEvent({ jobId, eventType: ev.event_type, payload: ev.payload || {} }));
+    }).catch(() => {});
+}
+
+// ── Submit job ───────────────────────────────────────────────────────────────
+
+async function rdaSubmitJob() {
+  const prompt     = ($('rda-prompt')?.value || '').trim();
+  const mode       = $('rda-mode')?.value || 'code';
+  const executorId = $('rda-executor')?.value || 'claude-code';
+  const projectPath= $('rda-project')?.value || '';
+  const deviceId   = $('rda-device')?.value || '';
+
+  if (!prompt) { rdaLog('[ERRO] Descreva a tarefa antes de executar.', '#f87171'); return; }
+  if (!deviceId) { rdaLog('[ERRO] Selecione um agente conectado.', '#f87171'); return; }
+
+  const permissions = {
+    editFiles: $('perm-edit')?.checked   ?? true,
+    runTests:  $('perm-tests')?.checked  ?? true,
+    commit:    $('perm-commit')?.checked ?? false,
+    deploy:    $('perm-deploy')?.checked ?? false,
+    docker:    false,
+    terminal:  $('perm-terminal')?.checked ?? false,
+  };
+
+  rdaClearOutput();
+  rdaLog('[ENVIANDO] Criando job...', '#a78bfa');
+
+  const btn = $('rda-submit-btn');
+  if (btn) btn.disabled = true;
+
+  try {
+    const r = await fetch(`${API}/api/rda/jobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId, prompt, mode, executorId, projectPath, permissions }),
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const { job, dispatched } = await r.json();
+    _rdaCurrentJob = job.id;
+    _rdaJobs.unshift(job);
+    rdaRenderJobs();
+    if (dispatched) {
+      rdaLog(`[JOB ${job.id.slice(0,8)}] Despachado para agente.`, '#22d3ee');
+    } else {
+      rdaLog(`[JOB ${job.id.slice(0,8)}] Na fila — agente conectará em breve.`, '#fbbf24');
+    }
+  } catch (e) {
+    rdaLog(`[ERRO] ${e.message}`, '#f87171');
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ── Refresh agents from API ──────────────────────────────────────────────────
+
+async function rdaRefreshAgents() {
+  try {
+    const [healthRes, jobsRes] = await Promise.all([
+      fetch(`${API}/api/rda/health`),
+      fetch(`${API}/api/rda/jobs?limit=20`),
+    ]);
+
+    if (healthRes.ok) {
+      const h = await healthRes.json();
+      const badge = $('rda-agent-badge');
+      if (badge) {
+        if (h.agents_online > 0) {
+          badge.textContent = `${h.agents_online} agente${h.agents_online > 1 ? 's' : ''} online`;
+          badge.className = 'badge badge-green';
+        } else {
+          badge.textContent = 'Nenhum agente';
+          badge.className = 'badge badge-gray';
+        }
+      }
+    }
+
+    if (jobsRes.ok) {
+      _rdaJobs = await jobsRes.json();
+      rdaRenderJobs();
+    }
+  } catch {}
+}
+
+// ── Start RDA on init ────────────────────────────────────────────────────────
+
+function initRda() {
+  rdaConnect();
+  setInterval(rdaRefreshAgents, 30000);
+}
+
+window.addEventListener('load', initRda);
 </script>
 </body>
 </html>
