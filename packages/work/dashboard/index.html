@@ -5251,7 +5251,7 @@ async function homeRdaSubmit() {
         mode: 'chat',
         executorId: 'claude-code',
         projectPath: Object.values(_rdaDevices)[0]?.projects?.[0]?.path || '',
-        permissions: { editFiles: false, runTests: false, commit: false, deploy: false, docker: false, terminal: false },
+        permissions: { editFiles: true, runTests: true, commit: true, deploy: false, docker: false, terminal: false },
       }),
     });
     const { job } = await r.json();

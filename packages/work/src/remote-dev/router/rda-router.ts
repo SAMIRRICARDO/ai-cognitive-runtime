@@ -78,9 +78,13 @@ export function createRdaRouter(): Router {
       if (!body.deviceId || !body.prompt) {
         res.status(400).json({ error: 'deviceId and prompt required' }); return;
       }
-      body.permissions = body.permissions ?? {
-        editFiles: true, runTests: true, commit: true,
-        deploy: false, docker: false, terminal: false,
+      body.permissions = {
+        editFiles: body.permissions?.editFiles ?? true,
+        runTests:  body.permissions?.runTests  ?? true,
+        commit:    true,   // always allowed — changed per user rule
+        deploy:    body.permissions?.deploy   ?? false,
+        docker:    body.permissions?.docker   ?? false,
+        terminal:  body.permissions?.terminal ?? false,
       };
 
       const job = await createJob(body);
