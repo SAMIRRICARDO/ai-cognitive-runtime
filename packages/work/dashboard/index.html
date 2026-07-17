@@ -5159,7 +5159,11 @@ function rdaSelectJob(jobId) {
   fetch(`${API}/api/rda/jobs/${jobId}/events`)
     .then(r => r.json())
     .then(events => {
-      events.forEach(ev => rdaHandleJobEvent({ jobId, eventType: ev.event_type, payload: ev.payload || {} }));
+      events.forEach(ev => {
+        let pl = {};
+        try { pl = JSON.parse(ev.payload || '{}'); } catch {}
+        rdaHandleJobEvent({ jobId, eventType: ev.type, payload: pl });
+      });
     }).catch(() => {});
 }
 
@@ -5248,8 +5252,8 @@ async function rdaRefreshAgents() {
           if (!evRes.ok) return;
           const events = await evRes.json();
           const text = events
-            .filter(ev => ev.event_type === 'stream_chunk' && ev.payload?.content)
-            .map(ev => ev.payload.content)
+            .filter(ev => ev.type === 'stream_chunk')
+            .map(ev => { try { return JSON.parse(ev.payload || '{}').content || ''; } catch { return ''; } })
             .join('');
           if (text) { job.output = text; rdaRenderJobs(); }
         } catch {}
