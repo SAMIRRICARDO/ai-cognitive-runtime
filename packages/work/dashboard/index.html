@@ -2843,6 +2843,12 @@ async function init() {
   // Auto-descoberta do túnel (salva no localStorage para próximos acessos Vercel)
   await autoDiscoverTunnel();
 
+  // Reconnect RDA WebSocket with the correct tunnel URL now that API is resolved
+  if (typeof rdaConnect === 'function') {
+    if (_rdaWs) { try { _rdaWs.close(); } catch {} _rdaWs = null; }
+    rdaConnect();
+  }
+
   // Check API connectivity first
   const online = await checkConnection();
   if (!online) {
@@ -4944,8 +4950,8 @@ function rdaClearOutput() {
 
 function rdaConnect() {
   if (_rdaWs && _rdaWs.readyState < 2) return;
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl = `${proto}://${location.host}/rda`;
+  if (!API) { setTimeout(rdaConnect, 2000); return; }  // wait for tunnel discovery
+  const wsUrl = API.replace(/^https/, 'wss').replace(/^http/, 'ws') + '/rda';
 
   try {
     _rdaWs = new WebSocket(wsUrl);
