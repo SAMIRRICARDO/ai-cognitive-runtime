@@ -8,6 +8,8 @@
 
 # Claude local settings
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/worktrees/
 
 # MCP config (pode conter tokens de env)
 .mcp.json
