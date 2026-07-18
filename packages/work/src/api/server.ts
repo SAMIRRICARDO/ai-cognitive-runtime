@@ -1559,7 +1559,7 @@ app.get('/api/work/career-intelligence', async (_req: Request, res: Response) =>
       roles:     byType['role']     ?? [],
       timing,
       summary: { totalApplied, totalInterviews, overallIR },
-      initialized: true,
+      initialized: patterns.length > 0,
     });
   } catch (e) {
     res.json(empty); // never 500 — return empty so dashboard shows "run hunt first"
