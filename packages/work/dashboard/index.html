@@ -471,6 +471,18 @@
         </div>
       </div>
 
+      <!-- System notice -->
+      <div id="system-notice" style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:18px;flex-shrink:0;">⚠️</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#fde68a;font-family:'JetBrains Mono',monospace;margin-bottom:3px;">BUG DETECTADO &amp; CORRIGIDO — 18/07/2026</div>
+          <div style="font-size:11px;color:#9ca3af;line-height:1.6;">
+            LinkedIn alterou o botão <b style="color:#fde68a;">Easy Apply</b> de <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">&lt;button&gt;</code> para <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">&lt;a tabindex="0"&gt;</code>. Todos os seletores existentes falhavam silenciosamente. Fix aplicado: 3 novas estratégias de busca por anchor com texto "Candidatura simplificada" foram adicionadas ao <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">LinkedInApplyEngine</code>. Próxima sessão deve aplicar normalmente.
+          </div>
+        </div>
+        <button onclick="document.getElementById('system-notice').style.display='none'" style="flex-shrink:0;background:none;border:none;color:#6b7280;cursor:pointer;font-size:16px;line-height:1;padding:0;margin-left:auto;">×</button>
+      </div>
+
       <!-- Action buttons -->
       <div class="flex flex-wrap gap-3 mb-6">
         <button onclick="startHunt(5)" class="btn btn-primary">
@@ -712,7 +724,7 @@
           <table class="tbl">
             <thead>
               <tr>
-                <th>Data/Hora</th>
+                <th onclick="toggleDateSort()" title="Clique para ordenar por data" style="cursor:pointer;user-select:none;white-space:nowrap;">Data/Hora <span id="date-sort-icon" style="font-size:11px;opacity:.7;">↕</span></th>
                 <th>Empresa</th>
                 <th>Cargo</th>
                 <th>Plataforma</th>
@@ -2040,22 +2052,32 @@ function debounceSearch() {
 
 let _allAppRows = [];
 const APPS_PAGE_SIZE = 10;
-let _appSortDir = null; // 'desc' | 'asc' | null (ordem do servidor)
+let _appSortDir  = null; // 'desc' | 'asc' | null (ordem do servidor) — Hiring Prob
+let _dateSortDir = null; // 'desc' | 'asc' | null — Data/Hora
 
 function getRowIP(row) {
   return _hireScoreMap[row.id]?.interview_probability ?? row.score_total ?? 0;
 }
 
 function applyAppSort() {
-  if (_appSortDir) {
+  if (_dateSortDir) {
+    _allAppRows.sort((a, b) => {
+      const ta = new Date(a.updated_at || 0).getTime();
+      const tb = new Date(b.updated_at || 0).getTime();
+      return _dateSortDir === 'desc' ? tb - ta : ta - tb;
+    });
+  } else if (_appSortDir) {
     _allAppRows.sort((a, b) =>
       _appSortDir === 'desc'
         ? getRowIP(b) - getRowIP(a)
         : getRowIP(a) - getRowIP(b)
     );
   }
-  const icon = $('hire-sort-icon');
-  if (icon) icon.textContent = _appSortDir === 'desc' ? '↓' : _appSortDir === 'asc' ? '↑' : '↕';
+
+  const hireIcon = $('hire-sort-icon');
+  if (hireIcon) hireIcon.textContent = _appSortDir ? (_appSortDir === 'desc' ? '↓' : '↑') : '↕';
+  const dateIcon = $('date-sort-icon');
+  if (dateIcon) dateIcon.textContent = _dateSortDir ? (_dateSortDir === 'desc' ? '↓' : '↑') : '↕';
 
   const tbody = $('apps-tbody');
   const visible = _allAppRows.slice(0, APPS_PAGE_SIZE);
@@ -2068,8 +2090,15 @@ function applyAppSort() {
   lucide.createIcons({ nodes: [tbody] });
 }
 
+function toggleDateSort() {
+  _dateSortDir = _dateSortDir === 'desc' ? 'asc' : _dateSortDir === 'asc' ? null : 'desc';
+  if (_dateSortDir) _appSortDir = null; // desativa hire sort
+  applyAppSort();
+}
+
 function toggleHireSort() {
   _appSortDir = _appSortDir === 'desc' ? 'asc' : 'desc';
+  if (_appSortDir) _dateSortDir = null; // desativa date sort
   applyAppSort();
 }
 
