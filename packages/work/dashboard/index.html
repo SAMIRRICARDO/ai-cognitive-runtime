@@ -716,9 +716,9 @@
           <option value="30d">Últimos 30 dias</option>
         </select>
         <input id="f-search" type="text" class="filter-input" placeholder="Buscar empresa ou cargo…" oninput="debounceSearch()" />
-        <button id="btn-date-sort" onclick="toggleDateSort()" title="Ordenar por data" class="filter-select" style="cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
-          <i data-lucide="calendar" style="width:13px;height:13px;opacity:.7;"></i>
-          <span id="btn-date-sort-label">Data ↕</span>
+        <button id="btn-date-sort" onclick="toggleDateSort()" title="Ordenar por data" class="filter-select" style="cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+          <i id="btn-date-sort-icon" data-lucide="arrow-up-down" style="width:13px;height:13px;opacity:.8;"></i>
+          <span id="btn-date-sort-label">Data</span>
         </button>
       </div>
 
@@ -728,7 +728,9 @@
           <table class="tbl">
             <thead>
               <tr>
-                <th onclick="toggleDateSort()" title="Clique para ordenar por data" style="cursor:pointer;user-select:none;white-space:nowrap;">Data/Hora <span id="date-sort-icon" style="font-size:11px;opacity:.7;">↕</span></th>
+                <th onclick="toggleDateSort()" title="Clique para ordenar por data" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                  <span style="display:inline-flex;align-items:center;gap:5px;">Data/Hora <i id="date-sort-icon" data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:.6;"></i></span>
+                </th>
                 <th>Empresa</th>
                 <th>Cargo</th>
                 <th>Plataforma</th>
@@ -1777,16 +1779,9 @@ let API = window.VRAXIA_API_URL
 })();
 
 async function autoDiscoverTunnel() {
-  // Se já tem URL configurada e está funcionando, não faz nada
-  if (API) {
-    try {
-      const r = await fetch(`${API}/api/work/health`, { signal: AbortSignal.timeout(3000) });
-      if (r.ok) return; // URL atual funciona, mantém
-    } catch {}
-  }
-
-  // Tenta api-config.json (injetado pelo deploy — funciona via Vercel/acesso remoto)
-  // cache:'no-store' garante que Safari/iOS não use versão cacheada após novo deploy
+  // api-config.json tem SEMPRE prioridade: contém a URL mais atual do túnel.
+  // Túneis Cloudflare mudam a cada restart — o localStorage pode ter URL velha
+  // que ainda responde no health mas aponta para dados antigos (bug iPhone).
   try {
     const c = await fetch(`./api-config.json?_=${Date.now()}`, { cache: 'no-store', signal: AbortSignal.timeout(2000) });
     if (c.ok) {
@@ -1804,6 +1799,14 @@ async function autoDiscoverTunnel() {
       }
     }
   } catch {}
+
+  // Fallback: URL salva no localStorage (caso api-config.json esteja offline/inacessível)
+  if (API) {
+    try {
+      const r = await fetch(`${API}/api/work/health`, { signal: AbortSignal.timeout(3000) });
+      if (r.ok) { console.log('[VRAXIA] Fallback localStorage URL:', API); return; }
+    } catch {}
+  }
 
   // Tenta localhost (acesso local ou via AnyDesk)
   try {
@@ -2090,11 +2093,22 @@ function applyAppSort() {
   }
 
   const hireIcon = $('hire-sort-icon');
-  if (hireIcon) hireIcon.textContent = _appSortDir ? (_appSortDir === 'desc' ? '↓' : '↑') : '↕';
+  if (hireIcon) {
+    hireIcon.setAttribute('data-lucide', _appSortDir === 'desc' ? 'arrow-down' : _appSortDir === 'asc' ? 'arrow-up' : 'arrow-up-down');
+    lucide.createIcons({ nodes: [hireIcon] });
+  }
   const dateIcon = $('date-sort-icon');
-  if (dateIcon) dateIcon.textContent = _dateSortDir ? (_dateSortDir === 'desc' ? '↓' : '↑') : '↕';
+  if (dateIcon) {
+    dateIcon.setAttribute('data-lucide', _dateSortDir === 'desc' ? 'arrow-down' : _dateSortDir === 'asc' ? 'arrow-up' : 'arrow-up-down');
+    lucide.createIcons({ nodes: [dateIcon] });
+  }
+  const btnDateIcon = $('btn-date-sort-icon');
+  if (btnDateIcon) {
+    btnDateIcon.setAttribute('data-lucide', _dateSortDir === 'desc' ? 'arrow-down' : _dateSortDir === 'asc' ? 'arrow-up' : 'arrow-up-down');
+    lucide.createIcons({ nodes: [btnDateIcon] });
+  }
   const btnDateLabel = $('btn-date-sort-label');
-  if (btnDateLabel) btnDateLabel.textContent = _dateSortDir === 'desc' ? 'Data ↓' : _dateSortDir === 'asc' ? 'Data ↑' : 'Data ↕';
+  if (btnDateLabel) btnDateLabel.textContent = _dateSortDir === 'desc' ? 'Mais recente' : _dateSortDir === 'asc' ? 'Mais antigo' : 'Data';
 
   const tbody = $('apps-tbody');
   const visible = _allAppRows.slice(0, APPS_PAGE_SIZE);

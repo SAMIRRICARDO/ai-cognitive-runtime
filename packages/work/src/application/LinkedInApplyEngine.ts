@@ -902,13 +902,14 @@ export class LinkedInApplyEngine {
   private async detectNextAction(tracer: ApplicationTracer): Promise<'next' | 'review' | 'submit' | 'unknown'> {
     const scope = await this.getFormContainer();
 
-    const next = scope.getByRole('button', { name: /^(Next|Próximo|Continue|Continuar|Avançar|Prosseguir|Próxima|Próximo passo)$/i });
+    // Use non-anchored patterns so partial accessible names (e.g. "Avaliar candidatura para ...") still match
+    const next = scope.getByRole('button', { name: /Next|Próximo|Continue|Continuar|Avançar|Prosseguir/i });
     if (await next.count() > 0 && await next.first().isEnabled().catch(() => false)) return 'next';
 
-    const review = scope.getByRole('button', { name: /^(Review|Revisar|Revisar candidatura|Review application|Avaliar|Avaliar candidatura)$/i });
+    const review = scope.getByRole('button', { name: /Review|Revisar|Avaliar/i });
     if (await review.count() > 0 && await review.first().isEnabled().catch(() => false)) return 'review';
 
-    const submit = scope.getByRole('button', { name: /^(Submit application|Enviar candidatura|Candidatar-me|Confirmar e enviar)$/i });
+    const submit = scope.getByRole('button', { name: /Submit application|Enviar candidatura|Candidatar-me|Confirmar e enviar/i });
     if (await submit.count() > 0 && await submit.first().isEnabled().catch(() => false)) return 'submit';
 
     if (await scope.locator('button[aria-label*="Next"], button[aria-label*="Próximo"], button[aria-label*="Avançar"]').count() > 0) return 'next';
@@ -928,6 +929,26 @@ export class LinkedInApplyEngine {
         if (/enviar candidatura|submit application|candidatar-me|confirmar e enviar/i.test(lbl)) return 'submit';
       }
     }
+
+    // Final fallback: query DOM directly via JS to bypass Playwright's accessibility model.
+    // This catches cases where buttons exist in DOM but are not visible/accessible via Playwright selectors.
+    try {
+      const jsResult = await this.page.evaluate(() => {
+        const dialog = document.querySelector('dialog[open]') as HTMLElement | null;
+        const root: HTMLElement = dialog ?? document.body;
+        for (const btn of Array.from(root.querySelectorAll('button'))) {
+          const text = (btn.textContent ?? '').trim();
+          if (/avaliar|review|revisar/i.test(text)) return 'review';
+          if (/avançar|próximo|next|continuar|continue|prosseguir/i.test(text)) return 'next';
+          if (/enviar candidatura|submit application|candidatar-me|confirmar e enviar/i.test(text)) return 'submit';
+        }
+        return null;
+      });
+      if (jsResult) {
+        tracer.addEvent({ step: 'detect_action_js_fallback', url: this.page.url(), result: 'ok', action: jsResult });
+        return jsResult as 'next' | 'review' | 'submit';
+      }
+    } catch { /* ignore */ }
 
     tracer.addEvent({ step: 'detect_action_unknown', url: this.page.url(), result: 'error', error: 'Ação desconhecida', metadata: { labels } });
     return 'unknown';
