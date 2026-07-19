@@ -111,6 +111,7 @@
     .hunt-idle    {color:#6b7280;background:rgba(107,114,128,.1);border:1px solid rgba(107,114,128,.2);}
     .hunt-running {color:#22d3ee;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);}
     .hunt-done    {color:#86efac;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);}
+    .hunt-rest    {color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);}
 
     /* Scrollbar */
     ::-webkit-scrollbar{width:4px;height:4px;}
@@ -559,6 +560,10 @@
             </div>
             <div class="flex items-center gap-3">
               <span id="home-recent-updated" class="text-xs text-gray-600 font-mono"></span>
+              <button id="btn-home-date-sort" onclick="toggleHomeDateSort()" title="Ordenar por data" style="font-size:11px;font-family:'JetBrains Mono',monospace;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);color:#6b7280;cursor:pointer;transition:all .2s;">
+                <span id="home-date-sort-arrow" style="font-size:12px;font-weight:700;">↓</span>
+                <span id="home-date-sort-label">Recente</span>
+              </button>
               <button onclick="loadHome()" class="text-xs text-gray-600 hover:text-gray-400 transition">↻</button>
               <button onclick="navTo('sec-table')" class="text-xs text-blue-400 hover:text-blue-300 transition">Ver todas →</button>
             </div>
@@ -2757,7 +2762,7 @@ async function stopHunt() {
   }
 }
 
-function setHuntRunning(running, pid) {
+function setHuntRunning(running, pid, restDay) {
   const pill = $('hunt-pill');
   const big  = $('hunt-status-big');
   const dot  = $('hunt-dot-big');
@@ -2776,6 +2781,16 @@ function setHuntRunning(running, pid) {
     if (pidEl) pidEl.textContent = pid ? `PID ${pid}` : '';
     if (startBtn) startBtn.style.display = 'none';
     if (stopBtn)  stopBtn.style.display  = '';
+  } else if (restDay) {
+    if (pill) { pill.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono hunt-rest'; }
+    if (big)  { big.className  = 'px-4 py-2 rounded-full text-sm font-mono font-semibold hunt-rest flex items-center gap-2'; }
+    if (dot)  { dot.style.background = '#fbbf24'; dot.style.boxShadow = 'none'; }
+    if (dotS) { dotS.style.background = '#fbbf24'; dotS.style.boxShadow = 'none'; }
+    $('hunt-status-label').textContent = 'Descanso (Dom)';
+    $('hunt-status-big-label').textContent = 'Descanso — Domingo';
+    if (pidEl) pidEl.textContent = 'retoma seg 00:00';
+    if (startBtn) startBtn.style.display = '';
+    if (stopBtn)  stopBtn.style.display  = 'none';
   } else {
     if (pill) { pill.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono hunt-idle'; }
     if (big)  { big.className  = 'px-4 py-2 rounded-full text-sm font-mono font-semibold hunt-idle flex items-center gap-2'; }
@@ -2900,6 +2915,8 @@ async function refreshAll() {
   await loadOpportunityRadar();
   await loadTopOpportunities();
   loadOpportunityFeed();      // non-blocking — reads only from _hireScoreMap
+  loadHome();                 // non-blocking — Home stats (candidaturas recentes, streak)
+  loadHomeEnriched();         // non-blocking — enriched home cards
   loadCareerIntelligence();   // non-blocking — shows empty state if no outcomes
   loadPredictionStats();      // non-blocking — shows empty state if no outcomes
   refreshDIAMap();            // non-blocking — populates _diaMap for outcome badges
@@ -2973,14 +2990,17 @@ async function init() {
       const r = await fetch(`${API}/api/work/db-mtime`, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
       const d = await r.json();
       const huntActive = !!d.huntPid;
+      const restDay = !!d.restDay;
 
       // Atualiza pill de status do hunt quando detectado via PID externo
       if (huntActive && !huntPolling) {
-        setHuntRunning(true, d.huntPid);
+        setHuntRunning(true, d.huntPid, false);
         startHuntPolling();
       } else if (!huntActive && huntPolling) {
-        setHuntRunning(false, null);
+        setHuntRunning(false, null, restDay);
         stopHuntPolling();
+      } else if (!huntActive && !huntPolling) {
+        setHuntRunning(false, null, restDay);
       }
 
       // Refresh parcial quando DB mudou — silent=true evita flash do spinner
@@ -2990,6 +3010,8 @@ async function init() {
         loadOpportunityRadar();
         loadTopOpportunities();
         loadOpportunityFeed();
+        loadHome();
+        loadHomeEnriched();
         const charts = document.getElementById('sec-charts');
         if (charts && charts.getBoundingClientRect().top < window.innerHeight) loadCharts();
       }
@@ -3720,6 +3742,60 @@ async function openHowToWin(jobId, company, title) {
 function closeHowToWin() { $('howtowin-modal').classList.remove('open'); }
 
 // ══ HOME SECTION ═════════════════════════════════════════════════════════════
+let _homeDateSort = 'desc'; // 'desc' = mais recente primeiro | 'asc' = mais antigo primeiro
+let _homeRecentRows = [];   // cache para re-sort sem re-fetch
+
+function renderHomeRecentApps() {
+  const el = $('home-recent-apps');
+  if (!el) return;
+  if (!_homeRecentRows.length) {
+    el.innerHTML = '<div class="empty-state py-4 text-xs">Nenhuma candidatura enviada ainda</div>';
+    return;
+  }
+  const sorted = [..._homeRecentRows].sort((a, b) => {
+    const ta = new Date(a.applied_at || a.updated_at || 0).getTime();
+    const tb = new Date(b.applied_at || b.updated_at || 0).getTime();
+    return _homeDateSort === 'desc' ? tb - ta : ta - tb;
+  });
+  el.innerHTML = sorted.slice(0, 5).map(row => {
+    const plat = row.platform || 'LinkedIn';
+    const pCol = plat === 'LinkedIn' ? '#0ea5e9' : plat === 'Gupy' ? '#a78bfa' : '#fb923c';
+    const dt = row.applied_at
+      ? new Date(row.applied_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
+      : row.created_at
+        ? new Date(row.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
+        : '—';
+    const ip = _hireScoreMap[row.id]?.interview_probability ?? row.score_total ?? null;
+    const ipHtml = ip != null
+      ? `<span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:${ip>=90?'#22d3ee':ip>=75?'#22c55e':'#fbbf24'};font-weight:700;">${ip}%</span>`
+      : '';
+    return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px;justify-content:space-between;">
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:12px;font-weight:600;color:#e5e7eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(row.company || '—')}</div>
+        <div style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(row.job_title || '—')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        ${ipHtml}
+        <span style="font-size:10px;color:${pCol};font-weight:600;">${plat}</span>
+        <span style="font-size:10px;color:#4b5563;">${dt}</span>
+        <span style="font-size:9px;padding:1px 6px;border-radius:20px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#86efac;font-weight:700;font-family:'JetBrains Mono',monospace;">✓</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHomeDateSort() {
+  _homeDateSort = _homeDateSort === 'desc' ? 'asc' : 'desc';
+  const arrow = $('home-date-sort-arrow');
+  const label = $('home-date-sort-label');
+  const btn   = $('btn-home-date-sort');
+  if (arrow) arrow.textContent = _homeDateSort === 'desc' ? '↓' : '↑';
+  if (label) label.textContent = _homeDateSort === 'desc' ? 'Recente' : 'Antigo';
+  if (btn)   btn.style.borderColor = _homeDateSort === 'asc' ? 'rgba(96,165,250,.4)' : 'rgba(255,255,255,.08)';
+  if (btn)   btn.style.color       = _homeDateSort === 'asc' ? '#93c5fd' : '#6b7280';
+  renderHomeRecentApps();
+}
+
 async function loadHome() {
   $('home-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
   try {
@@ -3746,41 +3822,11 @@ async function loadHome() {
   try {
     const r2 = await fetch(`${API}/api/work/applications?status=applied`, { cache: 'no-store' });
     const rows = await r2.json();
-    const el = $('home-recent-apps');
     const updEl = $('home-recent-updated');
     const nowStr = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
     if (updEl) updEl.textContent = `atualizado ${nowStr}`;
-    if (!Array.isArray(rows) || !rows.length) {
-      el.innerHTML = '<div class="empty-state py-4 text-xs">Nenhuma candidatura enviada ainda</div>';
-      return;
-    }
-    // Ordena por applied_at desc e pega as 5 mais recentes
-    const sorted = rows.sort((a, b) => new Date(b.applied_at || b.updated_at || 0).getTime() - new Date(a.applied_at || a.updated_at || 0).getTime());
-    el.innerHTML = sorted.slice(0, 5).map(row => {
-      const plat = row.platform || 'LinkedIn';
-      const pCol = plat === 'LinkedIn' ? '#0ea5e9' : plat === 'Gupy' ? '#a78bfa' : '#fb923c';
-      const dt = row.applied_at
-        ? new Date(row.applied_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
-        : row.created_at
-          ? new Date(row.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
-          : '—';
-      const ip = _hireScoreMap[row.id]?.interview_probability ?? row.score_total ?? null;
-      const ipHtml = ip != null
-        ? `<span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:${ip>=90?'#22d3ee':ip>=75?'#22c55e':'#fbbf24'};font-weight:700;">${ip}%</span>`
-        : '';
-      return `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px;justify-content:space-between;">
-        <div style="min-width:0;flex:1;">
-          <div style="font-size:12px;font-weight:600;color:#e5e7eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(row.company || '—')}</div>
-          <div style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(row.job_title || '—')}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          ${ipHtml}
-          <span style="font-size:10px;color:${pCol};font-weight:600;">${plat}</span>
-          <span style="font-size:10px;color:#4b5563;">${dt}</span>
-          <span style="font-size:9px;padding:1px 6px;border-radius:20px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#86efac;font-weight:700;font-family:'JetBrains Mono',monospace;">✓</span>
-        </div>
-      </div>`;
-    }).join('');
+    _homeRecentRows = Array.isArray(rows) ? rows : [];
+    renderHomeRecentApps();
   } catch { /* silent */ }
 }
 

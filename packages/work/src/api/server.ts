@@ -214,7 +214,8 @@ app.get('/api/work/db-mtime', (_req: Request, res: Response) => {
   const huntPid    = fs.existsSync(path.join(WORK_DIR, 'hunt.pid'))
     ? Number(fs.readFileSync(path.join(WORK_DIR, 'hunt.pid'), 'utf-8').trim())
     : (huntProcess?.pid ?? null);
-  res.json({ dbMtime, jsonlMtime, mtime: Math.max(dbMtime, jsonlMtime), huntPid });
+  const restDay = new Date().getDay() === 0; // Sunday = descanso
+  res.json({ dbMtime, jsonlMtime, mtime: Math.max(dbMtime, jsonlMtime), huntPid, restDay });
 });
 
 // ── GET /api/work/tunnel-url ──────────────────────────────────────────────────
