@@ -494,12 +494,32 @@ export class LinkedInApplyEngine {
 
   private async openEasyApply(btn: Locator, evidence: EvidenceCollector, tracer: ApplicationTracer): Promise<'modal' | 'page'> {
     await this.dismissBlockingDialog(); // fecha dialogs antes de clicar
-    // JS click bypasses Playwright's pointer-interception check e qualquer overlay
-    await btn.evaluate((el: HTMLElement) => el.click()).catch(() => btn.click({ force: true }));
+    const jobUrl = this.page.url(); // salva para recovery se houver redirect
+
+    // Playwright native click gera eventos isTrusted=true — LinkedIn só chama
+    // preventDefault() em <a> anchors para eventos trusted, prevenindo a navegação.
+    // JS evaluate el.click() é untrusted e pode fazer o <a> navegar para o href
+    // (jobs/search-results?skipRedirect=true). Usar click() nativo como primário,
+    // JS como fallback para casos de overlay bloqueando o pointer.
+    await btn.click({ timeout: 3000 }).catch(() =>
+      btn.click({ force: true, timeout: 3000 }).catch(() =>
+        btn.evaluate((el: HTMLElement) => el.click()).catch(() => {}),
+      ),
+    );
     // Wait up to 5s for navigation to either /apply/ page or a modal dialog.
     // Use a short poll instead of a fixed delay to avoid burning the inactivity window.
     await this.page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
     await delay(600, 900); // minimal settle time
+
+    // Se o clique no anchor fez o LinkedIn navegar para search-results?skipRedirect=true
+    // em vez de abrir o modal, retorna à vaga e aguarda o modal (o servidor LinkedIn
+    // pode ter enfileirado a abertura do modal mesmo após o redirect).
+    const urlMid = this.page.url();
+    if (urlMid.includes('skipRedirect=true') || (urlMid.includes('/jobs/search-results') && !urlMid.includes('/apply'))) {
+      tracer.addEvent({ step: 'easy_apply_skip_redirect_recovery', url: urlMid, result: 'ok', metadata: { jobUrl: jobUrl.slice(0, 80) } });
+      await this.page.goto(jobUrl, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+      await delay(800, 1200);
+    }
 
     const urlAfter = this.page.url();
     if (!urlAfter.includes('linkedin.com')) {
@@ -885,14 +905,14 @@ export class LinkedInApplyEngine {
     const next = scope.getByRole('button', { name: /^(Next|Próximo|Continue|Continuar|Avançar|Prosseguir|Próxima|Próximo passo)$/i });
     if (await next.count() > 0 && await next.first().isEnabled().catch(() => false)) return 'next';
 
-    const review = scope.getByRole('button', { name: /^(Review|Revisar|Revisar candidatura|Review application)$/i });
+    const review = scope.getByRole('button', { name: /^(Review|Revisar|Revisar candidatura|Review application|Avaliar|Avaliar candidatura)$/i });
     if (await review.count() > 0 && await review.first().isEnabled().catch(() => false)) return 'review';
 
     const submit = scope.getByRole('button', { name: /^(Submit application|Enviar candidatura|Candidatar-me|Confirmar e enviar)$/i });
     if (await submit.count() > 0 && await submit.first().isEnabled().catch(() => false)) return 'submit';
 
     if (await scope.locator('button[aria-label*="Next"], button[aria-label*="Próximo"], button[aria-label*="Avançar"]').count() > 0) return 'next';
-    if (await scope.locator('button[aria-label*="Review"], button[aria-label*="Revisar"]').count() > 0) return 'review';
+    if (await scope.locator('button[aria-label*="Review"], button[aria-label*="Revisar"], button[aria-label*="Avaliar"]').count() > 0) return 'review';
     if (await scope.locator('button[aria-label*="Submit"], button[aria-label*="Enviar candidatura"]').count() > 0) return 'submit';
 
     const allBtns = await scope.locator('button:visible').all();
@@ -903,7 +923,7 @@ export class LinkedInApplyEngine {
       const lbl  = txt || aria;
       if (lbl) {
         labels.push(lbl);
-        if (/review|revisar/i.test(lbl)) return 'review';
+        if (/review|revisar|avaliar/i.test(lbl)) return 'review';
         if (/avançar|próximo|next|continue|continuar/i.test(lbl)) return 'next';
         if (/enviar candidatura|submit application|candidatar-me|confirmar e enviar/i.test(lbl)) return 'submit';
       }
@@ -915,12 +935,12 @@ export class LinkedInApplyEngine {
 
   private async clickNext(tracer: ApplicationTracer): Promise<void> {
     const scope = await this.getFormContainer();
-    const btn = scope.getByRole('button', { name: /Next|Próximo|Continue|Continuar|Avançar|Prosseguir|Review|Revisar/i });
+    const btn = scope.getByRole('button', { name: /Next|Próximo|Continue|Continuar|Avançar|Prosseguir|Review|Revisar|Avaliar/i });
     if (await btn.count() > 0) {
       await this.safeClick(btn.first(), tracer, 'click_next');
       return;
     }
-    const fallback = scope.locator('button[aria-label*="Next"], button[aria-label*="Próximo"], button[aria-label*="Continue"], button[aria-label*="Avançar"], button[aria-label*="Review"]');
+    const fallback = scope.locator('button[aria-label*="Next"], button[aria-label*="Próximo"], button[aria-label*="Continue"], button[aria-label*="Avançar"], button[aria-label*="Review"], button[aria-label*="Avaliar"]');
     if (await fallback.count() > 0) {
       await this.safeClick(fallback.first(), tracer, 'click_next_fallback');
       return;
@@ -931,7 +951,7 @@ export class LinkedInApplyEngine {
       const aria = (await b.getAttribute('aria-label').catch(() => '')) ?? '';
       const lbl  = txt || aria;
       if (!lbl || /cancel|fechar|close|dismiss|descartar|sair/i.test(lbl)) continue;
-      if (/avançar|próximo|next|continue|continuar|review|revisar/i.test(lbl)) {
+      if (/avançar|próximo|next|continue|continuar|review|revisar|avaliar/i.test(lbl)) {
         await this.safeClick(b, tracer, `click_next_last_resort:${lbl.slice(0, 30)}`);
         return;
       }

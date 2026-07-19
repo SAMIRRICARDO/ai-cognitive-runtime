@@ -716,6 +716,10 @@
           <option value="30d">Últimos 30 dias</option>
         </select>
         <input id="f-search" type="text" class="filter-input" placeholder="Buscar empresa ou cargo…" oninput="debounceSearch()" />
+        <button id="btn-date-sort" onclick="toggleDateSort()" title="Ordenar por data" class="filter-select" style="cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+          <i data-lucide="calendar" style="width:13px;height:13px;opacity:.7;"></i>
+          <span id="btn-date-sort-label">Data ↕</span>
+        </button>
       </div>
 
       <!-- Table -->
@@ -1881,13 +1885,16 @@ function scoreBadge(ip, action, legacy) {
   </div>`;
 }
 
-function statusBadge(status) {
+function statusBadge(status, row) {
+  // 'failed' state machine → 'filtered_out' DB status, distinguido por error_category
+  const isEngineFail = status === 'filtered_out' && row && row.error_category;
   const MAP = {
     applied:              ['badge-green',  'Aplicado'],
     queued:               ['badge-blue',   'Na fila'],
     review:               ['badge-yellow', 'Revisão'],
     filtered_out:         ['badge-gray',   'Filtrado'],
     error:                ['badge-red',    'Erro'],
+    failed:               ['badge-red',    'Falhou'],
     interview:            ['badge-purple', 'Entrevista'],
     applying:             ['badge-cyan',   'Aplicando'],
     scanned:              ['badge-gray',   'Scanned'],
@@ -1895,6 +1902,14 @@ function statusBadge(status) {
     questionnaire_done:   ['badge-green',  'Q. Concluído'],
     rejected:             ['badge-red',    'Rejeitado'],
   };
+  const escAttr = s => esc(s).replace(/"/g, '&quot;');
+  if (isEngineFail) {
+    const cat = row.error_category;
+    const rca = (row.error_rca ?? row.notes ?? '').slice(0, 120);
+    const tooltip = escAttr([cat, rca].filter(Boolean).join(' — '));
+    const catChip = `<span style="font-size:9px;color:#f87171;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px" title="${tooltip}">${esc(cat)}</span>`;
+    return `<span title="${tooltip}"><span class="badge badge-red">Falhou</span>${catChip}</span>`;
+  }
   const [cls, label] = MAP[status] ?? ['badge-gray', status];
   return `<span class="badge ${cls}">${label}</span>`;
 }
@@ -2078,6 +2093,8 @@ function applyAppSort() {
   if (hireIcon) hireIcon.textContent = _appSortDir ? (_appSortDir === 'desc' ? '↓' : '↑') : '↕';
   const dateIcon = $('date-sort-icon');
   if (dateIcon) dateIcon.textContent = _dateSortDir ? (_dateSortDir === 'desc' ? '↓' : '↑') : '↕';
+  const btnDateLabel = $('btn-date-sort-label');
+  if (btnDateLabel) btnDateLabel.textContent = _dateSortDir === 'desc' ? 'Data ↓' : _dateSortDir === 'asc' ? 'Data ↑' : 'Data ↕';
 
   const tbody = $('apps-tbody');
   const visible = _allAppRows.slice(0, APPS_PAGE_SIZE);
@@ -2206,7 +2223,7 @@ function renderAppRows(rows) {
       <td>${scoreCell}</td>
       <td>${dsCell}</td>
       <td>${outcomeBadge(row.id)}</td>
-      <td>${statusBadge(row.status)}</td>
+      <td>${statusBadge(row.status, row)}</td>
       <td style="white-space:nowrap;display:flex;gap:4px;align-items:center;">
         ${row.linkedin_url
           ? `<a href="${esc(row.linkedin_url)}" target="_blank" class="btn btn-ghost text-xs px-3 py-1.5">Ver ↗</a>`
