@@ -363,6 +363,27 @@ export class LinkedInApplyEngine {
   private async findEasyApplyButton(evidence: EvidenceCollector, tracer: ApplicationTracer): Promise<Locator | null> {
     const strategies: Array<{ label: string; fn: () => Promise<Locator | null> }> = [
       // ── LinkedIn new UI (2026-07): Easy Apply is now an <a tabindex="0"> not <button> ──
+      // Scoped to job top-card area first to avoid picking up Similar-Jobs sidebar anchors.
+      {
+        label: 'anchor in top-card container',
+        fn: async () => {
+          const containers = [
+            '.job-details-jobs-unified-top-card__cta-container',
+            '.jobs-unified-top-card__cta-container',
+            '.jobs-apply-button--top-card',
+            '.jobs-s-apply',
+          ];
+          for (const sel of containers) {
+            const anchors = await this.page.locator(`${sel} a:visible`).all();
+            for (const a of anchors) {
+              const txt = (await a.innerText().catch(() => '')).trim();
+              if (/Candidatura simplificada|Easy Apply/i.test(txt))
+                return a;
+            }
+          }
+          return null;
+        },
+      },
       {
         label: 'anchor hasText[Candidatura simplificada]',
         fn: async () => {
@@ -383,8 +404,12 @@ export class LinkedInApplyEngine {
           const anchors = await this.page.locator('a[tabindex]:visible').all();
           for (const a of anchors) {
             const txt = (await a.innerText().catch(() => '')).trim();
-            if (/Candidatura simplificada|Easy Apply/i.test(txt))
-              return a;
+            if (!/Candidatura simplificada|Easy Apply/i.test(txt)) continue;
+            // Skip sidebar/similar-jobs anchors — they carry skipRedirect in their href
+            // and belong to other jobs, not the current one.
+            const href = await a.getAttribute('href').catch(() => '');
+            if (href && href.includes('skipRedirect')) continue;
+            return a;
           }
           return null;
         },
