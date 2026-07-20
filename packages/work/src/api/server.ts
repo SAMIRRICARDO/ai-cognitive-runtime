@@ -194,6 +194,13 @@ app.use('/api/', (_req: Request, res: Response, next: NextFunction) => {
 // ── Remote Dev Agent router ───────────────────────────────────────────────────
 app.use('/api/rda', createRdaRouter());
 
+// api-config.json nunca deve ser cacheado — contém a URL atual do túnel
+app.get('/work/api-config.json', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.sendFile(path.join(DASH_DIR, 'api-config.json'));
+});
+
 // Static dashboard at /work
 app.use('/work', express.static(DASH_DIR));
 app.get('/work', (_req: Request, res: Response) => {

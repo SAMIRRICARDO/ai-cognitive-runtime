@@ -51,6 +51,7 @@ export function initRdaWsServer(httpServer: Server): WebSocketServer {
     const ip   = req.socket.remoteAddress ?? 'unknown';
     const isAgent = req.headers['x-rda-agent'] === 'true';
     let agentDeviceId: string | null = null;
+    let dashConn: DashboardConn | null = null;
 
     ws.on('message', async (raw) => {
       let msg: WsMessage;
@@ -130,14 +131,15 @@ export function initRdaWsServer(httpServer: Server): WebSocketServer {
         await updateDeviceStatus(agentDeviceId, 'offline' as DeviceStatus);
         await audit(agentDeviceId, null, 'agent_disconnect', undefined, ip);
         broadcastToDashboards('device_status', { deviceId: agentDeviceId, status: 'offline' });
-      } else {
-        dashboards.delete({ ws } as DashboardConn);
+      } else if (dashConn) {
+        dashboards.delete(dashConn);
       }
     });
 
     // Register as dashboard if not agent
     if (!isAgent) {
-      dashboards.add({ ws });
+      dashConn = { ws };
+      dashboards.add(dashConn);
       // Send current agent statuses
       for (const [, agent] of agents) {
         send(ws, 'device_status', { deviceId: agent.deviceId, status: 'online', name: agent.name });

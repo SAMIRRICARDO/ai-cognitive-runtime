@@ -5039,10 +5039,12 @@ window.addEventListener('load', init);
 
 // ══ REMOTE DEVELOPMENT AGENT ═════════════════════════════════════════════════
 
-let _rdaWs          = null;   // dashboard WebSocket to /rda
-let _rdaCurrentJob  = null;   // active job id
-let _rdaDevices     = {};     // deviceId → {name, projects}
-let _rdaJobs        = [];     // recent jobs
+let _rdaWs             = null;   // dashboard WebSocket to /rda
+let _rdaCurrentJob     = null;   // active job id
+let _rdaDevices        = {};     // deviceId → {name, projects}
+let _rdaJobs           = [];     // recent jobs
+let _rdaHeartbeatTimer = null;
+let _rdaLastPong       = 0;
 
 function rdaLog(text, color) {
   const out = $('rda-output');
@@ -5081,10 +5083,19 @@ function rdaConnect() {
   _rdaWs.onopen = () => {
     const dot = $('rda-status-dot');
     if (dot) { dot.style.background = '#22d3ee'; dot.style.boxShadow = '0 0 6px rgba(34,211,238,.7)'; dot.style.animation = 'liveInd 1.4s ease-in-out infinite'; }
+    _rdaLastPong = Date.now();
+    // Heartbeat: detect dead WS connections (especially mobile Safari background kill)
+    clearInterval(_rdaHeartbeatTimer);
+    _rdaHeartbeatTimer = setInterval(() => {
+      if (!_rdaWs || _rdaWs.readyState !== 1) return;
+      if (Date.now() - _rdaLastPong > 25000) { _rdaWs.close(); return; }
+      try { _rdaWs.send(JSON.stringify({ type: 'heartbeat', payload: {} })); } catch {}
+    }, 10000);
     rdaRefreshAgents();
   };
 
   _rdaWs.onclose = () => {
+    clearInterval(_rdaHeartbeatTimer);
     const dot = $('rda-status-dot');
     if (dot) { dot.style.background = '#6b7280'; dot.style.boxShadow = 'none'; dot.style.animation = 'none'; }
     setTimeout(rdaConnect, 5000);
@@ -5095,6 +5106,8 @@ function rdaConnect() {
   _rdaWs.onmessage = (ev) => {
     let msg;
     try { msg = JSON.parse(ev.data); } catch { return; }
+
+    if (msg.type === 'heartbeat_ack') { _rdaLastPong = Date.now(); return; }
 
     if (msg.type === 'device_status') {
       const { deviceId, status, name } = msg.payload;
@@ -5386,6 +5399,19 @@ async function rdaRefreshAgents() {
           if (text) { job.output = text; rdaRenderJobs(); homeRdaRenderJobs(); }
         } catch {}
       }));
+
+      // Sync home-rda-output if current job finished while the WS was offline
+      if (_rdaCurrentJob) {
+        const cur = _rdaJobs.find(j => j.id === _rdaCurrentJob);
+        if (cur && ['completed', 'error', 'cancelled'].includes(cur.status)) {
+          const outputEl = $('home-rda-output');
+          if (outputEl) {
+            outputEl.style.display = 'block';
+            outputEl.style.color = cur.status === 'completed' ? '#22d3ee' : '#f87171';
+            outputEl.textContent = (cur.output || '').trim() || `[${cur.status.toUpperCase()}]`;
+          }
+        }
+      }
     }
   } catch {}
 }
@@ -5501,6 +5527,19 @@ function initRda() {
   rdaConnect();
   setInterval(rdaRefreshAgents, 30000);
 }
+
+// Mobile Safari kills WebSocket silently when tab goes to background.
+// Force reconnect + data refresh when user returns to the tab.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (!_rdaWs || _rdaWs.readyState >= 2) {
+    rdaConnect();
+  } else if (_rdaWs.readyState === 1) {
+    // Probe the existing connection — if it's dead the send throws → close → reconnect
+    try { _rdaWs.send(JSON.stringify({ type: 'heartbeat', payload: {} })); } catch { _rdaWs.close(); }
+  }
+  rdaRefreshAgents();
+});
 
 window.addEventListener('load', initRda);
 </script>
