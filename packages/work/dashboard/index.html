@@ -560,10 +560,11 @@
             </div>
             <div class="flex items-center gap-3">
               <span id="home-recent-updated" class="text-xs text-gray-600 font-mono"></span>
-              <button id="btn-home-date-sort" onclick="toggleHomeDateSort()" title="Ordenar por data" style="font-size:11px;font-family:'JetBrains Mono',monospace;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);color:#6b7280;cursor:pointer;transition:all .2s;">
-                <span id="home-date-sort-arrow" style="font-size:12px;font-weight:700;">↓</span>
-                <span id="home-date-sort-label">Recente</span>
-              </button>
+              <div style="display:inline-flex;align-items:center;gap:1px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:2px 4px;">
+                <span style="font-size:10px;color:#6b7280;padding:0 4px;user-select:none;font-family:'JetBrains Mono',monospace;">Data</span>
+                <button id="btn-home-date-sort-asc" onclick="setHomeDateSort('asc')" title="Mais antigo primeiro" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:20px;border-radius:4px;background:transparent;border:none;color:#6b7280;font-size:13px;font-weight:700;outline:none;transition:all .2s;">↑</button>
+                <button id="btn-home-date-sort-desc" onclick="setHomeDateSort('desc')" title="Mais recente primeiro" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:20px;border-radius:4px;background:transparent;border:none;color:#60a5fa;font-size:13px;font-weight:700;outline:none;transition:all .2s;">↓</button>
+              </div>
               <button onclick="loadHome()" class="text-xs text-gray-600 hover:text-gray-400 transition">↻</button>
               <button onclick="navTo('sec-table')" class="text-xs text-blue-400 hover:text-blue-300 transition">Ver todas →</button>
             </div>
@@ -3747,6 +3748,7 @@ let _homeDateSort = 'desc'; // 'desc' = mais recente primeiro | 'asc' = mais ant
 let _homeRecentRows = [];   // cache para re-sort sem re-fetch
 
 function renderHomeRecentApps() {
+  updateHomeDateSortUI();
   const el = $('home-recent-apps');
   if (!el) return;
   if (!_homeRecentRows.length) {
@@ -3785,16 +3787,23 @@ function renderHomeRecentApps() {
   }).join('');
 }
 
-function toggleHomeDateSort() {
-  _homeDateSort = _homeDateSort === 'desc' ? 'asc' : 'desc';
-  const arrow = $('home-date-sort-arrow');
-  const label = $('home-date-sort-label');
-  const btn   = $('btn-home-date-sort');
-  if (arrow) arrow.textContent = _homeDateSort === 'desc' ? '↓' : '↑';
-  if (label) label.textContent = _homeDateSort === 'desc' ? 'Recente' : 'Antigo';
-  if (btn)   btn.style.borderColor = _homeDateSort === 'asc' ? 'rgba(96,165,250,.4)' : 'rgba(255,255,255,.08)';
-  if (btn)   btn.style.color       = _homeDateSort === 'asc' ? '#93c5fd' : '#6b7280';
+function setHomeDateSort(dir) {
+  _homeDateSort = dir;
+  updateHomeDateSortUI();
   renderHomeRecentApps();
+}
+
+function updateHomeDateSortUI() {
+  const btnAsc  = $('btn-home-date-sort-asc');
+  const btnDesc = $('btn-home-date-sort-desc');
+  if (btnAsc) {
+    btnAsc.style.background = _homeDateSort === 'asc'  ? 'rgba(96,165,250,.18)' : 'transparent';
+    btnAsc.style.color      = _homeDateSort === 'asc'  ? '#60a5fa' : '#6b7280';
+  }
+  if (btnDesc) {
+    btnDesc.style.background = _homeDateSort === 'desc' ? 'rgba(96,165,250,.18)' : 'transparent';
+    btnDesc.style.color      = _homeDateSort === 'desc' ? '#60a5fa' : '#6b7280';
+  }
 }
 
 async function loadHome() {
