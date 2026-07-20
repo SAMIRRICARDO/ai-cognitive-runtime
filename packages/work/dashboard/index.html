@@ -721,10 +721,11 @@
           <option value="30d">Últimos 30 dias</option>
         </select>
         <input id="f-search" type="text" class="filter-input" placeholder="Buscar empresa ou cargo…" oninput="debounceSearch()" />
-        <button id="btn-date-sort" onclick="toggleDateSort()" title="Clique para ordenar por data (crescente / decrescente)" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#e5e7eb;font-size:13px;outline:none;transition:all .2s;font-family:inherit;">
-          <span id="btn-date-sort-arrow" style="font-size:14px;line-height:1;font-weight:700;color:#6b7280;">↕</span>
-          <span id="btn-date-sort-label">Data</span>
-        </button>
+        <div style="display:inline-flex;align-items:center;gap:1px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:3px 5px;">
+          <span style="font-size:12px;color:#6b7280;padding:0 5px;user-select:none;">Data</span>
+          <button id="btn-date-sort-asc" onclick="setDateSort('asc')" title="Crescente — mais antigo primeiro" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:26px;height:24px;border-radius:6px;background:transparent;border:none;color:#6b7280;font-size:14px;font-weight:700;outline:none;transition:all .2s;">↑</button>
+          <button id="btn-date-sort-desc" onclick="setDateSort('desc')" title="Decrescente — mais recente primeiro" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:26px;height:24px;border-radius:6px;background:transparent;border:none;color:#6b7280;font-size:14px;font-weight:700;outline:none;transition:all .2s;">↓</button>
+        </div>
       </div>
 
       <!-- Table -->
@@ -2120,21 +2121,15 @@ function applyAppSort() {
     dateIcon.style.opacity = _dateSortDir ? '1' : '.6';
     dateIcon.style.color = _dateSortDir ? '#60a5fa' : '';
   }
-  const btnDateArrow = $('btn-date-sort-arrow');
-  const btnDateLabel = $('btn-date-sort-label');
-  const btnDateSort  = $('btn-date-sort');
-  if (btnDateArrow) btnDateArrow.textContent = _dateSortDir === 'desc' ? '↓' : _dateSortDir === 'asc' ? '↑' : '↕';
-  if (btnDateLabel) btnDateLabel.textContent  = _dateSortDir === 'desc' ? 'Mais recente' : _dateSortDir === 'asc' ? 'Mais antigo' : 'Data';
-  if (btnDateSort) {
-    if (_dateSortDir) {
-      btnDateSort.style.borderColor = 'rgba(96,165,250,.5)';
-      btnDateSort.style.color = '#93c5fd';
-      if (btnDateArrow) btnDateArrow.style.color = '#60a5fa';
-    } else {
-      btnDateSort.style.borderColor = 'rgba(255,255,255,.1)';
-      btnDateSort.style.color = '#e5e7eb';
-      if (btnDateArrow) btnDateArrow.style.color = '#6b7280';
-    }
+  const btnAsc  = $('btn-date-sort-asc');
+  const btnDesc = $('btn-date-sort-desc');
+  if (btnAsc) {
+    btnAsc.style.background = _dateSortDir === 'asc'  ? 'rgba(96,165,250,.18)' : 'transparent';
+    btnAsc.style.color      = _dateSortDir === 'asc'  ? '#60a5fa' : '#6b7280';
+  }
+  if (btnDesc) {
+    btnDesc.style.background = _dateSortDir === 'desc' ? 'rgba(96,165,250,.18)' : 'transparent';
+    btnDesc.style.color      = _dateSortDir === 'desc' ? '#60a5fa' : '#6b7280';
   }
 
   const tbody = $('apps-tbody');
@@ -2148,9 +2143,15 @@ function applyAppSort() {
   lucide.createIcons({ nodes: [tbody] });
 }
 
+function setDateSort(dir) {
+  _dateSortDir = _dateSortDir === dir ? null : dir;
+  if (_dateSortDir) _appSortDir = null;
+  applyAppSort();
+}
+
 function toggleDateSort() {
   _dateSortDir = _dateSortDir === 'desc' ? 'asc' : _dateSortDir === 'asc' ? null : 'desc';
-  if (_dateSortDir) _appSortDir = null; // desativa hire sort
+  if (_dateSortDir) _appSortDir = null;
   applyAppSort();
 }
 
@@ -3020,7 +3021,7 @@ async function init() {
         _lastJsonlMtime = d.jsonlMtime;
         loadQuestionnaire(true);
       }
-    } catch {}
+    } catch { await autoDiscoverTunnel(); }
   }
   // Polling fixo de 60s — hunt status é rastreado separadamente por startHuntPolling (3s)
   let _dbMtimeTimer = null;
