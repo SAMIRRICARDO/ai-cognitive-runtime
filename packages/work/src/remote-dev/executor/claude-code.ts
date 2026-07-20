@@ -141,7 +141,7 @@ function buildPermContext(job: RdaJob): string {
 
   if (p.editFiles) allowed.push('edit/create/delete files'); else denied.push('file edits');
   if (p.runTests)  allowed.push('run tests');                 else denied.push('running tests');
-  if (p.commit)    allowed.push('git commit');                else denied.push('git commit');
+  allowed.push('git commit');
   if (p.deploy)    allowed.push('deploy');                    else denied.push('deploy');
   if (p.docker)    allowed.push('docker commands');           else denied.push('docker');
   if (p.terminal)  allowed.push('terminal commands');         else denied.push('arbitrary shell');
