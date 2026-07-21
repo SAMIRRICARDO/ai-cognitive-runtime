@@ -311,8 +311,16 @@ app.get('/api/work/applications', async (req: Request, res: Response) => {
       }
 
       if (period && period !== 'all') {
-        const days = period === 'hoje' ? 1 : period === '7d' ? 7 : 30;
-        const cutoff = new Date(Date.now() - days * 86_400_000).toISOString();
+        let cutoff: string;
+        if (period === 'hoje') {
+          // Brazil is permanently UTC-3 (no DST since 2019).
+          // Brazil midnight = UTC 03:00 of the same calendar day.
+          const nowBR = new Date(Date.now() - 3 * 3_600_000);
+          cutoff = new Date(Date.UTC(nowBR.getUTCFullYear(), nowBR.getUTCMonth(), nowBR.getUTCDate(), 3, 0, 0)).toISOString();
+        } else {
+          const days = period === '7d' ? 7 : 30;
+          cutoff = new Date(Date.now() - days * 86_400_000).toISOString();
+        }
         sql += ` AND updated_at >= ?`;
         params.push(cutoff);
       }

@@ -3946,16 +3946,13 @@ function setHomeDateSort(dir) {
 }
 
 function updateHomeDateSortUI() {
-  const btnAsc  = $('btn-home-date-sort-asc');
-  const btnDesc = $('btn-home-date-sort-desc');
-  if (btnAsc) {
-    btnAsc.style.background = _homeDateSort === 'asc'  ? 'rgba(96,165,250,.18)' : 'transparent';
-    btnAsc.style.color      = _homeDateSort === 'asc'  ? '#60a5fa' : '#6b7280';
-  }
-  if (btnDesc) {
-    btnDesc.style.background = _homeDateSort === 'desc' ? 'rgba(96,165,250,.18)' : 'transparent';
-    btnDesc.style.color      = _homeDateSort === 'desc' ? '#60a5fa' : '#6b7280';
-  }
+  const icon = $('home-date-sort-icon');
+  if (icon) icon.textContent = _homeDateSort === 'asc' ? '↑' : '↓';
+}
+
+function toggleHomeDateSort() {
+  _homeDateSort = _homeDateSort === 'desc' ? 'asc' : 'desc';
+  renderHomeRecentApps();
 }
 
 async function loadHome() {
@@ -6160,8 +6157,10 @@ function initRda() {
 
 // Mobile Safari kills WebSocket silently when tab goes to background.
 // Force reconnect + data refresh when user returns to the tab.
+let _tabHiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible') return;
+  if (document.visibilityState === 'hidden') { _tabHiddenAt = Date.now(); return; }
+  // visible
   if (!_rdaWs || _rdaWs.readyState >= 2) {
     rdaConnect();
   } else if (_rdaWs.readyState === 1) {
@@ -6169,11 +6168,28 @@ document.addEventListener('visibilitychange', () => {
     try { _rdaWs.send(JSON.stringify({ type: 'heartbeat', payload: {} })); } catch { _rdaWs.close(); }
   }
   rdaRefreshAgents();
-  // Redescobre túnel e força refresh de dados ao retornar da aba no iPhone/BFCache
-  autoDiscoverTunnel().then(() => refreshAll()).catch(() => {});
+  const hiddenMs = _tabHiddenAt ? Date.now() - _tabHiddenAt : 0;
+  if (hiddenMs > 60 * 60 * 1000) {
+    // Tab hidden >1h: if origin is alive do a full reload so we get fresh HTML + new tunnel URL.
+    // If origin is dead (stale tunnel URL), fall through to autoDiscoverTunnel.
+    fetch(location.origin + '/api/work/health', { signal: AbortSignal.timeout(2000) })
+      .then(r => { if (r.ok) { location.reload(); return; }
+        autoDiscoverTunnel().then(() => refreshAll()).catch(() => {}); })
+      .catch(() => autoDiscoverTunnel().then(() => refreshAll()).catch(() => {}));
+  } else {
+    // Redescobre túnel e força refresh de dados ao retornar da aba no iPhone/BFCache
+    autoDiscoverTunnel().then(() => refreshAll()).catch(() => {});
+  }
 });
 
 window.addEventListener('load', initRda);
+
+// BFCache: Safari iOS restaura a página do cache ao pressionar Voltar.
+// pageshow com persisted=true significa que o JS não re-executou — força refresh.
+window.addEventListener('pageshow', (e) => {
+  if (!e.persisted) return;
+  autoDiscoverTunnel().then(() => refreshAll()).catch(() => {});
+});
 </script>
 </body>
 </html>
