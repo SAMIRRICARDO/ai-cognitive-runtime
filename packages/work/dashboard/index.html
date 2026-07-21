@@ -292,7 +292,8 @@
   </div>
   <div style="margin-top:10px;font-size:10px;color:#4b5563;">
     Deixe vazio para usar <code style="color:#60a5fa;">http://localhost:3001</code> (modo local).<br>
-    Cole a URL do cloudflared/ngrok para acesso remoto.
+    Cole a URL do cloudflared/ngrok para acesso remoto.<br>
+    <span style="color:#fbbf24;">Se o túnel trocou de URL, entrar com a nova URL redireciona automaticamente.</span>
   </div>
 </div>
 
@@ -489,14 +490,14 @@
       </div>
 
       <!-- System notice -->
-      <div id="system-notice" style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
-        <span style="font-size:18px;flex-shrink:0;">✅</span>
+      <div id="system-notice" style="background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.3);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:18px;flex-shrink:0;">🔧</span>
         <div style="flex:1;">
-          <div style="font-size:12px;font-weight:700;color:#86efac;font-family:'JetBrains Mono',monospace;margin-bottom:3px;">FIX CONFIRMADO — 21/07/2026 · 3 de 7 candidaturas aplicadas hoje</div>
+          <div style="font-size:12px;font-weight:700;color:#fde68a;font-family:'JetBrains Mono',monospace;margin-bottom:3px;">BUG HIE CORRIGIDO — 21/07/2026 · Cache limpo · Próxima rodada rescora 167 vagas</div>
           <div style="font-size:11px;color:#9ca3af;line-height:1.6;">
-            <b style="color:#86efac;">VERIFIED (3):</b> Jobgether — Sênior AI Architect (04h) · Jaya Tech — Engenheiro(a) de Software de IA (09h) · CI&amp;T — Software Architect / AI Engineer (12h).
-            <br><b style="color:#fca5a5;">FAILED (4):</b> Enforce · Framework Digital · Empresa Confidencial · Harper Russo — todos por <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">no_easy_apply_btn</code> (redirecionamento externo ou proteção anti-bot). Causa independente do fix do sidebar.
-            <br><b style="color:#93c5fd;">Fix 20/07 validado:</b> estratégia scoped no top-card + filtro <code>currentJobId</code> funcionou corretamente nas 3 vagas com Easy Apply nativo.
+            <b style="color:#fde68a;">Causa raiz:</b> <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">CHEAP_MAX_OUTPUT_TOKENS=300</code> truncava o JSON do Haiku — campos <code>technicalFit</code>/<code>seniorityFit</code>/<code>atsProbability</code> ficavam <code>undefined</code> → score 13/100, IP 10% para TODOS os jobs (inclusive AI Engineer e ML). Gate rate caiu para 0%.
+            <br><b style="color:#86efac;">Fix aplicado (10:17):</b> 300 → 600 tokens. <b style="color:#86efac;">Cache limpo (agora):</b> 167 entradas corrompidas removidas do DB.
+            <br><b style="color:#93c5fd;">Candidaturas hoje (manhã):</b> Jobgether AI Architect · Jaya Tech IA Engineer · CI&amp;T AI Architect — 3 VERIFIED antes do bug afetar a rodada das 09h.
           </div>
         </div>
         <button onclick="document.getElementById('system-notice').style.display='none'" style="flex-shrink:0;background:none;border:none;color:#6b7280;cursor:pointer;font-size:16px;line-height:1;padding:0;margin-left:auto;">×</button>
@@ -3001,7 +3002,13 @@ function saveApiUrl() {
   const url = (inp?.value ?? '').trim().replace(/\/$/, '');
   if (url) {
     localStorage.setItem('vraxia_api_url', url);
-    window.location.reload();
+    // Se a nova URL é diferente da origin atual, navega para ela.
+    // Evita reload em origin morta (tunnel trocou URL).
+    if (url !== location.origin) {
+      window.location.href = url + '/work/';
+    } else {
+      window.location.reload();
+    }
   } else {
     clearApiUrl();
   }
