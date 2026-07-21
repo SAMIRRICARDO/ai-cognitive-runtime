@@ -203,6 +203,7 @@ function Invoke-Round {
     }
 
     # Parseia vagas aplicadas com sucesso no output desta rodada
+    # Detecta: "Aplicado!" (Catho/Gupy/Greenhouse) e "Candidatura CONFIRMADA" (LinkedIn Easy Apply)
     $appliedJobs = [System.Collections.Generic.List[string]]::new()
     $lastTitle   = ""
     foreach ($line in $roundLines) {
@@ -210,7 +211,8 @@ function Invoke-Round {
         if ($s -match ' @ ' -and $s -notmatch '^Score:' -and $s -notmatch 'Aplicando' -and $s -notmatch 'Aplicado' -and $s -notmatch '━') {
             $lastTitle = $s
         }
-        if ($s -match '^Aplicado!' -and $s -notmatch 'simulado' -and $lastTitle) {
+        $isSuccess = ($s -match '^Aplicado!' -and $s -notmatch 'simulado') -or ($s -match 'Candidatura CONFIRMADA')
+        if ($isSuccess -and $lastTitle) {
             $appliedJobs.Add($lastTitle)
             $lastTitle = ""
         }
