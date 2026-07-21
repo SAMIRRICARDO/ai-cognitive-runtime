@@ -202,11 +202,22 @@ app.get('/work/api-config.json', (_req: Request, res: Response) => {
   res.sendFile(path.join(DASH_DIR, 'api-config.json'));
 });
 
-// Static dashboard at /work
-app.use('/work', express.static(DASH_DIR));
-app.get('/work', (_req: Request, res: Response) => {
+// index.html: no-store para evitar BFCache stale no iOS Safari
+app.get('/work/', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
   res.sendFile(path.join(DASH_DIR, 'index.html'));
 });
+app.get('/work/index.html', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(DASH_DIR, 'index.html'));
+});
+app.get('/work', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(DASH_DIR, 'index.html'));
+});
+
+// Static dashboard at /work (outros assets: CSS, JS, imagens)
+app.use('/work', express.static(DASH_DIR));
 
 // ── GET /api/work/health ─────────────────────────────────────────────────────
 app.get('/api/work/health', (_req: Request, res: Response) => {

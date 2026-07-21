@@ -485,17 +485,14 @@
       </div>
 
       <!-- System notice -->
-      <div id="system-notice" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.3);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
-        <span style="font-size:18px;flex-shrink:0;">🔴</span>
+      <div id="system-notice" style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:18px;flex-shrink:0;">✅</span>
         <div style="flex:1;">
-          <div style="font-size:12px;font-weight:700;color:#fca5a5;font-family:'JetBrains Mono',monospace;margin-bottom:3px;">BUG CORRIGIDO — 20/07/2026 · Sidebar hijacking botão Easy Apply</div>
+          <div style="font-size:12px;font-weight:700;color:#86efac;font-family:'JetBrains Mono',monospace;margin-bottom:3px;">FIX CONFIRMADO — 21/07/2026 · 3 de 7 candidaturas aplicadas hoje</div>
           <div style="font-size:11px;color:#9ca3af;line-height:1.6;">
-            Rodada de hoje (03h) — <b style="color:#fca5a5;">3 de 4 candidaturas falharam.</b>
-            O <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">findEasyApplyButton</code> estava pegando links <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">skipRedirect=true</code>
-            do painel <b style="color:#e5e7eb;">Vagas Semelhantes</b> (sidebar) — que apontam para <i>outros</i> jobs —
-            em vez do botão da vaga principal. Ao clicar, o LinkedIn navegava para a página de busca e o modal nunca abria.
-            <br><b style="color:#86efac;">Fix aplicado:</b> estratégia scoped no top-card + filtro de anchors cujo <code>currentJobId</code> não bate com a vaga atual.
-            Próxima rodada deve confirmar o fix.
+            <b style="color:#86efac;">VERIFIED (3):</b> Jobgether — Sênior AI Architect (04h) · Jaya Tech — Engenheiro(a) de Software de IA (09h) · CI&amp;T — Software Architect / AI Engineer (12h).
+            <br><b style="color:#fca5a5;">FAILED (4):</b> Enforce · Framework Digital · Empresa Confidencial · Harper Russo — todos por <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">no_easy_apply_btn</code> (redirecionamento externo ou proteção anti-bot). Causa independente do fix do sidebar.
+            <br><b style="color:#93c5fd;">Fix 20/07 validado:</b> estratégia scoped no top-card + filtro <code>currentJobId</code> funcionou corretamente nas 3 vagas com Easy Apply nativo.
           </div>
         </div>
         <button onclick="document.getElementById('system-notice').style.display='none'" style="flex-shrink:0;background:none;border:none;color:#6b7280;cursor:pointer;font-size:16px;line-height:1;padding:0;margin-left:auto;">×</button>
@@ -776,8 +773,12 @@
           <table class="tbl">
             <thead>
               <tr>
-                <th onclick="toggleDateSort()" title="Clique para ordenar por data (crescente / decrescente)" style="cursor:pointer;user-select:none;white-space:nowrap;">
-                  <span style="display:inline-flex;align-items:center;gap:5px;">Data/Hora <span id="date-sort-icon" style="font-size:12px;font-weight:700;opacity:.6;">↕</span></span>
+                <th style="white-space:nowrap;">
+                  <span style="display:inline-flex;align-items:center;gap:3px;">
+                    Data/Hora
+                    <button onclick="setDateSort('asc')" id="btn-th-date-asc" title="Crescente — mais antigo primeiro" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:18px;border-radius:4px;background:transparent;border:none;color:#6b7280;font-size:12px;font-weight:700;outline:none;transition:all .2s;">↑</button>
+                    <button onclick="setDateSort('desc')" id="btn-th-date-desc" title="Decrescente — mais recente primeiro" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:18px;border-radius:4px;background:transparent;border:none;color:#6b7280;font-size:12px;font-weight:700;outline:none;transition:all .2s;">↓</button>
+                  </span>
                 </th>
                 <th>Empresa</th>
                 <th>Cargo</th>
@@ -2266,6 +2267,16 @@ function applyAppSort() {
     btnDesc.style.background = _dateSortDir === 'desc' ? 'rgba(96,165,250,.18)' : 'transparent';
     btnDesc.style.color      = _dateSortDir === 'desc' ? '#60a5fa' : '#6b7280';
   }
+  const btnThAsc  = $('btn-th-date-asc');
+  const btnThDesc = $('btn-th-date-desc');
+  if (btnThAsc) {
+    btnThAsc.style.background = _dateSortDir === 'asc'  ? 'rgba(96,165,250,.18)' : 'transparent';
+    btnThAsc.style.color      = _dateSortDir === 'asc'  ? '#60a5fa' : '#6b7280';
+  }
+  if (btnThDesc) {
+    btnThDesc.style.background = _dateSortDir === 'desc' ? 'rgba(96,165,250,.18)' : 'transparent';
+    btnThDesc.style.color      = _dateSortDir === 'desc' ? '#60a5fa' : '#6b7280';
+  }
 
   const tbody = $('apps-tbody');
   const visible = _allAppRows.slice(0, APPS_PAGE_SIZE);
@@ -3165,7 +3176,14 @@ async function init() {
         _lastJsonlMtime = d.jsonlMtime;
         loadQuestionnaire(true);
       }
-    } catch { try { await autoDiscoverTunnel(); } catch {} }
+    } catch {
+      const _prevApi = API;
+      try { await autoDiscoverTunnel(); } catch {}
+      // Se o túnel mudou (URL nova descoberta), recheck imediato em vez de esperar 30s
+      if (API && API !== _prevApi) {
+        try { await checkDbMtime(); } catch {}
+      }
+    }
   }
   // Polling fixo de 30s — hunt status é rastreado separadamente por startHuntPolling (3s)
   let _dbMtimeTimer = null;
@@ -6160,6 +6178,8 @@ document.addEventListener('visibilitychange', () => {
     try { _rdaWs.send(JSON.stringify({ type: 'heartbeat', payload: {} })); } catch { _rdaWs.close(); }
   }
   rdaRefreshAgents();
+  // Redescobre túnel e força refresh de dados ao retornar da aba no iPhone/BFCache
+  autoDiscoverTunnel().then(() => refreshAll()).catch(() => {});
 });
 
 window.addEventListener('load', initRda);

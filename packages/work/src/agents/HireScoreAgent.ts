@@ -110,10 +110,14 @@ Return ONLY this JSON:
         messages: [{ role: 'user', content: prompt }],
       });
 
-      const text = response.content[0].type === 'text' ? response.content[0].text : '{}';
+      const text = response.content[0].type === 'text' ? response.content[0].text : '';
       const raw = text.replace(/```json|```/g, '').trim();
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : '{}');
+      if (!jsonMatch) {
+        console.error(`[HireScoreAgent] JSON truncado (${response.usage?.output_tokens ?? '?'} tokens). Usando fallback.`);
+        return this.fallbackRaw(job, twin, pubAge);
+      }
+      const parsed = JSON.parse(jsonMatch[0]);
 
       return {
         technicalFit:    this.clamp(parsed.technicalFit, 0, 100),
