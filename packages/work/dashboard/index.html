@@ -5175,7 +5175,17 @@ function renderDIAContent(jobId, company, jobTitle, currentState, timeline) {
         <textarea id="dia-note-input" placeholder="${notePlaceholder}"
           style="width:100%;padding:8px 10px;border-radius:8px;background:#111827;border:1px solid #1f2937;color:#e5e7eb;font-size:12px;resize:none;min-height:70px;box-sizing:border-box;"></textarea>
       </div>
-      <div style="font-size:10px;color:#4b5563;margin-top:6px;">💡 Preencha os detalhes e clique no estado acima para salvar.</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button id="dia-save-btn"
+          onclick="saveDIANotes('${esc(jobId)}','${esc(currentState)}','${esc(company)}','${esc(jobTitle)}')"
+          style="flex:1;padding:9px 0;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.03em;transition:opacity .15s;">
+          💾 Salvar
+        </button>
+        <button onclick="$('dia-note-input').value='';const s=$('dia-schedule-input');if(s)s.value='';const c=$('dia-contact-input');if(c)c.value='';"
+          style="padding:9px 14px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid #374151;color:#9ca3af;font-size:12px;cursor:pointer;">
+          Limpar
+        </button>
+      </div>
     </div>
     <div style="margin-top:16px;">
       <div style="font-size:11px;color:#6b7280;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Histórico</div>
@@ -5233,6 +5243,45 @@ async function recordDIAState(jobId, state, company, jobTitle) {
     alert('API offline — tente novamente');
   } finally {
     if (btn) btn.style.opacity = '1';
+  }
+}
+
+async function saveDIANotes(jobId, currentState, company, jobTitle) {
+  const notesRaw = ($('dia-note-input')?.value    ?? '').trim();
+  const schedule = ($('dia-schedule-input')?.value ?? '').trim();
+  const contact  = ($('dia-contact-input')?.value  ?? '').trim();
+
+  if (!notesRaw && !schedule && !contact) {
+    alert('Preencha ao menos uma informação antes de salvar.');
+    return;
+  }
+
+  const parts = [];
+  if (contact) parts.push(`👤 ${contact}`);
+  if (notesRaw) parts.push(notesRaw);
+  const notes = parts.join('\n');
+
+  const btn = document.getElementById('dia-save-btn');
+  if (btn) { btn.style.opacity = '.5'; btn.textContent = 'Salvando...'; }
+
+  try {
+    const r = await fetch(`${API}/api/work/applications/${encodeURIComponent(jobId)}/dia`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ outcomeState: currentState, notes, scheduledAt: schedule || undefined }),
+    });
+    const d = await r.json();
+    if (d.error) { alert('Erro: ' + d.error); return; }
+
+    _diaMap[jobId] = { current: currentState, timeline: d.timeline ?? [] };
+    renderDIAContent(jobId, company, jobTitle, currentState, d.timeline ?? []);
+
+    if (schedule) refreshAgendaBadge();
+    if ($('agenda-content') && !$('agenda-content').querySelector('.spinner')) loadAgenda(true);
+  } catch {
+    alert('API offline — tente novamente');
+  } finally {
+    if (btn) { btn.style.opacity = '1'; btn.textContent = '💾 Salvar'; }
   }
 }
 

@@ -1746,10 +1746,17 @@ app.post('/api/work/applications/:jobId/dia', async (req: Request, res: Response
       return;
     }
 
-    // Resolve twinId from hire_scores if not provided
+    // Resolve twinId + job info — join hire_scores (optional) with job_applications
     let resolvedTwinId = twinId ?? 'twin_ai_engineer';
     const hsRow = await withDb(db => {
-      const r = db.exec(`SELECT twin_id, company, job_title, platform FROM hire_scores WHERE job_id = ?`, [jobId]);
+      const r = db.exec(
+        `SELECT COALESCE(hs.twin_id,'twin_ai_engineer') as twin_id,
+                ja.company, ja.job_title, ja.platform
+         FROM job_applications ja
+         LEFT JOIN hire_scores hs ON ja.id = hs.job_id
+         WHERE ja.id = ?`,
+        [jobId],
+      );
       if (!r.length || !r[0].values.length) return null;
       const cols = r[0].columns;
       const obj: Record<string, unknown> = {};
