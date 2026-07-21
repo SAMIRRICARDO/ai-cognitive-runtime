@@ -1,4 +1,9 @@
 {
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["filesystem", "memory", "github", "postgres"]
+  "enabledMcpjsonServers": ["filesystem", "memory", "github", "postgres"],
+  "env": {
+    "CHEAP_MODE": "true",
+    "MAX_OUTPUT_TOKENS": "300",
+    "MAX_TOOL_ITERATIONS": "3"
+  }
 }

@@ -1611,6 +1611,7 @@
                   <option value="rh_interview">Entrev. RH</option>
                   <option value="technical_interview_completed">Entrev. Técnica Concluída</option>
                   <option value="culture_fit_completed">Culture Fit Concluído</option>
+                  <option value="ai_screening_completed">Triagem IA Concluída</option>
                   <option value="awaiting_feedback">Aguardando Feedback</option>
                   <option value="offer_received">Oferta Recebida</option>
                   <option value="hired">Contratado</option>
@@ -1972,6 +1973,28 @@ async function autoDiscoverTunnel() {
     } else {
       // Sem túnel ativo — usa localhost diretamente
       API = 'http://localhost:3001';
+    }
+  } catch {}
+
+  // Último recurso: api-config.json do deploy Vercel estável.
+  // Permite que o iPhone recupere a URL do túnel mesmo quando a aba está
+  // presa em uma URL de túnel morta (o Vercel sempre tem a config atual).
+  const _stableUrl = localStorage.getItem('vraxia_vercel_url') || 'https://vraxia-platform.vercel.app';
+  try {
+    const _vc = await fetch(`${_stableUrl}/api-config.json?_=${Date.now()}`, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    if (_vc.ok) {
+      const _vcfg = await _vc.json();
+      if (_vcfg.apiUrl && _vcfg.apiUrl.startsWith('https://')) {
+        const _vh = await fetch(`${_vcfg.apiUrl}/api/work/health`, { signal: AbortSignal.timeout(3000) });
+        if (_vh.ok) {
+          API = _vcfg.apiUrl;
+          localStorage.setItem('vraxia_api_url', _vcfg.apiUrl);
+          const _vinp = document.getElementById('api-url-input');
+          if (_vinp) _vinp.value = _vcfg.apiUrl;
+          console.log('[VRAXIA] Túnel via Vercel estável:', _vcfg.apiUrl);
+          return;
+        }
+      }
     }
   } catch {}
 }
@@ -3110,12 +3133,10 @@ async function init() {
   // Check API connectivity first
   const online = await checkConnection();
   if (!online) {
-    // Show config drawer automatically if API is offline and we have no saved URL
-    const saved = localStorage.getItem('vraxia_api_url');
-    if (!saved) {
-      const drawer = $('api-config-drawer');
-      if (drawer) drawer.style.display = 'block';
-    }
+    // Sempre mostra o drawer quando offline — tunnel pode ter trocado de URL
+    // (antes só mostrava quando não havia URL salva, mas URL salva pode ser antiga)
+    const drawer = $('api-config-drawer');
+    if (drawer) drawer.style.display = 'block';
   }
 
   // Check hunt status on load
@@ -3139,10 +3160,12 @@ async function init() {
   // Polling adaptativo por db-mtime — detecta mudanças no DB e atualiza em ≤5s
   let _lastMtime = 0;
   let _lastJsonlMtime = 0;
+  let _dbMtimeFailed = false; // flag: último poll falhou → retry em 5s em vez de 30s
   async function checkDbMtime() {
     try {
       const r = await fetch(`${API}/api/work/db-mtime`, { cache: 'no-store', signal: AbortSignal.timeout(3000) });
       const d = await r.json();
+      _dbMtimeFailed = false; // fetch OK — volta ao intervalo normal de 30s
       const huntActive = !!d.huntPid;
       const restDay = !!d.restDay;
 
@@ -3175,19 +3198,16 @@ async function init() {
         loadQuestionnaire(true);
       }
     } catch {
-      const _prevApi = API;
+      // Marca falha para o próximo scheduleDbMtime usar delay curto (5s)
+      _dbMtimeFailed = true;
       try { await autoDiscoverTunnel(); } catch {}
-      // Se o túnel mudou (URL nova descoberta), recheck imediato em vez de esperar 30s
-      if (API && API !== _prevApi) {
-        try { await checkDbMtime(); } catch {}
-      }
     }
   }
-  // Polling fixo de 30s — hunt status é rastreado separadamente por startHuntPolling (3s)
+  // Polling: 5s após falha (retry rápido pós-redescoberta de túnel), 30s normal
   let _dbMtimeTimer = null;
   function scheduleDbMtime() {
     if (_dbMtimeTimer) clearTimeout(_dbMtimeTimer);
-    _dbMtimeTimer = setTimeout(async () => { try { await checkDbMtime(); } catch {} scheduleDbMtime(); }, 30_000);
+    _dbMtimeTimer = setTimeout(async () => { try { await checkDbMtime(); } catch {} scheduleDbMtime(); }, _dbMtimeFailed ? 5_000 : 30_000);
   }
   checkDbMtime().then(scheduleDbMtime).catch(() => scheduleDbMtime()); // roda imediatamente no load
 }
@@ -3922,11 +3942,10 @@ function renderHomeRecentApps() {
   el.innerHTML = sorted.slice(0, 5).map(row => {
     const plat = row.platform || 'LinkedIn';
     const pCol = plat === 'LinkedIn' ? '#0ea5e9' : plat === 'Gupy' ? '#a78bfa' : '#fb923c';
-    const dt = row.applied_at
-      ? new Date(row.applied_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
-      : row.created_at
-        ? new Date(row.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
-        : '—';
+    const dtRaw = row.applied_at || row.updated_at || row.scanned_at;
+    const dt = dtRaw
+      ? new Date(dtRaw).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
+      : '—';
     const ip = _hireScoreMap[row.id]?.interview_probability ?? row.score_total ?? null;
     const ipHtml = ip != null
       ? `<span style="font-size:10px;font-family:'JetBrains Mono',monospace;color:${ip>=90?'#22d3ee':ip>=75?'#22c55e':'#fbbf24'};font-weight:700;">${ip}%</span>`
@@ -3993,7 +4012,13 @@ async function loadHome() {
     if (updEl) updEl.textContent = `atualizado ${nowStr}`;
     _homeRecentRows = Array.isArray(rows) ? rows : [];
     renderHomeRecentApps();
-  } catch { /* silent */ }
+  } catch {
+    // API inacessível — limpa stale BFCache para não exibir candidaturas antigas
+    _homeRecentRows = [];
+    renderHomeRecentApps();
+    const updEl = $('home-recent-updated');
+    if (updEl) { updEl.textContent = 'API offline'; updEl.style.color = '#ef4444'; }
+  }
 }
 
 // Auto-refresh da home a cada 2 minutos quando na sec-home
@@ -5333,6 +5358,7 @@ const PIP_STATUS_LABEL = {
   rh_interview:                  '🤝 Entrev. RH',
   technical_interview_completed: '💻 Tec. Concluída',
   culture_fit_completed:         '🎭 Culture Fit OK',
+  ai_screening_completed:        '🤖 Triagem IA Concluída',
   awaiting_feedback:             '⏳ Aguard. Feedback',
   offer_received:                '🎁 Oferta Recebida',
   hired:                         '🎉 Contratado',
@@ -5341,7 +5367,8 @@ const PIP_STATUS_LABEL = {
 const PIP_STATUS_COLOR = {
   initial_contact:'#6b7280', interview_scheduled:'#fbbf24',
   rh_interview:'#22d3ee', technical_interview_completed:'#a78bfa',
-  culture_fit_completed:'#60a5fa', awaiting_feedback:'#f97316',
+  culture_fit_completed:'#60a5fa', ai_screening_completed:'#34d399',
+  awaiting_feedback:'#f97316',
   offer_received:'#22c55e', hired:'#22c55e', rejected:'#ef4444',
 };
 const PIP_PRIORITY_COLOR = { P1:'#ef4444', P2:'#f97316', P3:'#fbbf24', P4:'#60a5fa', P5:'#6b7280' };
@@ -5381,7 +5408,7 @@ function renderPipelineStats() {
   if (!el) return;
   const active      = _pipelineData.filter(o => !['hired','rejected'].includes(String(o.status)));
   const interviews  = _pipelineData.filter(o => o.interview_date && new Date(String(o.interview_date)) >= new Date());
-  const waiting     = _pipelineData.filter(o => ['awaiting_feedback','culture_fit_completed','technical_interview_completed'].includes(String(o.status)));
+  const waiting     = _pipelineData.filter(o => ['awaiting_feedback','culture_fit_completed','technical_interview_completed','ai_screening_completed'].includes(String(o.status)));
   const maxSalary   = Math.max(0, ..._pipelineData.filter(o => o.salary_expectation).map(o => Number(o.salary_expectation)));
   const stats = [
     { label:'Processos Ativos',    val: active.length,     color:'#fbbf24', icon:'🎯' },
@@ -6178,14 +6205,23 @@ document.addEventListener('visibilitychange', () => {
   const hiddenMs = _tabHiddenAt ? Date.now() - _tabHiddenAt : 0;
   if (hiddenMs > 60 * 60 * 1000) {
     // Tab hidden >1h: if origin is alive do a full reload so we get fresh HTML + new tunnel URL.
-    // If origin is dead (stale tunnel URL), fall through to autoDiscoverTunnel.
+    // If origin is dead (stale tunnel URL), fall through to autoDiscoverTunnel + show drawer.
     fetch(location.origin + '/api/work/health', { signal: AbortSignal.timeout(2000) })
-      .then(r => { if (r.ok) { location.reload(); return; }
-        autoDiscoverTunnel().then(() => refreshAll()).catch(() => {}); })
-      .catch(() => autoDiscoverTunnel().then(() => refreshAll()).catch(() => {}));
+      .then(r => {
+        if (r.ok) { location.reload(); return; }
+        // Origin morta (túnel trocou de URL) — tenta redescoberta e mostra drawer se offline
+        refreshAll()
+          .then(() => checkConnection().then(ok => { if (!ok) { const d = $('api-config-drawer'); if (d) d.style.display = 'block'; } }))
+          .catch(() => { const d = $('api-config-drawer'); if (d) d.style.display = 'block'; });
+      })
+      .catch(() => {
+        refreshAll()
+          .then(() => checkConnection().then(ok => { if (!ok) { const d = $('api-config-drawer'); if (d) d.style.display = 'block'; } }))
+          .catch(() => { const d = $('api-config-drawer'); if (d) d.style.display = 'block'; });
+      });
   } else {
-    // Redescobre túnel e força refresh de dados ao retornar da aba no iPhone/BFCache
-    autoDiscoverTunnel().then(() => refreshAll()).catch(() => {});
+    // refreshAll já chama autoDiscoverTunnel internamente — evita double-call desnecessário
+    refreshAll().catch(() => {});
   }
 });
 
@@ -6195,7 +6231,9 @@ window.addEventListener('load', initRda);
 // pageshow com persisted=true significa que o JS não re-executou — força refresh.
 window.addEventListener('pageshow', (e) => {
   if (!e.persisted) return;
-  autoDiscoverTunnel().then(() => refreshAll()).catch(() => {});
+  refreshAll()
+    .then(() => checkConnection().then(ok => { if (!ok) { const d = $('api-config-drawer'); if (d) d.style.display = 'block'; } }))
+    .catch(() => { const d = $('api-config-drawer'); if (d) d.style.display = 'block'; });
 });
 </script>
 </body>

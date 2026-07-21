@@ -1946,6 +1946,14 @@ const PIPELINE_SEED = [
     probability: 40,
     preparationTopics: ['LangChain','AI Agents','IoT','IoT Gateways','Data Engineering','AI Architecture','Discovery','Solution Design'],
   },
+  {
+    id: 'pip-006', company: 'Hapvida', position: 'Engenheiro(a) de Inteligência Artificial Sênior',
+    priority: 'P2', status: 'ai_screening_completed',
+    notes: 'Inscrição via Gupy. Fit Cultural 74/100 — aprovado. Pré-entrevista IA finalizada: respondidas todas as perguntas técnicas (AI Agents, Arquitetura de IA, APIs REST, Escalabilidade, Segurança, Requisitos de Negócio, Qualidade de Código, Arquitetura orientada a agentes). Processo aguardando avaliação automática da IA e validação pelo RH.',
+    nextAction: 'Monitorar retorno da Hapvida — aguardar contato do RH com resultado da avaliação IA.',
+    probability: 65,
+    preparationTopics: ['AI Agents','AI Architecture','APIs REST','Scalability','Security','Business Requirements','Code Quality','Agent-Oriented Architecture','LLM Integration','Observability'],
+  },
 ];
 
 app.get('/api/work/pipeline', async (_req: Request, res: Response) => {
