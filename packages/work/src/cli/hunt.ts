@@ -162,6 +162,21 @@ const LINKEDIN_CONFIG_EXTERNAL: JobSearchConfig = {
   maxApplicationsPerRun: governedApplyLimit,
 };
 
+// 5ª prioridade: Uber — LinkedIn company ID 1815218, sem Easy Apply (Uber usa ATS próprio)
+const LINKEDIN_CONFIG_UBER: JobSearchConfig = {
+  keywords: ['Software Engineer', 'Senior Software Engineer', 'Staff Engineer', 'Backend Engineer', 'Full Stack Engineer', 'AI Engineer', 'ML Engineer'],
+  locations: ['Brazil', 'São Paulo, Brazil', 'Remote'],
+  experienceLevels: ['MID_SENIOR_LEVEL', 'DIRECTOR'],
+  jobTypes: ['FULL_TIME'],
+  datePosted: 'month',
+  easyApplyOnly: false,
+  remoteOnly: false,
+  companyBlacklist: [],
+  titleBlacklist: TITLE_BLACKLIST,
+  maxApplicationsPerRun: governedApplyLimit,
+  companyIds: ['1815218'],  // Uber LinkedIn company ID
+};
+
 const GUPY_CONFIG = {
   keywords: KEYWORDS,
   companyWatchlist: [
@@ -669,11 +684,12 @@ async function main() {
     const jobsSP        = remoteOnly ? [] : await searchEngine.scrapeJobList(LINKEDIN_CONFIG_SP).catch(e => { console.warn('[Hunt] Busca SP falhou:', e); return []; });
     const jobsBR        = await searchEngine.scrapeJobList(LINKEDIN_CONFIG_BRASIL).catch(e => { console.warn('[Hunt] Busca BR falhou:', e); return []; });
     const jobsExternal  = await searchEngine.scrapeJobList(LINKEDIN_CONFIG_EXTERNAL).catch(e => { console.warn('[Hunt] Busca externa falhou:', e); return []; });
+    const jobsUber      = await searchEngine.scrapeJobList(LINKEDIN_CONFIG_UBER).catch(e => { console.warn('[Hunt] Busca Uber falhou:', e); return []; });
 
     const seenIds = new Set<string>();
-    const rawLinkedInJobs = [...jobsSPOnsite, ...jobsSP, ...jobsBR, ...jobsExternal].filter(j => { if (seenIds.has(j.id)) return false; seenIds.add(j.id); return true; });
+    const rawLinkedInJobs = [...jobsSPOnsite, ...jobsSP, ...jobsBR, ...jobsExternal, ...jobsUber].filter(j => { if (seenIds.has(j.id)) return false; seenIds.add(j.id); return true; });
     const jobs = sortNewestFirst(rawLinkedInJobs); // newest-first: < 24h tem 4x mais callback
-    console.log(`${jobs.length} vagas únicas encontradas no LinkedIn (SP onsite/híbrido: ${jobsSPOnsite.length}, SP geral: ${jobsSP.length}, BR/Remoto: ${jobsBR.length}, Externa/ATS: ${jobsExternal.length}) — ordenadas por data.\n`);
+    console.log(`${jobs.length} vagas únicas encontradas no LinkedIn (SP onsite/híbrido: ${jobsSPOnsite.length}, SP geral: ${jobsSP.length}, BR/Remoto: ${jobsBR.length}, Externa/ATS: ${jobsExternal.length}, Uber: ${jobsUber.length}) — ordenadas por data.\n`);
 
     for (const job of jobs) {
       if (totalApplied >= maxApply) break;

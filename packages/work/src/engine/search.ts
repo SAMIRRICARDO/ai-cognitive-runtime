@@ -59,6 +59,8 @@ export class JobSearchEngine {
 
     params.set('sortBy', 'DD'); // mais recentes primeiro
 
+    if (config.companyIds?.length) params.set('f_C', config.companyIds.join(','));
+
     return base + params.toString();
   }
 
