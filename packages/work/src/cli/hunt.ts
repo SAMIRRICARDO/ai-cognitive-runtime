@@ -203,6 +203,60 @@ const LINKEDIN_CONFIG_TOP_COMPANIES: JobSearchConfig = {
   companyWhitelist: TOP_COMPANIES_WHITELIST,
 };
 
+// 7ª prioridade: GPTW 2025 — 175 melhores empresas para trabalhar no Brasil
+// IDs LinkedIn confirmados por busca direta nos perfis de cada empresa
+const LINKEDIN_CONFIG_GPTW: JobSearchConfig = {
+  keywords: KEYWORDS,
+  locations: ['São Paulo, Brazil', 'Brazil', 'Remote'],
+  experienceLevels: ['MID_SENIOR_LEVEL', 'DIRECTOR'],
+  jobTypes: ['FULL_TIME', 'CONTRACT'],
+  datePosted: 'month',
+  easyApplyOnly: false,
+  remoteOnly: false,
+  companyBlacklist: [],
+  titleBlacklist: TITLE_BLACKLIST,
+  maxApplicationsPerRun: governedApplyLimit,
+  companyIds: [
+    // Big Tech / Multinacionais de TI
+    '228296',   // TOTVS
+    '2818',     // SAP
+    '48925',    // Accenture
+    '163711',   // Capgemini
+    '18535',    // NTT DATA
+    '54325',    // Cognizant
+    '480384',   // EY (Ernst & Young)
+    '3517498',  // Cisco
+    '18790668', // Salesforce
+    '23769',    // Meta
+    '3033',     // Avanade
+    '203563',   // CI&T
+    // Fintechs / Mercado Financeiro
+    '105386250',// Serasa Experian
+    '788938',   // TIM Brasil
+    // Consultorias / Serviços de TI
+    '906658',   // Radix Engineering
+    '40751352', // Schneider Electric Brasil
+    '27123',    // Senior Sistemas
+    '43551',    // e-Core
+    // Mercado / Logística / Dados
+    '25170536', // INDICIUM
+    '3726003',  // Logcomex
+    '398921',   // DBC Company
+    '486525',   // Coopersystem
+    '22978',    // Icaro Tech
+    // Outros tech/inovação
+    '53675',    // Webmotors
+    '3713624',  // Petlove
+    '7356',     // Pitang
+    '12731470', // Eloware
+    '12627031', // Mercos
+    // Infraestrutura / Cloud
+    '3279270',  // Equinix
+    // Thomson Reuters
+    '2487151',  // Thomson Reuters
+  ],
+};
+
 const GUPY_CONFIG = {
   keywords: KEYWORDS,
   companyWatchlist: [
@@ -716,11 +770,12 @@ async function main() {
     const jobsExternal  = await searchEngine.scrapeJobList(LINKEDIN_CONFIG_EXTERNAL).catch(e => { console.warn('[Hunt] Busca externa falhou:', e); return []; });
     const jobsUber      = await searchEngine.scrapeJobList(LINKEDIN_CONFIG_UBER).catch(e => { console.warn('[Hunt] Busca Uber falhou:', e); return []; });
     const jobsTop       = await searchEngine.scrapeJobList(LINKEDIN_CONFIG_TOP_COMPANIES).catch(e => { console.warn('[Hunt] Busca Top Companies falhou:', e); return []; });
+    const jobsGPTW      = await searchEngine.scrapeJobList(LINKEDIN_CONFIG_GPTW).catch(e => { console.warn('[Hunt] Busca GPTW falhou:', e); return []; });
 
     const seenIds = new Set<string>();
-    const rawLinkedInJobs = [...jobsSPOnsite, ...jobsSP, ...jobsBR, ...jobsExternal, ...jobsUber, ...jobsTop].filter(j => { if (seenIds.has(j.id)) return false; seenIds.add(j.id); return true; });
+    const rawLinkedInJobs = [...jobsSPOnsite, ...jobsSP, ...jobsBR, ...jobsExternal, ...jobsUber, ...jobsTop, ...jobsGPTW].filter(j => { if (seenIds.has(j.id)) return false; seenIds.add(j.id); return true; });
     const jobs = sortNewestFirst(rawLinkedInJobs); // newest-first: < 24h tem 4x mais callback
-    console.log(`${jobs.length} vagas únicas encontradas no LinkedIn (SP onsite/híbrido: ${jobsSPOnsite.length}, SP geral: ${jobsSP.length}, BR/Remoto: ${jobsBR.length}, Externa/ATS: ${jobsExternal.length}, Uber: ${jobsUber.length}, Top empresas: ${jobsTop.length}) — ordenadas por data.\n`);
+    console.log(`${jobs.length} vagas únicas encontradas no LinkedIn (SP onsite/híbrido: ${jobsSPOnsite.length}, SP geral: ${jobsSP.length}, BR/Remoto: ${jobsBR.length}, Externa/ATS: ${jobsExternal.length}, Uber: ${jobsUber.length}, Top empresas: ${jobsTop.length}, GPTW 2025: ${jobsGPTW.length}) — ordenadas por data.\n`);
 
     for (const job of jobs) {
       if (totalApplied >= maxApply) break;
