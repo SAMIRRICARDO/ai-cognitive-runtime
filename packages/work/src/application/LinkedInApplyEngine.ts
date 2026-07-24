@@ -105,13 +105,15 @@ export class LinkedInApplyEngine {
       tracer.markStep('filling_questions');
 
       let stepCount = 0;
-      const maxSteps = opts.maxSteps ?? 12;
+      const maxSteps = opts.maxSteps ?? 20;
       // Stuck detection: tracks question fingerprint across consecutive "next" clicks.
       // If the same question IDs appear after clicking Next 2+ times, the form is
       // blocked by a validation error that we can't resolve — fail fast instead of
       // burning through all maxSteps iterations (~100s).
       let prevQFingerprint = '';
       let stuckAfterNext = 0;
+      let stuckAfterReview = 0;
+      let prevReviewFingerprint = '';
 
       while (stepCount < maxSteps) {
         stepCount++;
@@ -189,6 +191,34 @@ export class LinkedInApplyEngine {
         }
 
         if (action === 'review') {
+          // Stuck detection for review: if same question fingerprint appears after
+          // clicking "Avaliar" 2+ times, the form is not advancing to submit —
+          // likely a validation error or stale SPA state. Fail fast.
+          const reviewFingerprint = [...filledIds].sort().join('|');
+          if (prevReviewFingerprint && reviewFingerprint && reviewFingerprint === prevReviewFingerprint) {
+            stuckAfterReview++;
+            if (stuckAfterReview >= 2) {
+              console.warn(`[LinkedInApplyEngine] Formulário preso no review — ${stuckAfterReview} cliques em Avaliar sem avançar para Submit`);
+              const networkEvidence = evidence.getNetworkRequests().some(r =>
+                r.isApplicationRelated && r.method === 'POST' && r.status === 200,
+              );
+              if (networkEvidence) {
+                if (pageFlowKeepalive) clearInterval(pageFlowKeepalive);
+                tracer.addEvent({ step: `review_stuck_but_submitted_${stepCount}`, url: this.page.url(), result: 'ok', metadata: { via: 'network_post_200', stuckAfterReview } });
+                sm.tryTransition('submitting', { via: 'review_stuck_network_evidence' });
+                sm.tryTransition('submitted',  { via: 'review_stuck_network_evidence' });
+                break;
+              }
+              if (pageFlowKeepalive) clearInterval(pageFlowKeepalive);
+              tracer.addEvent({ step: `review_stuck_step_${stepCount}`, url: this.page.url(), result: 'error', error: `Formulário não avançou para Submit após ${stuckAfterReview} cliques em Avaliar` });
+              sm.tryTransition('failed', { reason: 'review_stuck', stuckAfterReview });
+              return { success: false, attempts: attemptCount };
+            }
+          } else {
+            stuckAfterReview = 0;
+            prevReviewFingerprint = reviewFingerprint;
+          }
+          stuckAfterNext = 0; // reset next-stuck counter when switching to review
           sm.tryTransition('reviewing', { step: stepCount });
           await this.clickNext(tracer);
           await this.page.waitForLoadState('domcontentloaded', { timeout: 1000 }).catch(() => {});

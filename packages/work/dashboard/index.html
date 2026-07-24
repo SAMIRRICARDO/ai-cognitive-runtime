@@ -2020,6 +2020,11 @@
 <!-- ══ CHAT FOOTER ══════════════════════════════════════════════════════════ -->
 
 <script>
+// URL do túnel embutida no deploy — garante que o iPhone use a URL correta
+// mesmo quando o Vercel tem SSO e não consegue servir api-config.json.
+window.VRAXIA_API_URL = "https://beijing-drawings-wherever-verification.trycloudflare.com";
+</script>
+<script>
 // ══ CONFIG ════════════════════════════════════════════════════════════════════
 let API = window.VRAXIA_API_URL
   || localStorage.getItem('vraxia_api_url')
@@ -2931,7 +2936,7 @@ async function loadQuestionnaire(silent = false) {
     // 1ª tentativa: API ao vivo (local / tunnel)
     try {
       const r = await fetch(`${API}/api/work/questionnaire-log`,
-        { signal: AbortSignal.timeout(4000) });
+        { signal: AbortSignal.timeout(8000) });
       if (!r.ok) throw new Error('api');
       groups = await r.json();
     } catch {
@@ -4091,22 +4096,23 @@ function renderHomeRecentApps() {
     el.innerHTML = '<div class="empty-state py-4 text-xs">Nenhuma candidatura enviada ainda</div>';
     return;
   }
-  const ACTIVE_STATUSES = new Set(['applied','submitted','completed','interview','applying','reviewing']);
+  const ACTIVE_STATUSES = new Set(['applied','submitted','completed','interview','applying','reviewing','queued','error']);
   const sorted = [..._homeRecentRows]
     .filter(r => ACTIVE_STATUSES.has((r.status || '').toLowerCase()))
     .sort((a, b) => {
-      const ta = new Date(a.applied_at || a.updated_at || a.scanned_at || 0).getTime();
-      const tb = new Date(b.applied_at || b.updated_at || b.scanned_at || 0).getTime();
+      // updated_at é sempre preenchido (upsert) — prioridade sobre applied_at que pode ser null
+      const ta = new Date(a.updated_at || a.applied_at || a.scanned_at || 0).getTime();
+      const tb = new Date(b.updated_at || b.applied_at || b.scanned_at || 0).getTime();
       return _homeDateSort === 'desc' ? tb - ta : ta - tb;
     });
   if (!sorted.length) {
     el.innerHTML = '<div class="empty-state py-4 text-xs">Nenhuma candidatura enviada ainda</div>';
     return;
   }
-  el.innerHTML = sorted.slice(0, 5).map(row => {
+  el.innerHTML = sorted.slice(0, 10).map(row => {
     const plat = row.platform || 'LinkedIn';
     const pCol = plat === 'LinkedIn' ? '#0ea5e9' : plat === 'Gupy' ? '#a78bfa' : '#fb923c';
-    const dtRaw = row.applied_at || row.updated_at || row.scanned_at;
+    const dtRaw = row.updated_at || row.applied_at || row.scanned_at;
     const dt = dtRaw
       ? new Date(dtRaw).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' })
       : '—';
